@@ -13,8 +13,8 @@ export default function EmptyState({ icon: Icon, title, description, children }:
       <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-card text-muted ring-1 ring-border">
         <Icon size={18} />
       </div>
-      <div className="text-[13px] font-semibold text-text">{title}</div>
-      {description && <p className="mt-1 max-w-xs text-[11.5px] text-sub">{description}</p>}
+      <div className="text-[15px] font-semibold text-text">{title}</div>
+      {description && <p className="mt-1 max-w-xs text-[13.5px] text-sub">{description}</p>}
       {children && <div className="mt-4">{children}</div>}
     </div>
   );

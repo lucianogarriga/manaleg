@@ -2,6 +2,7 @@ import AuthHydrator from "@/components/auth/AuthHydrator";
 import { getCurrentProfile } from "@/components/auth/AuthGuard";
 import { getLayoutCounts } from "@/services/supabase/layoutCounts";
 import { formatLongDate, todayISO } from "@/utils/formatters";
+import Toaster from "@/components/ui/Toaster";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 
@@ -15,9 +16,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <AuthHydrator profile={profile} />
       <Sidebar profile={profile} counts={counts} />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <Topbar fecha={formatLongDate(todayISO())} alertas={counts.vencimientosProximos} />
+        <Topbar
+          fecha={formatLongDate(todayISO())}
+          alertas={counts.alertas}
+          urgentes={counts.vencimientosProximos}
+        />
         <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
       </div>
+      <Toaster />
     </div>
   );
 }

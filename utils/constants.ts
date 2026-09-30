@@ -1,4 +1,4 @@
-export const TIPOS_CAUSA = [
+export const FUEROS = [
   "Civil",
   "Comercial",
   "Laboral",
@@ -6,6 +6,9 @@ export const TIPOS_CAUSA = [
   "Extrajudicial",
   "Administrativo",
 ] as const;
+
+// Tipo del próximo aviso de una causa
+export const TIPOS_AVISO = ["Vencimiento", "Alerta"] as const;
 
 export const ESTADOS_CAUSA = [
   "Iniciada",

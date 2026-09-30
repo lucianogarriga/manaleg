@@ -1,12 +1,14 @@
 import type {
   ANTICIPACION_ALERTA,
   ESTADOS_CAUSA,
-  TIPOS_CAUSA,
+  FUEROS,
+  TIPOS_AVISO,
   TIPOS_MOVIMIENTO,
   TIPOS_VENCIMIENTO,
 } from "@/utils/constants";
 
-export type TipoCausa = (typeof TIPOS_CAUSA)[number];
+export type Fuero = (typeof FUEROS)[number];
+export type TipoAviso = (typeof TIPOS_AVISO)[number];
 export type EstadoCausa = (typeof ESTADOS_CAUSA)[number];
 export type Anticipacion = (typeof ANTICIPACION_ALERTA)[number];
 export type TipoMovimiento = (typeof TIPOS_MOVIMIENTO)[number];
@@ -44,8 +46,8 @@ export interface Causa {
   user_id: string;
   caratula: string;
   nro_expediente: string | null;
-  tipo_causa: TipoCausa | null;
-  fuero: string | null;
+  fuero: Fuero | null;
+  tipo_juicio: string | null;
   juzgado_camara: string | null;
   parte_actora: string | null;
   parte_demandada: string | null;
@@ -53,7 +55,8 @@ export interface Causa {
   estado: EstadoCausa;
   fecha_inicio: string | null;
   proximo_vencimiento: string | null;
-  tipo_vencimiento: string | null;
+  tipo_vencimiento: TipoAviso | null;
+  motivo_vencimiento: string | null;
   anticipacion_alerta: Anticipacion;
   inactividad_dias: number;
   monto_reclamado: number | null;
@@ -63,6 +66,49 @@ export interface Causa {
   ultimo_editor_id: string | null;
   created_at: string;
   updated_at: string;
+}
+
+type ProfileRef = Pick<Profile, "id" | "nombre_completo" | "email">;
+
+// Causa con los datos relacionados que muestra la UI
+export interface CausaConRelaciones extends Causa {
+  owner: ProfileRef | null;
+  editor: ProfileRef | null;
+  cliente: Pick<Cliente, "id" | "nombre_completo"> | null; // null si es de otro owner (RLS)
+}
+
+// Campos editables desde el formulario
+export type CausaInput = Pick<
+  Causa,
+  | "caratula"
+  | "nro_expediente"
+  | "fuero"
+  | "tipo_juicio"
+  | "juzgado_camara"
+  | "parte_actora"
+  | "parte_demandada"
+  | "cliente_id"
+  | "estado"
+  | "fecha_inicio"
+  | "proximo_vencimiento"
+  | "tipo_vencimiento"
+  | "motivo_vencimiento"
+  | "anticipacion_alerta"
+  | "inactividad_dias"
+  | "monto_reclamado"
+  | "link_drive"
+  | "notas"
+>;
+
+export interface MovimientoConAutor extends Movimiento {
+  autor: ProfileRef | null;
+}
+
+export type PagoConAutor = Pago & { registrado_por: ProfileRef | null };
+
+// Honorario de una causa con sus pagos (más recientes primero)
+export interface HonorarioConPagos extends Honorario {
+  pagos: PagoConAutor[];
 }
 
 export interface CausaShare {

@@ -12,7 +12,7 @@ export default function LoginPage() {
 
   return (
     <form action={action} className="space-y-3">
-      <h1 className="text-[14px] font-bold text-text">Ingresar</h1>
+      <h1 className="text-[16px] font-bold text-text">Ingresar</h1>
       <FormAlert state={state} />
       <AuthField
         label="Email"
@@ -32,7 +32,7 @@ export default function LoginPage() {
       <SubmitButton pending={pending} pendingText="Ingresando…">
         Ingresar
       </SubmitButton>
-      <p className="text-center text-[11px] text-sub">
+      <p className="text-center text-[13px] text-sub">
         ¿No tenés cuenta?{" "}
         <Link href="/register" className="font-semibold text-blue">
           Registrate

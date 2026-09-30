@@ -13,9 +13,9 @@ export default function RegisterPage() {
   if (state.message) {
     return (
       <div className="space-y-3">
-        <h1 className="text-[14px] font-bold text-text">Revisá tu email</h1>
+        <h1 className="text-[16px] font-bold text-text">Revisá tu email</h1>
         <FormAlert state={state} />
-        <Link href="/login" className="block text-center text-[11px] font-semibold text-blue">
+        <Link href="/login" className="block text-center text-[13px] font-semibold text-blue">
           Volver a ingresar
         </Link>
       </div>
@@ -24,7 +24,7 @@ export default function RegisterPage() {
 
   return (
     <form action={action} className="space-y-3">
-      <h1 className="text-[14px] font-bold text-text">Crear cuenta</h1>
+      <h1 className="text-[16px] font-bold text-text">Crear cuenta</h1>
       <FormAlert state={state} />
       <AuthField
         label="Nombre completo"
@@ -60,7 +60,7 @@ export default function RegisterPage() {
       <SubmitButton pending={pending} pendingText="Creando cuenta…">
         Crear cuenta
       </SubmitButton>
-      <p className="text-center text-[11px] text-sub">
+      <p className="text-center text-[13px] text-sub">
         ¿Ya tenés cuenta?{" "}
         <Link href="/login" className="font-semibold text-blue">
           Ingresá

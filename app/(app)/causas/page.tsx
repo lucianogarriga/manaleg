@@ -1,13 +1,14 @@
-import { Scale } from "lucide-react";
-import EmptyState from "@/components/ui/EmptyState";
+import CausasView from "@/components/causas/CausasView";
+import { getCurrentProfile } from "@/components/auth/AuthGuard";
+import { getCausas } from "@/services/supabase/causas";
+import { getClienteOptions } from "@/services/supabase/clientes";
 
-// Placeholder: la vista master-detail se construye en la Fase C
-export default function CausasPage() {
-  return (
-    <EmptyState
-      icon={Scale}
-      title="Causas"
-      description="Acá va a ir la lista de causas con el panel de detalle (Fase C)."
-    />
-  );
+export default async function CausasPage() {
+  const [profile, causas, clientes] = await Promise.all([
+    getCurrentProfile(),
+    getCausas(),
+    getClienteOptions(),
+  ]);
+
+  return <CausasView causas={causas} clientes={clientes} userId={profile.id} />;
 }
