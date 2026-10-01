@@ -5,6 +5,7 @@ import { useCausasStore, type CausasFilter } from "@/store/causasStore";
 const CHIPS: { value: CausasFilter; label: string; urgent?: boolean }[] = [
   { value: "todas", label: "Todas" },
   { value: "mias", label: "Mis causas" },
+  { value: "compartidas", label: "Compartidas conmigo" },
   { value: "urgentes", label: "Urgentes", urgent: true },
   { value: "cerradas", label: "Cerradas" },
 ];

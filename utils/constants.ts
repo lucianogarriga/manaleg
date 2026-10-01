@@ -22,9 +22,12 @@ export const ANTICIPACION_ALERTA = ["1 día", "3 días", "1 semana"] as const;
 
 export const TIPOS_MOVIMIENTO = [
   "Presentación",
-  "Llamada",
+  "Decreto",
+  "Auto/Sentencia",
   "Resolución",
   "Audiencia",
+  "Llamada",
+  "Telegrama Ley/CD",
   "Pago",
   "Otro",
 ] as const;

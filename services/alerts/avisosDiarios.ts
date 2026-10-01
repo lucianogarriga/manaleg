@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/services/supabase/admin";
 import { escapeHtml, sendEmail } from "@/services/email/resend";
-import { addDaysISO, dayOfWeekISO, formatDate, formatLongDate, todayISO } from "@/utils/formatters";
+import { esHabil, siguienteHabil } from "@/utils/diasHabiles";
+import { addDaysISO, formatDate, formatLongDate, todayISO } from "@/utils/formatters";
 import type { TipoAviso } from "@/types";
 
 interface CausaConAviso {
@@ -22,74 +23,92 @@ interface Destinatario {
 
 export interface ResumenAvisos {
   hoy: string;
-  fechas: string[]; // fechas de aviso que cubre esta ejecución
-  omitido?: string; // motivo por el que no se envió nada (ej. fin de semana)
-  causas: number;
+  omitido?: string; // motivo por el que no se envió nada (ej. hoy no es día hábil)
+  causasCandidatas: number;
   emailsEnviados: number;
   yaEnviados: number; // omitidos porque ya se habían avisado
   errores: string[];
   dryRun: boolean;
 }
 
-// Fechas de aviso que cubre el envío de "hoy".
-//   Lunes a jueves → solo mañana.
-//   Viernes        → sábado, domingo y lunes, así nada vence sin aviso por el fin de semana.
-//   Sábado/domingo → no se envía.
-export function fechasDeAviso(hoy: string): string[] {
-  const dow = dayOfWeekISO(hoy);
-  if (dow === 0 || dow === 6) return [];
-  if (dow === 5) return [addDaysISO(hoy, 1), addDaysISO(hoy, 2), addDaysISO(hoy, 3)];
-  return [addDaysISO(hoy, 1)];
-}
+const HORIZONTE_DIAS = 21; // tope de búsqueda (por si el próximo hábil está lejos: feria judicial)
 
 // Manda por email, a cada usuario con acceso a la causa (titular y colaboradores),
-// las alertas y vencimientos del día siguiente hábil. Se ejecuta de lunes a viernes (cron).
-// Con dryRun=true calcula todo pero no envía ni registra nada.
+// las alertas y vencimientos que caen hasta el PRÓXIMO DÍA HÁBIL, contando sus
+// feriados y días inhábiles (nacionales + los que cargó él).
+//   Lunes a jueves → lo de mañana.  Viernes → lo del lunes (o el siguiente hábil).
+//   Si hoy no es hábil para el usuario (fin de semana, feriado, feria) no se le manda nada.
+// Se ejecuta de lunes a viernes (cron). Con dryRun=true calcula pero no envía ni registra.
 export async function enviarAvisos({ dryRun = false } = {}): Promise<ResumenAvisos> {
   const hoy = todayISO();
-  const fechas = fechasDeAviso(hoy);
-  const resumen: ResumenAvisos = { hoy, fechas, causas: 0, emailsEnviados: 0, yaEnviados: 0, errores: [], dryRun };
-
-  if (fechas.length === 0) {
-    resumen.omitido = "Fin de semana: no se envían avisos";
-    return resumen;
-  }
+  const resumen: ResumenAvisos = {
+    hoy,
+    causasCandidatas: 0,
+    emailsEnviados: 0,
+    yaEnviados: 0,
+    errores: [],
+    dryRun,
+  };
 
   const admin = createAdminClient();
+
+  // Días inhábiles: feriados globales (user_id null) + los personales de cada usuario
+  const { data: inhabilesRows, error: inhError } = await admin
+    .from("dias_inhabiles")
+    .select("user_id, fecha")
+    .gte("fecha", hoy);
+  if (inhError) throw new Error(`No se pudieron leer los días inhábiles: ${inhError.message}`);
+
+  const globales = new Set<string>();
+  const personales = new Map<string, Set<string>>();
+  for (const r of inhabilesRows ?? []) {
+    if (r.user_id === null) globales.add(r.fecha);
+    else personales.set(r.user_id, (personales.get(r.user_id) ?? new Set()).add(r.fecha));
+  }
+  const inhabilesDe = (userId: string): Set<string> => new Set([...globales, ...(personales.get(userId) ?? [])]);
+
+  // Si hoy no es hábil ni para el calendario general, no hay nada que hacer
+  if (!esHabil(hoy, globales)) {
+    resumen.omitido = "Hoy no es día hábil (fin de semana o feriado): no se envían avisos";
+    return resumen;
+  }
 
   const { data: causas, error } = await admin
     .from("causas")
     .select(
       "id, caratula, nro_expediente, proximo_vencimiento, tipo_vencimiento, motivo_vencimiento, user_id, causa_shares(shared_with_user_id)",
     )
-    .in("proximo_vencimiento", fechas)
+    .gt("proximo_vencimiento", hoy)
+    .lte("proximo_vencimiento", addDaysISO(hoy, HORIZONTE_DIAS))
     .neq("estado", "Cerrada")
     .returns<CausaConAviso[]>();
 
   if (error) throw new Error(`No se pudieron leer las causas: ${error.message}`);
-  resumen.causas = causas.length;
+  resumen.causasCandidatas = causas.length;
   if (causas.length === 0) return resumen;
-
-  // causa_id → usuarios que deben recibir el aviso
-  const paraCausa = new Map<string, Set<string>>();
-  for (const c of causas) {
-    paraCausa.set(c.id, new Set([c.user_id, ...c.causa_shares.map((s) => s.shared_with_user_id)]));
-  }
 
   // Avisos que ya se mandaron (para no repetirlos)
   const { data: previos, error: prevError } = await admin
     .from("avisos_enviados")
     .select("causa_id, user_id, fecha_vencimiento")
     .in("causa_id", causas.map((c) => c.id))
-    .in("fecha_vencimiento", fechas)
     .eq("canal", "email");
   if (prevError) throw new Error(`No se pudo leer avisos_enviados: ${prevError.message}`);
   const yaAvisado = new Set((previos ?? []).map((p) => `${p.causa_id}:${p.user_id}:${p.fecha_vencimiento}`));
 
-  // usuario → causas pendientes de avisar
+  // usuario → causas a avisar hoy, según el próximo día hábil de ESE usuario
   const porUsuario = new Map<string, CausaConAviso[]>();
-  for (const c of causas) {
-    for (const userId of paraCausa.get(c.id)!) {
+  const usuarios = new Set(causas.flatMap((c) => [c.user_id, ...c.causa_shares.map((s) => s.shared_with_user_id)]));
+
+  for (const userId of usuarios) {
+    const inh = inhabilesDe(userId);
+    if (!esHabil(hoy, inh)) continue; // hoy es inhábil para este usuario (ej. feria judicial)
+    const limite = siguienteHabil(hoy, inh);
+
+    for (const c of causas) {
+      const tieneAcceso = c.user_id === userId || c.causa_shares.some((s) => s.shared_with_user_id === userId);
+      if (!tieneAcceso || c.proximo_vencimiento > limite) continue;
+
       if (yaAvisado.has(`${c.id}:${userId}:${c.proximo_vencimiento}`)) {
         resumen.yaEnviados++;
         continue;
@@ -142,11 +161,11 @@ export async function enviarAvisos({ dryRun = false } = {}): Promise<ResumenAvis
   return resumen;
 }
 
-// "mañana" si es el día siguiente; si no, el día de la semana (ej. "el lunes 05/10")
+// "mañana" si es el día siguiente; si no, el día (ej. "el lun 05/10")
 function cuando(fecha: string, hoy: string): string {
   return fecha === addDaysISO(hoy, 1)
     ? "mañana"
-    : `el ${formatLongDate(fecha).split(" ").slice(0, 2).join(" ")} (${formatDate(fecha).slice(0, 5)})`;
+    : `el ${formatLongDate(fecha).split(" ").slice(0, 2).join(" ").toLowerCase()} (${formatDate(fecha).slice(0, 5)})`;
 }
 
 function armarAsunto(causas: CausaConAviso[], hoy: string): string {

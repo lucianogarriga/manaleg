@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/services/supabase/client";
-import type { HonorarioConPagos, MovimientoConAutor } from "@/types";
+import type { CausaShareConUsuario, HonorarioConPagos, MovimientoConAutor } from "@/types";
 
 interface Loaded<T> {
   causaId: string;
@@ -53,6 +53,20 @@ export function useMovimientos(causaId: string) {
       .eq("causa_id", id)
       .order("fecha", { ascending: false })
       .returns<MovimientoConAutor[]>(),
+  );
+}
+
+const EMPTY_SHARES: CausaShareConUsuario[] = [];
+
+// Usuarios con quienes está compartida la causa
+export function useShares(causaId: string) {
+  return useCausaQuery<CausaShareConUsuario[]>(causaId, EMPTY_SHARES, (supabase, id) =>
+    supabase
+      .from("causa_shares")
+      .select("*, usuario:profiles!causa_shares_shared_with_user_id_fkey(id, nombre_completo, email)")
+      .eq("causa_id", id)
+      .order("created_at", { ascending: true })
+      .returns<CausaShareConUsuario[]>(),
   );
 }
 

@@ -1,12 +1,7 @@
-import { User } from "lucide-react";
-import EmptyState from "@/components/ui/EmptyState";
+import ClientesView from "@/components/clientes/ClientesView";
+import { getClientes } from "@/services/supabase/clientes";
 
-export default function ClientesPage() {
-  return (
-    <EmptyState
-      icon={User}
-      title="Clientes"
-      description="Próximamente: alta y gestión de clientes (Fase F)."
-    />
-  );
+export default async function ClientesPage() {
+  const clientes = await getClientes();
+  return <ClientesView clientes={clientes} />;
 }

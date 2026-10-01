@@ -1,6 +1,13 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Share2 } from "lucide-react";
+import { quitarAcceso } from "@/app/(app)/causas/shareActions";
+import ColaboradoresList from "@/components/shares/ColaboradoresList";
+import ShareCausaModal from "@/components/shares/ShareCausaModal";
+import { useShares } from "@/hooks/useCausaData";
+import { useUIStore } from "@/store/uiStore";
 import AlertCard from "@/components/ui/AlertCard";
 import Badge from "@/components/ui/Badge";
 import CardSection from "@/components/ui/CardSection";
@@ -11,7 +18,7 @@ import MovimientosSection from "@/components/movimientos/MovimientosSection";
 import { useCausasStore } from "@/store/causasStore";
 import { formatCurrency, formatDate, getDaysUntil, getInitials } from "@/utils/formatters";
 import { getDeadlineLabel, getUrgency } from "@/utils/urgencyHelpers";
-import type { CausaConRelaciones } from "@/types";
+import type { CausaConRelaciones, CausaShareConUsuario } from "@/types";
 
 interface CausaDetailProps {
   causa: CausaConRelaciones;
@@ -20,12 +27,28 @@ interface CausaDetailProps {
 }
 
 export default function CausaDetail({ causa, userId, className = "" }: CausaDetailProps) {
+  const router = useRouter();
   const openEdit = useCausasStore((s) => s.openEdit);
   const select = useCausasStore((s) => s.select);
+  const showToast = useUIStore((s) => s.showToast);
+  const { data: shares, loading: sharesLoading, reload: reloadShares } = useShares(causa.id);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const cerrada = causa.estado === "Cerrada";
   const urgency = getUrgency(causa.proximo_vencimiento, cerrada);
-  const esCompartida = causa.user_id !== userId;
+  const esTitular = causa.user_id === userId;
+  const esCompartida = !esTitular;
+
+  const revocar = async (share: CausaShareConUsuario) => {
+    const nombre = share.usuario?.nombre_completo ?? share.usuario?.email ?? "este usuario";
+    if (!confirm(`¿Quitar el acceso de ${nombre} a esta causa?`)) return;
+    const result = await quitarAcceso(share.id);
+    showToast({ message: result.error ?? result.message ?? "Listo." });
+    if (!result.error) {
+      reloadShares();
+      router.refresh();
+    }
+  };
   const ownerName = causa.owner?.nombre_completo ?? causa.owner?.email ?? "—";
 
   // Inactividad: días desde el último movimiento (o desde el alta si no hay)
@@ -88,13 +111,29 @@ export default function CausaDetail({ causa, userId, className = "" }: CausaDeta
               Compartida conmigo
             </span>
           )}
-          <button
-            type="button"
-            onClick={() => openEdit(causa.id)}
-            className="ml-auto cursor-pointer whitespace-nowrap text-[13px] font-semibold text-blue hover:underline"
-          >
-            Editar causa
-          </button>
+          {esTitular && shares.length > 0 && (
+            <span className="rounded-[4px] bg-pur-lt px-2 py-[2px] text-[12px] font-medium text-pur">
+              Compartida con {shares.length}
+            </span>
+          )}
+          <span className="ml-auto flex items-center gap-4">
+            {esTitular && (
+              <button
+                type="button"
+                onClick={() => setShareOpen(true)}
+                className="flex cursor-pointer items-center gap-1 whitespace-nowrap text-[13px] font-semibold text-blue hover:underline"
+              >
+                <Share2 size={13} /> Compartir
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => openEdit(causa.id)}
+              className="cursor-pointer whitespace-nowrap text-[13px] font-semibold text-blue hover:underline"
+            >
+              Editar causa
+            </button>
+          </span>
         </div>
       </div>
 
@@ -127,7 +166,29 @@ export default function CausaDetail({ causa, userId, className = "" }: CausaDeta
         <FieldGrid fields={vencimientos} />
       </CardSection>
 
+      <ColaboradoresList
+        owner={causa.owner}
+        shares={shares}
+        loading={sharesLoading}
+        esTitular={esTitular}
+        onRevoke={revocar}
+      />
+
       <MovimientosSection causaId={causa.id} userId={userId} />
+
+      {shareOpen && (
+        <ShareCausaModal
+          causaId={causa.id}
+          caratula={causa.caratula}
+          onClose={() => setShareOpen(false)}
+          onShared={(message) => {
+            setShareOpen(false);
+            showToast({ message });
+            reloadShares();
+            router.refresh();
+          }}
+        />
+      )}
 
       {causa.editor && (
         <p className="mx-3 mt-3 text-[12px] text-muted">

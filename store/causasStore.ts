@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type CausasFilter = "todas" | "mias" | "urgentes" | "cerradas";
+export type CausasFilter = "todas" | "mias" | "compartidas" | "urgentes" | "cerradas";
 
 interface CausasState {
   selectedId: string | null;

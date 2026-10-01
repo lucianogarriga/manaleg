@@ -1,4 +1,5 @@
 import { createClient } from "./server";
+import type { AlertaItem } from "./layoutCounts";
 import type { CausaConRelaciones, CausaInput } from "@/types";
 
 // RLS devuelve solo causas propias + compartidas: no filtrar por user_id acá.
@@ -6,7 +7,8 @@ const CAUSA_SELECT = `
   *,
   owner:profiles!causas_user_id_fkey(id, nombre_completo, email),
   editor:profiles!causas_ultimo_editor_id_fkey(id, nombre_completo, email),
-  cliente:clientes(id, nombre_completo)
+  cliente:clientes(id, nombre_completo),
+  causa_shares(id)
 `;
 
 export async function getCausas(): Promise<CausaConRelaciones[]> {
@@ -20,6 +22,35 @@ export async function getCausas(): Promise<CausaConRelaciones[]> {
 
   if (error) throw new Error(`No se pudieron cargar las causas: ${error.message}`);
   return data;
+}
+
+type AvisoRow = {
+  id: string;
+  caratula: string;
+  proximo_vencimiento: string;
+  tipo_vencimiento: AlertaItem["tipo"];
+  motivo_vencimiento: string | null;
+};
+
+// Próxima alerta o vencimiento de cada causa abierta (para el calendario)
+export async function getAvisosCausas(): Promise<AlertaItem[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("causas")
+    .select("id, caratula, proximo_vencimiento, tipo_vencimiento, motivo_vencimiento")
+    .neq("estado", "Cerrada")
+    .not("proximo_vencimiento", "is", null)
+    .order("proximo_vencimiento", { ascending: true })
+    .returns<AvisoRow[]>();
+
+  if (error) throw new Error(`No se pudieron cargar los vencimientos: ${error.message}`);
+  return data.map((c) => ({
+    causaId: c.id,
+    caratula: c.caratula,
+    fecha: c.proximo_vencimiento,
+    tipo: c.tipo_vencimiento,
+    motivo: c.motivo_vencimiento,
+  }));
 }
 
 export async function getCausaById(id: string): Promise<CausaConRelaciones | null> {

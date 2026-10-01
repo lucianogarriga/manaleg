@@ -2,15 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, CalendarClock } from "lucide-react";
+import { Bell, CalendarClock, ClipboardList, Pencil, Share2, Users, Wallet, type LucideIcon } from "lucide-react";
+import { marcarNotificacionesLeidas } from "@/app/(app)/notificaciones/actions";
 import { useCausasStore } from "@/store/causasStore";
-import { getDaysUntil } from "@/utils/formatters";
+import { formatRelative, getDaysUntil } from "@/utils/formatters";
 import { URGENCY_DOT, getDeadlineLabel, getUrgency } from "@/utils/urgencyHelpers";
-import type { AlertaItem } from "@/services/supabase/layoutCounts";
+import type { AlertaItem, NotificacionItem } from "@/services/supabase/layoutCounts";
+import type { TipoNotificacion } from "@/types";
 
 interface AlertsBellProps {
   alertas: AlertaItem[];
-  urgentes: number; // número del badge
+  urgentes: number; // alertas vencidas o de los próximos 3 días
+  notificaciones: NotificacionItem[];
+  sinLeer: number; // notificaciones de colegas sin leer
 }
 
 const GRUPOS = [
@@ -19,10 +23,22 @@ const GRUPOS = [
   { titulo: "Más adelante", match: (d: number) => d > 7 },
 ];
 
-export default function AlertsBell({ alertas, urgentes }: AlertsBellProps) {
+const NOTIF_ICON: Record<TipoNotificacion, LucideIcon> = {
+  causa_editada: Pencil,
+  movimiento: ClipboardList,
+  honorarios: Wallet,
+  pago: Wallet,
+  compartida: Share2,
+};
+
+type Tab = "alertas" | "colegas";
+
+export default function AlertsBell({ alertas, urgentes, notificaciones, sinLeer }: AlertsBellProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<Tab>("alertas");
   const ref = useRef<HTMLDivElement>(null);
+  const total = urgentes + sinLeer;
 
   useEffect(() => {
     if (!open) return;
@@ -48,74 +64,176 @@ export default function AlertsBell({ alertas, urgentes }: AlertsBellProps) {
     router.push("/causas");
   };
 
+  const abrirNotificacion = (n: NotificacionItem) => {
+    if (!n.leida) void marcarNotificacionesLeidas([n.id]);
+    goToCausa(n.causaId);
+  };
+
   return (
     <div ref={ref} className="relative shrink-0">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label={`Alertas y vencimientos (${urgentes} urgentes)`}
+        aria-label={`Notificaciones (${total} pendientes)`}
         aria-expanded={open}
-        className="relative flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded-full bg-amb-lt text-amb"
+        className="relative flex h-[34px] w-[34px] cursor-pointer items-center justify-center rounded-full bg-amb-lt text-amb"
       >
-        <Bell size={15} />
-        {urgentes > 0 && (
-          <span className="absolute -top-px -right-px flex h-[13px] min-w-[13px] items-center justify-center rounded-full bg-red px-[3px] text-[9.5px] font-bold text-white">
-            {urgentes}
+        <Bell size={17} />
+        {total > 0 && (
+          <span className="absolute -top-[3px] -right-[3px] flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-red px-[4px] text-[11px] font-bold text-white">
+            {total}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="fixed inset-x-3 top-[52px] z-40 max-h-[70vh] overflow-y-auto rounded-[8px] border border-border bg-card shadow-xl sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:mt-2 sm:w-[400px]">
-          <div className="sticky top-0 border-b border-border bg-card px-[13px] py-[9px] text-[12px] font-bold uppercase tracking-[.4px] text-sub">
-            Próximas alertas y vencimientos
+        <div className="fixed inset-x-3 top-[56px] z-40 flex max-h-[75vh] flex-col overflow-hidden rounded-[8px] border border-border bg-card shadow-xl sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:mt-2 sm:w-[420px]">
+          {/* Pestañas */}
+          <div role="tablist" className="flex shrink-0 border-b border-border">
+            <TabButton active={tab === "alertas"} onClick={() => setTab("alertas")} count={urgentes} label="Alertas y vencimientos" />
+            <TabButton active={tab === "colegas"} onClick={() => setTab("colegas")} count={sinLeer} label="Colegas" />
           </div>
 
-          {alertas.length === 0 ? (
-            <p className="px-4 py-8 text-center text-[13.5px] text-muted">
-              No tenés alertas ni vencimientos en los próximos 30 días.
-            </p>
-          ) : (
-            GRUPOS.map((grupo) => {
-              const items = alertas.filter((a) => grupo.match(getDaysUntil(a.fecha) ?? 99));
-              if (items.length === 0) return null;
-              return (
-                <div key={grupo.titulo}>
-                  <div className="bg-bg px-[13px] py-[5px] text-[10.5px] font-bold uppercase tracking-[.5px] text-muted">
-                    {grupo.titulo} ({items.length})
-                  </div>
-                  {items.map((a) => {
-                    const urgency = getUrgency(a.fecha);
-                    const Icon = a.tipo === "Alerta" ? Bell : CalendarClock;
-                    return (
-                      <button
-                        key={a.causaId}
-                        type="button"
-                        onClick={() => goToCausa(a.causaId)}
-                        className="flex w-full cursor-pointer items-start gap-[9px] border-b border-slate-100 px-[13px] py-[9px] text-left hover:bg-bg"
-                      >
-                        <span className={`mt-[5px] h-[7px] w-[7px] shrink-0 rounded-full ${URGENCY_DOT[urgency]}`} />
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[13.5px] font-semibold text-text">{a.caratula}</span>
-                          <span className="mt-px flex items-center gap-1 text-[12.5px] text-sub">
-                            <Icon size={10} className="shrink-0" />
-                            <span className="truncate">{a.motivo ?? a.tipo ?? "Vencimiento"}</span>
-                          </span>
-                        </span>
-                        <span
-                          className={`shrink-0 pt-px text-[12px] ${urgency === "red" ? "font-semibold text-red" : urgency === "amber" ? "text-amb" : "text-muted"}`}
-                        >
-                          {getDeadlineLabel(a.fecha, a.tipo)}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              );
-            })
-          )}
+          <div className="overflow-y-auto">
+            {tab === "alertas" ? (
+              <AlertasTab alertas={alertas} onOpen={goToCausa} />
+            ) : (
+              <ColegasTab
+                notificaciones={notificaciones}
+                sinLeer={sinLeer}
+                onOpen={abrirNotificacion}
+                onMarkAll={() => void marcarNotificacionesLeidas()}
+              />
+            )}
+          </div>
         </div>
       )}
     </div>
+  );
+}
+
+function TabButton({ active, onClick, count, label }: { active: boolean; onClick: () => void; count: number; label: string }) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={`flex flex-1 cursor-pointer items-center justify-center gap-[6px] border-b-2 px-3 py-[10px] text-[13.5px] font-semibold ${
+        active ? "border-blue text-blue" : "border-transparent text-sub hover:bg-bg"
+      }`}
+    >
+      {label}
+      {count > 0 && (
+        <span className="rounded-full bg-red px-[6px] py-px text-[11px] font-bold text-white">{count}</span>
+      )}
+    </button>
+  );
+}
+
+function AlertasTab({ alertas, onOpen }: { alertas: AlertaItem[]; onOpen: (causaId: string) => void }) {
+  if (alertas.length === 0) {
+    return (
+      <p className="px-4 py-8 text-center text-[13.5px] text-muted">
+        No tenés alertas ni vencimientos en los próximos 30 días.
+      </p>
+    );
+  }
+
+  return (
+    <>
+      {GRUPOS.map((grupo) => {
+        const items = alertas.filter((a) => grupo.match(getDaysUntil(a.fecha) ?? 99));
+        if (items.length === 0) return null;
+        return (
+          <div key={grupo.titulo}>
+            <div className="bg-bg px-[13px] py-[5px] text-[11.5px] font-bold uppercase tracking-[.5px] text-muted">
+              {grupo.titulo} ({items.length})
+            </div>
+            {items.map((a) => {
+              const urgency = getUrgency(a.fecha);
+              const Icon = a.tipo === "Alerta" ? Bell : CalendarClock;
+              return (
+                <button
+                  key={a.causaId}
+                  type="button"
+                  onClick={() => onOpen(a.causaId)}
+                  className="flex w-full cursor-pointer items-start gap-[9px] border-b border-slate-100 px-[13px] py-[9px] text-left hover:bg-bg"
+                >
+                  <span className={`mt-[7px] h-[8px] w-[8px] shrink-0 rounded-full ${URGENCY_DOT[urgency]}`} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[14px] font-semibold text-text">{a.caratula}</span>
+                    <span className="mt-px flex items-center gap-1 text-[13px] text-sub">
+                      <Icon size={11} className="shrink-0" />
+                      <span className="truncate">{a.motivo ?? a.tipo ?? "Vencimiento"}</span>
+                    </span>
+                  </span>
+                  <span
+                    className={`shrink-0 pt-px text-[12.5px] ${urgency === "red" ? "font-semibold text-red" : urgency === "amber" ? "text-amb" : "text-muted"}`}
+                  >
+                    {getDeadlineLabel(a.fecha, a.tipo)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
+function ColegasTab({
+  notificaciones,
+  sinLeer,
+  onOpen,
+  onMarkAll,
+}: {
+  notificaciones: NotificacionItem[];
+  sinLeer: number;
+  onOpen: (n: NotificacionItem) => void;
+  onMarkAll: () => void;
+}) {
+  if (notificaciones.length === 0) {
+    return (
+      <div className="px-4 py-8 text-center text-[13.5px] text-muted">
+        <Users size={22} className="mx-auto mb-2 text-slate-300" />
+        Cuando un colega modifique una causa compartida con vos, te avisamos acá.
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {sinLeer > 0 && (
+        <div className="flex justify-end border-b border-slate-100 px-[13px] py-[6px]">
+          <button type="button" onClick={onMarkAll} className="cursor-pointer text-[12.5px] font-semibold text-blue hover:underline">
+            Marcar todas como leídas
+          </button>
+        </div>
+      )}
+      {notificaciones.map((n) => {
+        const Icon = NOTIF_ICON[n.tipo] ?? Pencil;
+        return (
+          <button
+            key={n.id}
+            type="button"
+            onClick={() => onOpen(n)}
+            className={`flex w-full cursor-pointer items-start gap-[9px] border-b border-slate-100 px-[13px] py-[10px] text-left hover:bg-bg ${
+              n.leida ? "" : "bg-blue-lt/60"
+            }`}
+          >
+            <Icon size={15} className={`mt-[3px] shrink-0 ${n.leida ? "text-muted" : "text-blue"}`} />
+            <span className="min-w-0 flex-1">
+              <span className={`block text-[13.5px] leading-snug ${n.leida ? "text-sub" : "font-semibold text-text"}`}>
+                {n.mensaje}
+              </span>
+              <span className="mt-px block truncate text-[12.5px] text-muted">{n.caratula}</span>
+            </span>
+            <span className="shrink-0 pt-px text-[12px] text-muted">{formatRelative(n.creadaEn)}</span>
+          </button>
+        );
+      })}
+    </>
   );
 }

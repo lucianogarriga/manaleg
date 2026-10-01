@@ -20,6 +20,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           fecha={formatLongDate(todayISO())}
           alertas={counts.alertas}
           urgentes={counts.vencimientosProximos}
+          notificaciones={counts.notificaciones}
+          sinLeer={counts.notificacionesSinLeer}
         />
         <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
       </div>

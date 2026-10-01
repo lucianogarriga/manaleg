@@ -18,9 +18,14 @@ export function useCausas(causas: CausaConRelaciones[], userId: string) {
     const isUrgente = (c: CausaConRelaciones) =>
       getUrgency(c.proximo_vencimiento, isCerrada(c)) === "red";
 
+    const sharesCount = (c: CausaConRelaciones) => c.causa_shares?.length ?? 0;
+
     const matchers: Record<CausasFilter, (c: CausaConRelaciones) => boolean> = {
       todas: () => true,
-      mias: (c) => c.user_id === userId,
+      // Mis causas = soy owner y no hay colaboradores (causa propia, sin compartir)
+      mias: (c) => c.user_id === userId && sharesCount(c) === 0,
+      // Compartidas = cualquier causa con shares activos (ya sea que yo compartí o me compartieron)
+      compartidas: (c) => sharesCount(c) > 0,
       urgentes: isUrgente,
       cerradas: isCerrada,
     };

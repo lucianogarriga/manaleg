@@ -1,12 +1,7 @@
-import { CalendarDays } from "lucide-react";
-import EmptyState from "@/components/ui/EmptyState";
+import VencimientosView from "@/components/vencimientos/VencimientosView";
+import { getAllVencimientos } from "@/services/supabase/vencimientos";
 
-export default function VencimientosPage() {
-  return (
-    <EmptyState
-      icon={CalendarDays}
-      title="Vencimientos"
-      description="Próximamente: todos los vencimientos de tus causas (Fase F)."
-    />
-  );
+export default async function VencimientosPage() {
+  const items = await getAllVencimientos();
+  return <VencimientosView items={items} />;
 }

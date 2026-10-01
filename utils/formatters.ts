@@ -48,6 +48,16 @@ export function formatDateTime(iso: string): string {
   return `${fecha === todayISO() ? "Hoy" : formatDate(fecha)}, ${hora}`;
 }
 
+// "hace 5 min", "hace 3 h", "ayer", "12/09/2026"
+export function formatRelative(iso: string): string {
+  const diffMin = Math.floor((Date.now() - new Date(iso).getTime()) / 60_000);
+  if (diffMin < 1) return "recién";
+  if (diffMin < 60) return `hace ${diffMin} min`;
+  if (diffMin < 60 * 24) return `hace ${Math.floor(diffMin / 60)} h`;
+  if (diffMin < 60 * 48) return "ayer";
+  return formatDate(new Intl.DateTimeFormat("en-CA", { timeZone: TIME_ZONE }).format(new Date(iso)));
+}
+
 // 4200000 → "$4.200.000"
 export function formatCurrency(value: number | null | undefined): string {
   if (value === null || value === undefined) return "—";

@@ -4,17 +4,19 @@ import { usePathname, useRouter } from "next/navigation";
 import { Menu, Search } from "lucide-react";
 import { useCausasStore } from "@/store/causasStore";
 import { useUIStore } from "@/store/uiStore";
-import type { AlertaItem } from "@/services/supabase/layoutCounts";
+import type { AlertaItem, NotificacionItem } from "@/services/supabase/layoutCounts";
 import AlertsBell from "./AlertsBell";
 import { getPageTitle } from "./navigation";
 
 interface TopbarProps {
   fecha: string; // ya formateada, ej. "Vie 11 sep 2026"
   alertas: AlertaItem[]; // lista de la campana
-  urgentes: number; // badge de la campana
+  urgentes: number; // alertas urgentes (badge)
+  notificaciones: NotificacionItem[]; // avisos de colegas
+  sinLeer: number;
 }
 
-export default function Topbar({ fecha, alertas, urgentes }: TopbarProps) {
+export default function Topbar({ fecha, alertas, urgentes, notificaciones, sinLeer }: TopbarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const openSidebar = useUIStore((s) => s.openSidebar);
@@ -51,7 +53,7 @@ export default function Topbar({ fecha, alertas, urgentes }: TopbarProps) {
 
       <div className="hidden whitespace-nowrap text-[13px] text-sub lg:block">{fecha}</div>
 
-      <AlertsBell alertas={alertas} urgentes={urgentes} />
+      <AlertsBell alertas={alertas} urgentes={urgentes} notificaciones={notificaciones} sinLeer={sinLeer} />
     </header>
   );
 }

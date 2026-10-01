@@ -75,6 +75,7 @@ export interface CausaConRelaciones extends Causa {
   owner: ProfileRef | null;
   editor: ProfileRef | null;
   cliente: Pick<Cliente, "id" | "nombre_completo"> | null; // null si es de otro owner (RLS)
+  causa_shares: Array<{ id: string }> | null; // colaboradores; length > 0 = causa compartida
 }
 
 // Campos editables desde el formulario
@@ -111,12 +112,38 @@ export interface HonorarioConPagos extends Honorario {
   pagos: PagoConAutor[];
 }
 
+export interface DiaInhabil {
+  id: string;
+  user_id: string | null; // null = feriado nacional del sistema
+  fecha: string;
+  descripcion: string;
+  tipo: "Feriado nacional" | "Feria judicial" | "Día inhábil";
+}
+
+export type TipoNotificacion = "causa_editada" | "movimiento" | "honorarios" | "pago" | "compartida";
+
+export interface Notificacion {
+  id: string;
+  user_id: string;
+  actor_id: string | null;
+  causa_id: string;
+  tipo: TipoNotificacion;
+  mensaje: string;
+  leida: boolean;
+  created_at: string;
+}
+
 export interface CausaShare {
   id: string;
   causa_id: string;
   shared_with_user_id: string;
   invited_by_user_id: string;
   created_at: string;
+}
+
+// Colaborador con acceso a una causa compartida
+export interface CausaShareConUsuario extends CausaShare {
+  usuario: ProfileRef | null;
 }
 
 export interface Movimiento {

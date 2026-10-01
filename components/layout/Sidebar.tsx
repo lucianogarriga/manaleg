@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { useUIStore } from "@/store/uiStore";
+import { useCausasStore } from "@/store/causasStore";
 import { getInitials } from "@/utils/formatters";
 import type { Profile } from "@/types";
 import type { LayoutCounts } from "@/services/supabase/layoutCounts";
@@ -18,6 +19,7 @@ interface SidebarProps {
 export default function Sidebar({ profile, counts }: SidebarProps) {
   const pathname = usePathname();
   const { sidebarOpen, closeSidebar } = useUIStore();
+  const selectCausa = useCausasStore((s) => s.select);
 
   const pillFor = (item: NavItem) => {
     if (item.badge === "causas" && counts.causasActivas > 0)
@@ -59,7 +61,11 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
                   <Link
                     key={item.href}
                     href={item.href}
-                    onClick={closeSidebar}
+                    onClick={() => {
+                      closeSidebar();
+                      // Al tocar "Causas" (activo o no), deseleccionamos la causa abierta
+                      if (item.href === "/causas") selectCausa(null);
+                    }}
                     className={`mx-[6px] my-px flex items-center gap-[9px] rounded-[6px] py-[7.5px] pr-3 pl-[14px] text-[14.5px] transition-colors duration-100 ${
                       active
                         ? "bg-blue/35 font-semibold text-white"

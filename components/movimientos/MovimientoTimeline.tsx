@@ -1,17 +1,8 @@
 "use client";
 
-import { ClipboardList, FileText, Gavel, Phone, Scale, Trash2, Wallet, type LucideIcon } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { formatDateTime, getInitials } from "@/utils/formatters";
-import type { MovimientoConAutor, TipoMovimiento } from "@/types";
-
-const TIPO_ICON: Record<TipoMovimiento, LucideIcon> = {
-  Presentación: FileText,
-  Llamada: Phone,
-  Resolución: Scale,
-  Audiencia: Gavel,
-  Pago: Wallet,
-  Otro: ClipboardList,
-};
+import type { MovimientoConAutor } from "@/types";
 
 interface MovimientoTimelineProps {
   items: MovimientoConAutor[];
@@ -19,24 +10,22 @@ interface MovimientoTimelineProps {
   onDelete: (id: string) => void;
 }
 
-// Línea vertical con dots; el más reciente lleva borde azul.
 export default function MovimientoTimeline({ items, userId, onDelete }: MovimientoTimelineProps) {
   return (
     <div className="px-[13px] pt-2 pb-[13px]">
       {items.map((m, i) => {
-        const Icon = (m.tipo && TIPO_ICON[m.tipo]) || ClipboardList;
-        const autor = m.autor?.nombre_completo ?? m.autor?.email ?? "—";
+        const nombre = m.autor?.nombre_completo ?? null;
+        const email = m.autor?.email ?? "?";
         return (
           <div key={m.id} className="group relative flex gap-[10px]">
             {i < items.length - 1 && (
-              <span className="absolute top-[18px] -bottom-1 left-[9px] w-px bg-slate-200" />
+              <span className="absolute top-[26px] -bottom-1 left-[12px] w-px bg-slate-200" />
             )}
             <span
-              className={`mt-[2px] flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2 ${
-                i === 0 ? "border-blue bg-blue-lt text-blue" : "border-border bg-bg text-muted"
-              }`}
+              className="mt-[1px] flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded-full bg-linear-135 from-blue to-pur text-[10px] font-bold text-white"
+              title={nombre ?? email}
             >
-              <Icon size={9} />
+              {getInitials(nombre, email[0]?.toUpperCase())}
             </span>
             <div className="min-w-0 flex-1">
               <div className="text-[13.5px] leading-[1.4] break-words whitespace-pre-line text-text">
@@ -44,8 +33,7 @@ export default function MovimientoTimeline({ items, userId, onDelete }: Movimien
               </div>
               <div className="mb-2 flex items-center gap-1 text-[12px] text-muted">
                 <span>
-                  {formatDateTime(m.fecha)} ·{" "}
-                  <span title={autor}>{getInitials(m.autor?.nombre_completo, autor[0]?.toUpperCase())}</span>
+                  {formatDateTime(m.fecha)} · {nombre ?? email}
                   {m.tipo && ` · ${m.tipo}`}
                 </span>
                 {m.autor_id === userId && (

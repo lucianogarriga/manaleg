@@ -1,4 +1,6 @@
 import {
+  Calculator,
+  Calendar,
   CalendarDays,
   ClipboardList,
   Scale,
@@ -30,6 +32,13 @@ export const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
   {
     title: "Actividad",
     items: [{ href: "/movimientos", label: "Movimientos", icon: ClipboardList }],
+  },
+  {
+    title: "Herramientas",
+    items: [
+      { href: "/calendario", label: "Calendario", icon: Calendar },
+      { href: "/calculadora", label: "Calculadora de plazos", icon: Calculator },
+    ],
   },
 ];
 
