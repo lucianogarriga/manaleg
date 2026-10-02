@@ -222,15 +222,14 @@ export default function CausaModal({ causa, userId }: Props) {
               <CollapsibleSection
                 title={`Acceso compartido${shares.length > 0 ? ` (${shares.length})` : ""}`}
               >
-                <div className="px-[14px] pb-3">
-                  <ColaboradoresList
-                    owner={causa.owner}
-                    shares={shares}
-                    loading={sharesLoading}
-                    esTitular={esTitular}
-                    onRevoke={revocar}
-                  />
-                </div>
+                <ColaboradoresList
+                  owner={causa.owner}
+                  shares={shares}
+                  loading={sharesLoading}
+                  esTitular={esTitular}
+                  onRevoke={revocar}
+                  naked
+                />
               </CollapsibleSection>
             </div>
 

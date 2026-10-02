@@ -19,10 +19,10 @@ export default function MovimientoTimeline({ items, userId, onDelete }: Movimien
         return (
           <div key={m.id} className="group relative flex gap-[10px]">
             {i < items.length - 1 && (
-              <span className="absolute top-[26px] -bottom-1 left-[12px] w-px bg-slate-200" />
+              <span className="absolute top-[24px] -bottom-1 left-[10px] w-px bg-slate-200/80" />
             )}
             <span
-              className="mt-[1px] flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded-full bg-linear-135 from-blue to-pur text-[10px] font-bold text-white"
+              className="mt-[1px] flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full border border-slate-300/80 bg-white/70 text-[9px] font-semibold text-sub/75 shadow-sm"
               title={nombre ?? email}
             >
               {getInitials(nombre, email[0]?.toUpperCase())}

@@ -7,7 +7,7 @@ export interface Field {
 
 const VARIANTS = {
   default: "text-[14px] font-medium text-text",
-  mono: "font-mono text-[13px] text-sub",
+  mono: "font-mono text-[14px] font-medium text-text",
   danger: "text-[14px] font-bold text-red",
 };
 
