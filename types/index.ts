@@ -3,6 +3,7 @@ import type {
   ESTADOS_CAUSA,
   FUEROS,
   TIPOS_AVISO,
+  TIPOS_EVENTO,
   TIPOS_MOVIMIENTO,
   TIPOS_VENCIMIENTO,
 } from "@/utils/constants";
@@ -13,7 +14,22 @@ export type EstadoCausa = (typeof ESTADOS_CAUSA)[number];
 export type Anticipacion = (typeof ANTICIPACION_ALERTA)[number];
 export type TipoMovimiento = (typeof TIPOS_MOVIMIENTO)[number];
 export type TipoVencimiento = (typeof TIPOS_VENCIMIENTO)[number];
+export type TipoEvento = (typeof TIPOS_EVENTO)[number];
 export type EstadoAlerta = "Pendiente" | "Notificado" | "Vencido";
+
+export interface Evento {
+  id: string;
+  causa_id: string;
+  user_id: string;
+  titulo: string;
+  tipo: TipoEvento;
+  fecha: string; // DATE → "YYYY-MM-DD"
+  hora: string | null; // TIME → "HH:MM:SS"
+  lugar: string | null;
+  notas: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 // Fechas: DATE llega como "YYYY-MM-DD", TIMESTAMPTZ como ISO string.
 // DECIMAL llega como number.

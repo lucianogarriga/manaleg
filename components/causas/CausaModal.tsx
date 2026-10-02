@@ -12,6 +12,7 @@ import CollapsibleSection from "@/components/ui/CollapsibleSection";
 import DriveLink from "@/components/ui/DriveLink";
 import FieldGrid, { type Field } from "@/components/ui/FieldGrid";
 import HonorariosCard from "@/components/honorarios/HonorariosCard";
+import EventosSection from "@/components/eventos/EventosSection";
 import MovimientosSection from "@/components/movimientos/MovimientosSection";
 import { useShares } from "@/hooks/useCausaData";
 import { useCausasStore } from "@/store/causasStore";
@@ -209,6 +210,10 @@ export default function CausaModal({ causa, userId }: Props) {
 
               <CollapsibleSection title="Historial de movimientos" defaultOpen>
                 <MovimientosSection causaId={causa.id} userId={userId} naked />
+              </CollapsibleSection>
+
+              <CollapsibleSection title="Eventos">
+                <EventosSection causaId={causa.id} naked />
               </CollapsibleSection>
 
               <CollapsibleSection title="Vencimientos y alertas">

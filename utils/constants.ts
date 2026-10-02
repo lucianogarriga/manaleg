@@ -32,6 +32,14 @@ export const TIPOS_MOVIMIENTO = [
   "Otro",
 ] as const;
 
+export const TIPOS_EVENTO = [
+  "Audiencia",
+  "Mediación",
+  "Pericial",
+  "Reunión",
+  "Otro",
+] as const;
+
 export const TIPOS_VENCIMIENTO = [
   "Plazo procesal",
   "Audiencia",
