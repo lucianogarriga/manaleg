@@ -98,17 +98,22 @@ export default function CausaModal({ causa, userId }: Props) {
         aria-hidden="true"
       />
 
-      {/* Modal: full-screen en mobile, 95vh en desktop */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-[2.5vh_2.5%]">
+      {/* Modal: 97vh en mobile, 95vh en desktop — siempre flotando sobre el backdrop */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
         <div
-          className="relative flex h-full w-full flex-col overflow-hidden rounded-none bg-bg shadow-2xl md:h-[95vh] md:rounded-2xl"
+          className="relative flex h-[97vh] w-[calc(100%-16px)] flex-col overflow-hidden rounded-xl bg-bg shadow-2xl md:h-[95vh] md:w-[95%] md:rounded-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header fijo */}
           <div className="shrink-0 border-b border-border bg-card px-5 pt-4 pb-3">
             {/* Título + botón cerrar */}
             <div className="mb-[10px] flex items-start gap-3">
-              <h2 className="flex-1 text-[17px] font-bold leading-[1.3] text-text">
+              <h2 className="flex-1 text-[16px] font-bold leading-[1.35] text-text">
+                {causa.nro_expediente && (
+                  <span className="font-semibold text-sub">
+                    Expte. N° {causa.nro_expediente} —{" "}
+                  </span>
+                )}
                 {causa.caratula}
               </h2>
               <button
@@ -132,11 +137,6 @@ export default function CausaModal({ causa, userId }: Props) {
               {causa.juzgado_camara && (
                 <span className="hidden rounded-[4px] bg-slate-100 px-2 py-[2px] text-[12px] font-medium text-sub sm:inline">
                   {causa.juzgado_camara}
-                </span>
-              )}
-              {causa.nro_expediente && (
-                <span className="hidden rounded-[4px] bg-slate-50 px-2 py-[2px] font-mono text-[12px] text-muted sm:inline">
-                  Exp: {causa.nro_expediente}
                 </span>
               )}
               <span
@@ -197,7 +197,7 @@ export default function CausaModal({ causa, userId }: Props) {
             )}
 
             {/* Secciones colapsables */}
-            <div className="divide-y divide-border">
+            <div className="py-3">
               <CollapsibleSection title="Datos del expediente" defaultOpen>
                 <FieldGrid fields={datos} />
                 {causa.link_drive && (
