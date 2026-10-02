@@ -9,7 +9,15 @@ import { useUIStore } from "@/store/uiStore";
 import MovimientoForm from "./MovimientoForm";
 import MovimientoTimeline from "./MovimientoTimeline";
 
-export default function MovimientosSection({ causaId, userId }: { causaId: string; userId: string }) {
+export default function MovimientosSection({
+  causaId,
+  userId,
+  naked = false,
+}: {
+  causaId: string;
+  userId: string;
+  naked?: boolean;
+}) {
   const router = useRouter();
   const { data, loading, error, reload } = useMovimientos(causaId);
   const [formOpen, setFormOpen] = useState(false);
@@ -29,26 +37,43 @@ export default function MovimientosSection({ causaId, userId }: { causaId: strin
     afterChange();
   };
 
+  const inner = loading ? (
+    <div className="space-y-3 px-[13px] py-4" aria-busy="true">
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="h-[14px] animate-pulse rounded bg-slate-100" style={{ width: `${90 - i * 18}%` }} />
+      ))}
+    </div>
+  ) : error ? (
+    <p className="px-[13px] py-4 text-[13px] text-red">No se pudo cargar el historial: {error}</p>
+  ) : data.length === 0 ? (
+    <p className="px-[13px] py-4 text-[13.5px] text-muted">Todavía no hay movimientos en esta causa.</p>
+  ) : (
+    <MovimientoTimeline items={data} userId={userId} onDelete={onDelete} />
+  );
+
   return (
     <>
-      <CardSection
-        title="Historial de movimientos"
-        action={<CardAction onClick={() => setFormOpen(true)}>+ Agregar</CardAction>}
-      >
-        {loading ? (
-          <div className="space-y-3 px-[13px] py-4" aria-busy="true">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="h-[14px] animate-pulse rounded bg-slate-100" style={{ width: `${90 - i * 18}%` }} />
-            ))}
+      {naked ? (
+        <div>
+          <div className="flex justify-end px-[13px] pb-2 pt-1">
+            <button
+              type="button"
+              onClick={() => setFormOpen(true)}
+              className="cursor-pointer text-[13px] font-semibold text-blue hover:underline"
+            >
+              + Agregar
+            </button>
           </div>
-        ) : error ? (
-          <p className="px-[13px] py-4 text-[13px] text-red">No se pudo cargar el historial: {error}</p>
-        ) : data.length === 0 ? (
-          <p className="px-[13px] py-4 text-[13.5px] text-muted">Todavía no hay movimientos en esta causa.</p>
-        ) : (
-          <MovimientoTimeline items={data} userId={userId} onDelete={onDelete} />
-        )}
-      </CardSection>
+          {inner}
+        </div>
+      ) : (
+        <CardSection
+          title="Historial de movimientos"
+          action={<CardAction onClick={() => setFormOpen(true)}>+ Agregar</CardAction>}
+        >
+          {inner}
+        </CardSection>
+      )}
 
       {formOpen && (
         <MovimientoForm
@@ -64,3 +89,4 @@ export default function MovimientosSection({ causaId, userId }: { causaId: strin
     </>
   );
 }
+

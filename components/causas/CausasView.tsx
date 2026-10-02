@@ -9,9 +9,8 @@ import { useCausas } from "@/hooks/useCausas";
 import { useCausasStore } from "@/store/causasStore";
 import type { ClienteOption } from "@/services/supabase/clientes";
 import type { CausaConRelaciones } from "@/types";
-import CausaDetail from "./CausaDetail";
 import CausaForm from "./CausaForm";
-import CausasList from "./CausasList";
+import CausaModal from "./CausaModal";
 import CausaRow from "./CausaRow";
 
 interface CausasViewProps {
@@ -48,23 +47,8 @@ export default function CausasView({ causas, clientes, userId }: CausasViewProps
             + Nueva causa
           </button>
         </EmptyState>
-      ) : selected ? (
-        // ── Modo detalle: lista estrecha + panel de detalle ──
-        <div className="flex h-full overflow-hidden">
-          <CausasList
-            causas={visibles}
-            total={total}
-            activeId={selected.id}
-            className={`w-full md:w-[310px] md:shrink-0 hidden md:flex`}
-          />
-          <CausaDetail
-            causa={selected}
-            userId={userId}
-            className="flex-1"
-          />
-        </div>
       ) : (
-        // ── Modo dashboard: stats + lista wide ──
+        // ── Dashboard: stats + lista wide (siempre visible) ──
         <div className="flex h-full flex-col overflow-hidden">
           <StatsRow causas={causas} />
           <FilterChips total={total} />
@@ -86,6 +70,9 @@ export default function CausasView({ causas, clientes, userId }: CausasViewProps
           </div>
         </div>
       )}
+
+      {/* Modal fullscreen sobre el dashboard */}
+      {selected && <CausaModal causa={selected} userId={userId} />}
 
       {total > 0 && <FAB onClick={openCreate} label="Nueva causa" />}
       {formOpen && (
