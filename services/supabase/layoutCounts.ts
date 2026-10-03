@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "./server";
 import { addDaysISO, getDaysUntil, todayISO } from "@/utils/formatters";
 import type { TipoAviso, TipoNotificacion } from "@/types";
@@ -54,7 +55,9 @@ type NotificacionRow = {
 
 // Contadores del sidebar y la campana. RLS ya limita a las causas
 // propias y compartidas (y a mis notificaciones): no hace falta filtrar por user_id.
-export async function getLayoutCounts(): Promise<LayoutCounts> {
+// cache() de React deduplica llamadas dentro del mismo render (ej: layout + página
+// que también llame a getLayoutCounts). No persiste entre requests.
+export const getLayoutCounts: () => Promise<LayoutCounts> = cache(async function getLayoutCounts(): Promise<LayoutCounts> {
   const supabase = await createClient();
   const hoy = todayISO();
 
@@ -103,4 +106,4 @@ export async function getLayoutCounts(): Promise<LayoutCounts> {
     notificaciones,
     notificacionesSinLeer: sinLeer.count ?? 0,
   };
-}
+});

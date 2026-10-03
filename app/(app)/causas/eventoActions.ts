@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { createEvento, updateEvento, deleteEvento } from "@/services/supabase/eventos";
 import { TIPOS_EVENTO } from "@/utils/constants";
 import type { TipoEvento } from "@/types";
@@ -51,11 +52,11 @@ export async function guardarEvento(
   try {
     if (eventoId) {
       await updateEvento(eventoId, input);
-      return { message: "Evento actualizado." };
     } else {
       await createEvento(causaId, input);
-      return { message: "Evento agregado." };
     }
+    revalidatePath(`/causas`);
+    return { message: eventoId ? "Evento actualizado." : "Evento agregado." };
   } catch (e) {
     return { error: (e as Error).message };
   }
@@ -64,6 +65,7 @@ export async function guardarEvento(
 export async function eliminarEvento(id: string): Promise<ActionResult> {
   try {
     await deleteEvento(id);
+    revalidatePath(`/causas`);
     return { message: "Evento eliminado." };
   } catch (e) {
     return { error: (e as Error).message };

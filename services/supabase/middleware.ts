@@ -4,7 +4,7 @@ import { SUPABASE_KEY, SUPABASE_URL } from "./config";
 
 const AUTH_PAGES = ["/login", "/register"];
 // /api/cron no tiene sesión de usuario: se protege con CRON_SECRET en la propia ruta
-const PUBLIC_PREFIXES = [...AUTH_PAGES, "/api/auth", "/api/cron"];
+const PUBLIC_PREFIXES = [...AUTH_PAGES, "/api/auth", "/api/cron", "/api/health"];
 
 // Refresca la sesión de Supabase en cada request y redirige según
 // si el usuario está logueado o no.
