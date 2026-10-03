@@ -49,7 +49,7 @@ export default function CausaRow({ causa, active, onSelect, wide = false }: Caus
         onMouseLeave={(e) => { if (!active) (e.currentTarget as HTMLElement).style.background = ""; }}
       >
         {/* Badges estado + vía */}
-        <div className="flex shrink-0 items-center gap-[5px]">
+        <div className="hidden shrink-0 items-center gap-[5px] sm:flex">
           <Badge estado={causa.estado} />
           {via && (
             <span
