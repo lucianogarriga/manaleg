@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { createClient } from "./server";
 import { todayISO } from "@/utils/formatters";
 
@@ -22,85 +23,50 @@ function addDays(date: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-export async function getDashboardStats(): Promise<DashboardStats> {
+// Ejecuta las 6 queries reales. Se llama solo en cache miss.
+async function fetchStats(): Promise<DashboardStats> {
   const supabase = await createClient();
   const hoy = todayISO();
   const hace30 = addDays(hoy, -30);
   const hace60 = addDays(hoy, -60);
-  const hace42 = addDays(hoy, -42);
-  const en7 = addDays(hoy, 7);
-  const en30 = addDays(hoy, 30);
+  const en7    = addDays(hoy, 7);
+  const en30   = addDays(hoy, 30);
 
   const [
-    activas,
-    causasEste30,
-    causasPrev30,
-    causasSparkRaw,
-    clientesAll,
-    clientesEste30,
-    clientesPrev30,
-    vencProx7,
-    vencidos,
-    audiencias,
-    pagosEste30,
-    pagosPrev30,
+    activas,          // Q1: causas activas (count)
+    causasRecientes,  // Q2: causas últimos 60d → nuevas este30, prev30, sparkline
+    vencimientos,     // Q3: causas con vencimiento open → prox7 + vencidos
+    clientes,         // Q4: todos los clientes (created_at) → total, este30, prev30
+    audiencias,       // Q5: audiencias próximas 30d (count)
+    pagos,            // Q6: pagos últimos 60d → cobrado este30 + prev30
   ] = await Promise.all([
-    // Causas activas total
-    supabase.from("causas").select("id", { count: "exact", head: true }).neq("estado", "Cerrada"),
 
-    // Causas nuevas este mes
+    // Q1 — causas activas (solo count)
     supabase
       .from("causas")
       .select("id", { count: "exact", head: true })
-      .gte("created_at", `${hace30}T00:00:00Z`),
+      .neq("estado", "Cerrada"),
 
-    // Causas nuevas mes anterior
-    supabase
-      .from("causas")
-      .select("id", { count: "exact", head: true })
-      .gte("created_at", `${hace60}T00:00:00Z`)
-      .lt("created_at", `${hace30}T00:00:00Z`),
-
-    // Sparks: created_at últimas 6 semanas
+    // Q2 — fechas de causas creadas en los últimos 60 días
     supabase
       .from("causas")
       .select("created_at")
-      .gte("created_at", `${hace42}T00:00:00Z`),
+      .gte("created_at", `${hace60}T00:00:00Z`),
 
-    // Total clientes
-    supabase.from("clientes").select("id", { count: "exact", head: true }),
-
-    // Clientes nuevos este mes
-    supabase
-      .from("clientes")
-      .select("id", { count: "exact", head: true })
-      .gte("created_at", `${hace30}T00:00:00Z`),
-
-    // Clientes nuevos mes anterior
-    supabase
-      .from("clientes")
-      .select("id", { count: "exact", head: true })
-      .gte("created_at", `${hace60}T00:00:00Z`)
-      .lt("created_at", `${hace30}T00:00:00Z`),
-
-    // Vencimientos próximos 7 días
+    // Q3 — causas abiertas con vencimiento ≤ próximos 7 días (incluye vencidos)
     supabase
       .from("causas")
-      .select("id", { count: "exact", head: true })
+      .select("proximo_vencimiento")
       .neq("estado", "Cerrada")
       .not("proximo_vencimiento", "is", null)
-      .gte("proximo_vencimiento", hoy)
       .lte("proximo_vencimiento", en7),
 
-    // Vencidos (pasados, sin cerrar)
+    // Q4 — todos los clientes (solo created_at, liviano)
     supabase
-      .from("causas")
-      .select("id", { count: "exact", head: true })
-      .neq("estado", "Cerrada")
-      .not("proximo_vencimiento", "is", null)
-      .lt("proximo_vencimiento", hoy),
+      .from("clientes")
+      .select("created_at"),
 
-    // Audiencias próximas 30 días
+    // Q5 — audiencias próximas 30 días (solo count)
     supabase
       .from("eventos")
       .select("id", { count: "exact", head: true })
@@ -108,45 +74,91 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       .gte("fecha", hoy)
       .lte("fecha", en30),
 
-    // Honorarios cobrados este mes
+    // Q6 — pagos de los últimos 60 días
     supabase
       .from("pagos")
-      .select("monto")
-      .gte("fecha_pago", hace30),
-
-    // Honorarios cobrados mes anterior
-    supabase
-      .from("pagos")
-      .select("monto")
-      .gte("fecha_pago", hace60)
-      .lt("fecha_pago", hace30),
+      .select("monto, fecha_pago")
+      .gte("fecha_pago", hace60),
   ]);
 
-  // Sparkline: agrupar por semana (6 semanas, de más antigua a más nueva)
+  // ── Q2: desglose de causas recientes ────────────────────────────
+  const causasData = causasRecientes.data ?? [];
+  let causasNuevasEste30 = 0;
+  let causasNuevasPrev30 = 0;
   const sparkline = Array(6).fill(0);
-  for (const row of causasSparkRaw.data ?? []) {
-    const created = row.created_at.slice(0, 10);
-    const msAgo = Date.parse(`${hoy}T00:00:00Z`) - Date.parse(`${created}T00:00:00Z`);
-    const daysAgo = Math.floor(msAgo / 86400000);
-    const weekIdx = Math.min(5, Math.floor(daysAgo / 7));
-    sparkline[5 - weekIdx]++;
+  const hace30ms = Date.parse(`${hace30}T00:00:00Z`);
+  const hoyMs    = Date.parse(`${hoy}T00:00:00Z`);
+
+  for (const row of causasData) {
+    const ts = Date.parse(row.created_at);
+    if (ts >= hace30ms) causasNuevasEste30++;
+    else causasNuevasPrev30++;
+
+    // Sparkline: 6 semanas (últimas 42 días), idx 0 = más antigua
+    const daysAgo = Math.floor((hoyMs - ts) / 86400000);
+    if (daysAgo <= 42) {
+      const weekIdx = Math.min(5, Math.floor(daysAgo / 7));
+      sparkline[5 - weekIdx]++;
+    }
   }
 
-  const sumMonto = (rows: { monto: number }[] | null) =>
-    (rows ?? []).reduce((acc, r) => acc + (r.monto ?? 0), 0);
+  // ── Q3: vencimientos ────────────────────────────────────────────
+  const vencData = vencimientos.data ?? [];
+  let vencimientosProx7 = 0;
+  let vencidosTotal = 0;
+  for (const row of vencData) {
+    const v = row.proximo_vencimiento as string;
+    if (v < hoy) vencidosTotal++;
+    else vencimientosProx7++;
+  }
+
+  // ── Q4: clientes ────────────────────────────────────────────────
+  const clientesData = clientes.data ?? [];
+  const clientesTotal = clientesData.length;
+  let clientesNuevosEste30 = 0;
+  let clientesNuevosPrev30 = 0;
+  for (const row of clientesData) {
+    const ts = Date.parse(row.created_at);
+    if (ts >= hace30ms) clientesNuevosEste30++;
+    else if (ts >= Date.parse(`${hace60}T00:00:00Z`)) clientesNuevosPrev30++;
+  }
+
+  // ── Q6: pagos ───────────────────────────────────────────────────
+  const pagosData = pagos.data ?? [];
+  let honorariosCobradosEste30 = 0;
+  let honorariosCobradosPrev30 = 0;
+  for (const row of pagosData) {
+    const ts = Date.parse(row.fecha_pago);
+    if (ts >= hace30ms) honorariosCobradosEste30 += row.monto ?? 0;
+    else honorariosCobradosPrev30 += row.monto ?? 0;
+  }
 
   return {
     causasActivas: activas.count ?? 0,
-    causasNuevasEste30: causasEste30.count ?? 0,
-    causasNuevasPrev30: causasPrev30.count ?? 0,
+    causasNuevasEste30,
+    causasNuevasPrev30,
     causasSparkline: sparkline,
-    clientesTotal: clientesAll.count ?? 0,
-    clientesNuevosEste30: clientesEste30.count ?? 0,
-    clientesNuevosPrev30: clientesPrev30.count ?? 0,
-    vencimientosProx7: vencProx7.count ?? 0,
-    vencidosTotal: vencidos.count ?? 0,
+    clientesTotal,
+    clientesNuevosEste30,
+    clientesNuevosPrev30,
+    vencimientosProx7,
+    vencidosTotal,
     audienciasProx30: audiencias.count ?? 0,
-    honorariosCobradosEste30: sumMonto(pagosEste30.data),
-    honorariosCobradosPrev30: sumMonto(pagosPrev30.data),
+    honorariosCobradosEste30,
+    honorariosCobradosPrev30,
   };
+}
+
+// Cache de 60s por usuario. El userId entra como argumento → clave única por usuario.
+const getCachedStats = unstable_cache(
+  (_userId: string) => fetchStats(),
+  ["dashboard-stats"],
+  { revalidate: 60, tags: ["dashboard-stats"] }
+);
+
+export async function getDashboardStats(): Promise<DashboardStats> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("No autenticado");
+  return getCachedStats(user.id);
 }

@@ -9,7 +9,7 @@ export default async function DashboardPage() {
     getCurrentProfile(),
     getLayoutCounts(),
     getProximosEventos(30),
-    getDashboardStats(),
+    getDashboardStats().catch(() => null),
   ]);
 
   return (

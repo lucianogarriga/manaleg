@@ -10,6 +10,7 @@ import {
 import { addDaysISO, formatCurrency, formatDate, getDaysUntil, todayISO } from "@/utils/formatters";
 import { getDeadlineLabel, getUrgency, URGENCY_TEXT } from "@/utils/urgencyHelpers";
 import type { AlertaItem } from "@/services/supabase/layoutCounts";
+import { WifiOff } from "lucide-react";
 import type { DashboardStats } from "@/services/supabase/dashboardStats";
 import type { Evento } from "@/types";
 
@@ -206,33 +207,46 @@ function MiniCalendar({ alertas, eventos }: { alertas: AlertaItem[]; eventos: (E
   );
 }
 
+/* ─── Banner de error de stats ─── */
+function StatsBanner() {
+  return (
+    <div className="mb-4 flex items-center gap-3 rounded-xl border border-amb-lt bg-amb-lt px-4 py-3">
+      <WifiOff size={15} className="shrink-0 text-amb" />
+      <p className="text-[12.5px] text-amb">
+        Las estadísticas no pudieron cargarse en este momento. Puede ser una demora temporal del servidor.
+        <button
+          type="button"
+          className="ml-2 font-semibold underline"
+          onClick={() => window.location.reload()}
+        >
+          Reintentar
+        </button>
+      </p>
+    </div>
+  );
+}
+
 /* ─── Main ─── */
 interface Props {
   nombre: string;
   causasActivas: number;
   alertas: AlertaItem[];
   eventos: (Evento & { caratula: string })[];
-  stats: DashboardStats;
+  stats: DashboardStats | null;
 }
 
 export default function DashboardView({ nombre, causasActivas, alertas, eventos, stats }: Props) {
   const hoy = todayISO();
-  const semana = addDaysISO(hoy, 7);
-
-  const vencenSemana = alertas.filter(a => a.fecha >= hoy && a.fecha <= semana).length;
-  const vencidos = alertas.filter(a => a.fecha < hoy).length;
-  const eventosSemana = eventos.filter(e => e.fecha >= hoy && e.fecha <= semana).length;
+  const semana = addDaysISO(hoy, 7); // usado por MiniCalendar vía alertas/eventos
 
   const hora = new Date().getHours();
   const saludo = hora < 12 ? "Buenos días" : hora < 19 ? "Buenas tardes" : "Buenas noches";
   const primerNombre = nombre.split(" ")[0];
 
-  const trendCausas   = pct(stats.causasNuevasEste30, stats.causasNuevasPrev30);
-  const trendClientes = pct(stats.clientesNuevosEste30, stats.clientesNuevosPrev30);
-  const trendHonorarios = pct(stats.honorariosCobradosEste30, stats.honorariosCobradosPrev30);
-
-  // Barra de progreso: causas con vencimiento / causas activas
-  const barVenc = causasActivas > 0 ? Math.round((stats.vencimientosProx7 / causasActivas) * 100) : 0;
+  const trendCausas     = stats ? pct(stats.causasNuevasEste30, stats.causasNuevasPrev30) : null;
+  const trendClientes   = stats ? pct(stats.clientesNuevosEste30, stats.clientesNuevosPrev30) : null;
+  const trendHonorarios = stats ? pct(stats.honorariosCobradosEste30, stats.honorariosCobradosPrev30) : null;
+  const barVenc         = stats && causasActivas > 0 ? Math.round((stats.vencimientosProx7 / causasActivas) * 100) : 0;
 
   const CARDS: StatCardProps[] = [
     {
@@ -240,11 +254,9 @@ export default function DashboardView({ nombre, causasActivas, alertas, eventos,
       iconBg: "rgba(37,99,235,.15)",
       iconColor: "var(--color-blue)",
       label: "Causas activas",
-      value: stats.causasActivas,
-      sub: `${stats.causasNuevasEste30} nuevas este mes`,
+      value: stats ? stats.causasActivas : "—",
+      sub: stats ? `${stats.causasNuevasEste30} nuevas este mes` : undefined,
       trend: trendCausas,
-      sparkline: stats.causasSparkline,
-      sparkColor: "var(--color-blue)",
       href: "/causas",
     },
     {
@@ -252,10 +264,10 @@ export default function DashboardView({ nombre, causasActivas, alertas, eventos,
       iconBg: "rgba(4,120,87,.15)",
       iconColor: "var(--color-grn)",
       label: "Causas nuevas",
-      value: stats.causasNuevasEste30,
-      sub: "últimos 30 días",
+      value: stats ? stats.causasNuevasEste30 : "—",
+      sub: stats ? "últimos 30 días" : undefined,
       trend: trendCausas,
-      barPct: trendCausas !== null && trendCausas > 0 ? Math.min(100, trendCausas) : 0,
+      barPct: stats && trendCausas !== null && trendCausas > 0 ? Math.min(100, trendCausas) : 0,
       barColor: "var(--color-grn)",
       href: "/causas",
     },
@@ -264,11 +276,9 @@ export default function DashboardView({ nombre, causasActivas, alertas, eventos,
       iconBg: "rgba(91,33,182,.15)",
       iconColor: "var(--color-pur)",
       label: "Clientes",
-      value: stats.clientesTotal,
-      sub: `${stats.clientesNuevosEste30} nuevos este mes`,
+      value: stats ? stats.clientesTotal : "—",
+      sub: stats ? `${stats.clientesNuevosEste30} nuevos este mes` : undefined,
       trend: trendClientes,
-      sparkline: stats.causasSparkline.map((_, i) => i), // placeholder visual
-      sparkColor: "var(--color-pur)",
       href: "/clientes",
     },
     {
@@ -276,11 +286,12 @@ export default function DashboardView({ nombre, causasActivas, alertas, eventos,
       iconBg: "rgba(180,83,9,.15)",
       iconColor: "var(--color-amb)",
       label: "Vencimientos próx.",
-      value: stats.vencimientosProx7,
-      sub: stats.vencidosTotal > 0 ? `${stats.vencidosTotal} vencido${stats.vencidosTotal > 1 ? "s" : ""}` : "próximos 7 días",
-      trend: stats.vencidosTotal > 0 ? null : undefined,
+      value: stats ? stats.vencimientosProx7 : "—",
+      sub: stats
+        ? (stats.vencidosTotal > 0 ? `${stats.vencidosTotal} vencido${stats.vencidosTotal > 1 ? "s" : ""}` : "próximos 7 días")
+        : undefined,
       barPct: barVenc,
-      barColor: stats.vencidosTotal > 0 ? "var(--color-red)" : "var(--color-amb)",
+      barColor: stats && stats.vencidosTotal > 0 ? "var(--color-red)" : "var(--color-amb)",
       href: "/vencimientos",
     },
     {
@@ -288,9 +299,9 @@ export default function DashboardView({ nombre, causasActivas, alertas, eventos,
       iconBg: "rgba(6,182,212,.15)",
       iconColor: "#06b6d4",
       label: "Audiencias",
-      value: stats.audienciasProx30,
-      sub: "próximas 30 días",
-      barPct: stats.audienciasProx30 > 0 ? Math.min(100, stats.audienciasProx30 * 20) : 0,
+      value: stats ? stats.audienciasProx30 : "—",
+      sub: stats ? "próximas 30 días" : undefined,
+      barPct: stats && stats.audienciasProx30 > 0 ? Math.min(100, stats.audienciasProx30 * 20) : 0,
       barColor: "#06b6d4",
       href: "/causas",
     },
@@ -299,10 +310,10 @@ export default function DashboardView({ nombre, causasActivas, alertas, eventos,
       iconBg: "rgba(4,120,87,.15)",
       iconColor: "var(--color-grn)",
       label: "Honorarios cobrados",
-      value: formatCurrency(stats.honorariosCobradosEste30),
-      sub: "últimos 30 días",
+      value: stats ? formatCurrency(stats.honorariosCobradosEste30) : "—",
+      sub: stats ? "últimos 30 días" : undefined,
       trend: trendHonorarios,
-      barPct: trendHonorarios !== null && trendHonorarios > 0 ? Math.min(100, trendHonorarios) : 0,
+      barPct: stats && trendHonorarios !== null && trendHonorarios > 0 ? Math.min(100, trendHonorarios) : 0,
       barColor: "var(--color-grn)",
     },
   ];
@@ -314,6 +325,9 @@ export default function DashboardView({ nombre, causasActivas, alertas, eventos,
         <h1 className="text-[20px] font-bold text-text">{saludo}, {primerNombre}</h1>
         <p className="mt-[2px] text-[13.5px] text-sub">{formatDate(hoy)} · Resumen de tu actividad</p>
       </div>
+
+      {/* Banner de error si stats es null */}
+      {!stats && <StatsBanner />}
 
       {/* Stat cards — 3 col desktop, 2 col mobile */}
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3">
