@@ -3,6 +3,12 @@
 import { createCliente, updateCliente, deleteCliente, type ClienteInput } from "@/services/supabase/clientes";
 import type { FormState } from "@/types";
 
+function normalizeFormValues(formData: FormData): Record<string, string> {
+  return Object.fromEntries(
+    Array.from(formData.entries()).map(([key, value]) => [key, value instanceof File ? value.name : String(value)])
+  );
+}
+
 function extractInput(formData: FormData): ClienteInput {
   return {
     nombre_completo: (formData.get("nombre_completo") as string).trim(),
@@ -18,14 +24,14 @@ export async function guardarCliente(_prev: FormState, formData: FormData): Prom
   const input = extractInput(formData);
 
   if (!input.nombre_completo) {
-    return { error: "El nombre es obligatorio.", values: Object.fromEntries(formData) };
+    return { error: "El nombre es obligatorio.", values: normalizeFormValues(formData) };
   }
 
   const { error } = id
     ? await updateCliente(id, input)
     : await createCliente(input);
 
-  if (error) return { error: error.message, values: Object.fromEntries(formData) };
+  if (error) return { error: error.message, values: normalizeFormValues(formData) };
 
   return { message: id ? "Cliente actualizado." : "Cliente creado." };
 }

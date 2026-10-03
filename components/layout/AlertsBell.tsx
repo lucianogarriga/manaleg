@@ -119,7 +119,7 @@ function TabButton({ active, onClick, count, label }: { active: boolean; onClick
       role="tab"
       aria-selected={active}
       onClick={onClick}
-      className={`flex flex-1 cursor-pointer items-center justify-center gap-[6px] border-b-2 px-3 py-[10px] text-[13.5px] font-semibold ${
+      className={`flex flex-1 cursor-pointer items-center justify-center gap-[6px] border-b-2 px-3 py-[9px] text-[12px] font-semibold ${
         active ? "border-blue text-blue" : "border-transparent text-sub hover:bg-bg"
       }`}
     >
@@ -134,7 +134,7 @@ function TabButton({ active, onClick, count, label }: { active: boolean; onClick
 function AlertasTab({ alertas, onOpen }: { alertas: AlertaItem[]; onOpen: (causaId: string) => void }) {
   if (alertas.length === 0) {
     return (
-      <p className="px-4 py-8 text-center text-[13.5px] text-muted">
+      <p className="px-4 py-8 text-center text-[12.5px] text-muted">
         No tenés alertas ni vencimientos en los próximos 30 días.
       </p>
     );
@@ -147,7 +147,7 @@ function AlertasTab({ alertas, onOpen }: { alertas: AlertaItem[]; onOpen: (causa
         if (items.length === 0) return null;
         return (
           <div key={grupo.titulo}>
-            <div className="bg-bg px-[13px] py-[5px] text-[11.5px] font-bold uppercase tracking-[.5px] text-muted">
+            <div className="bg-bg px-[13px] py-[4px] text-[10.5px] font-bold uppercase tracking-[.5px] text-muted">
               {grupo.titulo} ({items.length})
             </div>
             {items.map((a) => {
@@ -158,18 +158,18 @@ function AlertasTab({ alertas, onOpen }: { alertas: AlertaItem[]; onOpen: (causa
                   key={a.causaId}
                   type="button"
                   onClick={() => onOpen(a.causaId)}
-                  className="flex w-full cursor-pointer items-start gap-[9px] border-b border-border px-[13px] py-[9px] text-left hover:bg-bg"
+                  className="flex w-full cursor-pointer items-start gap-[9px] border-b border-border px-[13px] py-[8px] text-left hover:bg-bg"
                 >
-                  <span className={`mt-[7px] h-[8px] w-[8px] shrink-0 rounded-full ${URGENCY_DOT[urgency]}`} />
+                  <span className={`mt-[6px] h-[7px] w-[7px] shrink-0 rounded-full ${URGENCY_DOT[urgency]}`} />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[14px] font-semibold text-text">{a.caratula}</span>
-                    <span className="mt-px flex items-center gap-1 text-[13px] text-sub">
-                      <Icon size={11} className="shrink-0" />
+                    <span className="block truncate text-[12.5px] font-semibold text-text">{a.caratula}</span>
+                    <span className="mt-px flex items-center gap-1 text-[11.5px] text-sub">
+                      <Icon size={10} className="shrink-0" />
                       <span className="truncate">{a.motivo ?? a.tipo ?? "Vencimiento"}</span>
                     </span>
                   </span>
                   <span
-                    className={`shrink-0 pt-px text-[12.5px] ${urgency === "red" ? "font-semibold text-red" : urgency === "amber" ? "text-amb" : "text-muted"}`}
+                    className={`shrink-0 pt-px text-[11.5px] ${urgency === "red" ? "font-semibold text-red" : urgency === "amber" ? "text-amb" : "text-muted"}`}
                   >
                     {getDeadlineLabel(a.fecha, a.tipo)}
                   </span>
@@ -196,8 +196,8 @@ function ColegasTab({
 }) {
   if (notificaciones.length === 0) {
     return (
-      <div className="px-4 py-8 text-center text-[13.5px] text-muted">
-        <Users size={22} className="mx-auto mb-2 text-slate-300" />
+      <div className="px-4 py-8 text-center text-[12.5px] text-muted">
+        <Users size={20} className="mx-auto mb-2 text-muted" />
         Cuando un colega modifique una causa compartida con vos, te avisamos acá.
       </div>
     );
@@ -223,14 +223,14 @@ function ColegasTab({
               n.leida ? "" : "bg-blue-lt/60"
             }`}
           >
-            <Icon size={15} className={`mt-[3px] shrink-0 ${n.leida ? "text-muted" : "text-blue"}`} />
+            <Icon size={13} className={`mt-[3px] shrink-0 ${n.leida ? "text-muted" : "text-blue"}`} />
             <span className="min-w-0 flex-1">
-              <span className={`block text-[13.5px] leading-snug ${n.leida ? "text-sub" : "font-semibold text-text"}`}>
+              <span className={`block text-[12.5px] leading-snug ${n.leida ? "text-sub" : "font-semibold text-text"}`}>
                 {n.mensaje}
               </span>
-              <span className="mt-px block truncate text-[12.5px] text-muted">{n.caratula}</span>
+              <span className="mt-px block truncate text-[11.5px] text-muted">{n.caratula}</span>
             </span>
-            <span className="shrink-0 pt-px text-[12px] text-muted">{formatRelative(n.creadaEn)}</span>
+            <span className="shrink-0 pt-px text-[11px] text-muted">{formatRelative(n.creadaEn)}</span>
           </button>
         );
       })}

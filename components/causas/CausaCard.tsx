@@ -47,7 +47,7 @@ export default function CausaCard({ causa, active, onSelect }: CausaCardProps) {
 
       {/* Expediente */}
       {causa.nro_expediente && (
-        <div className="font-mono text-[11px] text-muted">{causa.nro_expediente}</div>
+        <div className="text-[11.5px] font-semibold text-sub">Expte. N° {causa.nro_expediente}</div>
       )}
 
       {/* Fuero / Juzgado */}
