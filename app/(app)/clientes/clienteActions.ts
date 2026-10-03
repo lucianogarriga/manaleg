@@ -4,9 +4,13 @@ import { createCliente, updateCliente, deleteCliente, type ClienteInput } from "
 import type { FormState } from "@/types";
 
 function normalizeFormValues(formData: FormData): Record<string, string> {
-  return Object.fromEntries(
-    Array.from(formData.entries()).map(([key, value]) => [key, value instanceof File ? value.name : String(value)])
-  );
+  const values: Record<string, string> = {};
+
+  for (const [key, value] of formData.entries()) {
+    values[key] = value instanceof File ? value.name : String(value);
+  }
+
+  return values;
 }
 
 function extractInput(formData: FormData): ClienteInput {
