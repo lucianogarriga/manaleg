@@ -87,21 +87,44 @@ export default function Topbar({ fecha, alertas, urgentes, notificaciones, sinLe
       <div className="flex items-center gap-[6px]">
         <span className="hidden whitespace-nowrap text-[12px] text-sub lg:block">{fecha}</span>
 
-        {/* Toggle tema */}
+        {/* Toggle tema — switch pill */}
         <button
           type="button"
           onClick={toggleTheme}
-          title={theme === "light" ? "Modo oscuro" : "Modo claro"}
-          className="flex cursor-pointer items-center justify-center rounded-[7px] p-[6px] transition-colors"
-          style={{ color: "var(--color-sub)" }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "var(--hover-row)")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "")}
+          title={theme === "light" ? "Activar modo oscuro" : "Activar modo claro"}
+          className="flex cursor-pointer items-center gap-[5px] rounded-full border px-[6px] py-[4px] transition-colors duration-200"
+          style={{
+            background: theme === "dark" ? "#1e293b" : "var(--color-bg)",
+            borderColor: theme === "dark" ? "#334155" : "var(--color-border)",
+          }}
         >
-          {theme === "light" ? (
-            <Moon size={15} style={{ color: "#6366f1" }} />
-          ) : (
-            <Sun size={15} style={{ color: "#fbbf24" }} />
-          )}
+          {/* Ícono sol */}
+          <Sun
+            size={12}
+            style={{
+              color: theme === "light" ? "#f59e0b" : "#475569",
+              transition: "color .2s",
+            }}
+          />
+          {/* Pill track */}
+          <span
+            className="relative flex h-[14px] w-[24px] items-center rounded-full transition-colors duration-200"
+            style={{ background: theme === "dark" ? "#6366f1" : "#cbd5e1" }}
+          >
+            {/* Thumb */}
+            <span
+              className="absolute h-[10px] w-[10px] rounded-full bg-white shadow-sm transition-transform duration-200"
+              style={{ transform: theme === "dark" ? "translateX(12px)" : "translateX(2px)" }}
+            />
+          </span>
+          {/* Ícono luna */}
+          <Moon
+            size={12}
+            style={{
+              color: theme === "dark" ? "#818cf8" : "#94a3b8",
+              transition: "color .2s",
+            }}
+          />
         </button>
 
         <AlertsBell

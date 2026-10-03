@@ -1,4 +1,4 @@
-import { unstable_cache } from "next/cache";
+import { cache } from "react";
 import { createClient } from "./server";
 import { todayISO } from "@/utils/formatters";
 
@@ -149,16 +149,7 @@ async function fetchStats(): Promise<DashboardStats> {
   };
 }
 
-// Cache de 60s por usuario. El userId entra como argumento → clave única por usuario.
-const getCachedStats = unstable_cache(
-  (_userId: string) => fetchStats(),
-  ["dashboard-stats"],
-  { revalidate: 60, tags: ["dashboard-stats"] }
-);
-
-export async function getDashboardStats(): Promise<DashboardStats> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("No autenticado");
-  return getCachedStats(user.id);
-}
+// cache() de React deduplica dentro de la misma request (no entre requests),
+// pero sí corre dentro del contexto de la request → cookies disponibles.
+// unstable_cache corría fuera del contexto y no podía leer la sesión.
+export const getDashboardStats: () => Promise<DashboardStats> = cache(fetchStats);
