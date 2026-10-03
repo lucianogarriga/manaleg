@@ -38,6 +38,7 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const confirm = String(formData.get("confirm") ?? "");
+  const tyc = formData.get("tyc");
 
   const values = { nombre, email };
 
@@ -45,6 +46,7 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
   if (password.length < 8)
     return { error: "La contraseña debe tener al menos 8 caracteres.", values };
   if (password !== confirm) return { error: "Las contraseñas no coinciden.", values };
+  if (tyc !== "on") return { error: "Debés aceptar los Términos y Condiciones.", values };
 
   const origin = (await headers()).get("origin") ?? "http://localhost:3000";
   const supabase = await createClient();
@@ -52,7 +54,11 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
     email,
     password,
     options: {
-      data: { nombre_completo: nombre }, // lo toma el trigger handle_new_user
+      data: {
+        nombre_completo: nombre,
+        tyc_accepted_at: new Date().toISOString(),
+        tyc_version: "1.0",
+      },
       emailRedirectTo: `${origin}/api/auth/callback`,
     },
   });

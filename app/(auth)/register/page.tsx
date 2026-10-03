@@ -75,6 +75,38 @@ export default function RegisterPage() {
         required
       />
 
+      {/* Checkbox T&C */}
+      <label className="flex items-start gap-[10px] cursor-pointer select-none">
+        <input
+          type="checkbox"
+          name="tyc"
+          value="on"
+          required
+          className="mt-[3px] h-[15px] w-[15px] shrink-0 cursor-pointer accent-[#2563eb]"
+        />
+        <span className="text-[12.5px] leading-[1.5]" style={{ color: "#64748b" }}>
+          Leí y acepto los{" "}
+          <Link
+            href="/legal/terminos"
+            target="_blank"
+            className="font-semibold hover:underline"
+            style={{ color: "#2563eb" }}
+          >
+            Términos y Condiciones
+          </Link>{" "}
+          y la{" "}
+          <Link
+            href="/legal/privacidad"
+            target="_blank"
+            className="font-semibold hover:underline"
+            style={{ color: "#2563eb" }}
+          >
+            Política de Privacidad
+          </Link>
+          .
+        </span>
+      </label>
+
       <SubmitButton pending={pending} pendingText="Creando cuenta…">
         Crear cuenta
       </SubmitButton>

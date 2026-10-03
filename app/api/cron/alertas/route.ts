@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { enviarAvisos } from "@/services/alerts/avisosDiarios";
 
+export const maxDuration = 60; // segundos — activo en planes Pro/Enterprise de Vercel
+
 // Lo invoca Vercel Cron de lunes a viernes (ver vercel.json).
 // Vercel manda automáticamente "Authorization: Bearer <CRON_SECRET>".
 // ?dry=1 calcula qué se enviaría sin mandar ni registrar nada.

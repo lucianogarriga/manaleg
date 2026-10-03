@@ -26,6 +26,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           urgentes={counts.vencimientosProximos}
           notificaciones={counts.notificaciones}
           sinLeer={counts.notificacionesSinLeer}
+          profile={profile}
         />
         <main className="min-h-0 flex-1 overflow-y-auto">
           {children}

@@ -3,11 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut } from "lucide-react";
-import { logout } from "@/app/(auth)/actions";
 import { useUIStore } from "@/store/uiStore";
 import { useCausasStore } from "@/store/causasStore";
-import { getInitials } from "@/utils/formatters";
 import type { Profile } from "@/types";
 import type { LayoutCounts } from "@/services/supabase/layoutCounts";
 import { NAV_SECTIONS, type NavItem } from "./navigation";
@@ -148,49 +145,6 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
             ))}
           </nav>
 
-          {/* Footer */}
-          <div className="flex shrink-0 flex-col overflow-hidden pt-2 pb-2 gap-1">
-            {/* Usuario */}
-            <div
-              className={`flex items-center overflow-hidden ${
-                exp ? "gap-[9px] px-[10px]" : "justify-center px-0"
-              }`}
-            >
-              <div
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-bold text-white"
-                style={{ background: "linear-gradient(135deg, #2563eb, #7c3aed)" }}
-              >
-                {getInitials(profile.nombre_completo, profile.email[0]?.toUpperCase())}
-              </div>
-              <div
-                className={`min-w-0 flex-1 overflow-hidden transition-[opacity,max-width] duration-150 ${
-                  exp ? "opacity-100 max-w-[100px]" : "opacity-0 max-w-0"
-                }`}
-              >
-                <div
-                  className="truncate text-[12.5px] font-medium"
-                  style={{ color: "var(--color-text)" }}
-                >
-                  {profile.nombre_completo ?? profile.email}
-                </div>
-                <div className="text-[10.5px]" style={{ color: "var(--sb-fg)" }}>
-                  {profile.plan === "pro" ? "Plan Pro" : "Plan Free"}
-                </div>
-              </div>
-              {exp && (
-                <form action={logout}>
-                  <button
-                    type="submit"
-                    title="Cerrar sesión"
-                    className="flex cursor-pointer rounded p-1 transition-colors"
-                    style={{ color: "var(--sb-fg)" }}
-                  >
-                    <LogOut size={13} />
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
         </div>
       </aside>
     </>

@@ -122,41 +122,44 @@ export async function enviarAvisos({ dryRun = false } = {}): Promise<ResumenAvis
     .from("profiles")
     .select("id, email, nombre_completo")
     .in("id", [...porUsuario.keys()])
+    .eq("notificaciones_email", true)   // respeta la preferencia del usuario
     .returns<Destinatario[]>();
   if (perfError) throw new Error(`No se pudieron leer los perfiles: ${perfError.message}`);
 
-  for (const perfil of perfiles) {
-    const pendientes = (porUsuario.get(perfil.id) ?? []).sort((a, b) =>
-      a.proximo_vencimiento.localeCompare(b.proximo_vencimiento),
-    );
-    if (pendientes.length === 0) continue;
-    if (dryRun) {
+  await Promise.allSettled(
+    perfiles.map(async (perfil) => {
+      const pendientes = (porUsuario.get(perfil.id) ?? []).sort((a, b) =>
+        a.proximo_vencimiento.localeCompare(b.proximo_vencimiento),
+      );
+      if (pendientes.length === 0) return;
+      if (dryRun) {
+        resumen.emailsEnviados += 1;
+        return;
+      }
+
+      const { error: sendError } = await sendEmail({
+        to: perfil.email,
+        subject: armarAsunto(pendientes, hoy),
+        html: armarHtml(perfil, pendientes, hoy),
+      });
+
+      if (sendError) {
+        resumen.errores.push(sendError);
+        return; // no se registra: se reintenta en la próxima ejecución
+      }
+
+      const { error: logError } = await admin.from("avisos_enviados").insert(
+        pendientes.map((c) => ({
+          causa_id: c.id,
+          user_id: perfil.id,
+          fecha_vencimiento: c.proximo_vencimiento,
+          canal: "email",
+        })),
+      );
+      if (logError) resumen.errores.push(`No se pudo registrar el aviso enviado: ${logError.message}`);
       resumen.emailsEnviados += 1;
-      continue;
-    }
-
-    const { error: sendError } = await sendEmail({
-      to: perfil.email,
-      subject: armarAsunto(pendientes, hoy),
-      html: armarHtml(perfil, pendientes, hoy),
-    });
-
-    if (sendError) {
-      resumen.errores.push(sendError);
-      continue; // no se registra: se reintenta en la próxima ejecución
-    }
-
-    const { error: logError } = await admin.from("avisos_enviados").insert(
-      pendientes.map((c) => ({
-        causa_id: c.id,
-        user_id: perfil.id,
-        fecha_vencimiento: c.proximo_vencimiento,
-        canal: "email",
-      })),
-    );
-    if (logError) resumen.errores.push(`No se pudo registrar el aviso enviado: ${logError.message}`);
-    resumen.emailsEnviados += 1;
-  }
+    }),
+  );
 
   return resumen;
 }
