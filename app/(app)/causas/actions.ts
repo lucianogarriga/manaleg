@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createCausa, deleteCausa, updateCausa } from "@/services/supabase/causas";
-import { ANTICIPACION_ALERTA, ESTADOS_CAUSA, FUEROS, TIPOS_AVISO } from "@/utils/constants";
+import { ANTICIPACION_ALERTA, ESTADOS_CAUSA, FUEROS, TIPOS_AVISO, VIAS_PROCESO } from "@/utils/constants";
 import { oneOf, parseMonto, text } from "@/utils/formData";
 import type { CausaInput, FormState } from "@/types";
 
@@ -38,6 +38,7 @@ function parseCausa(formData: FormData): { input?: CausaInput; error?: string } 
       parte_demandada: text(formData, "parte_demandada"),
       cliente_id: text(formData, "cliente_id"),
       estado: oneOf(text(formData, "estado"), ESTADOS_CAUSA) ?? "Iniciada",
+      via_proceso: oneOf(text(formData, "via_proceso"), VIAS_PROCESO),
       fecha_inicio: text(formData, "fecha_inicio"),
       proximo_vencimiento: proximoVencimiento,
       tipo_vencimiento: proximoVencimiento

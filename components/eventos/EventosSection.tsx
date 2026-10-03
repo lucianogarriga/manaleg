@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useActionState } from "react";
 import { Calendar, Clock, MapPin, Pencil, Trash2, X } from "lucide-react";
@@ -17,7 +17,7 @@ const TIPO_STYLES: Record<string, { bg: string; text: string }> = {
   Mediación: { bg: "bg-pur-lt", text: "text-pur" },
   Pericial: { bg: "bg-amb-lt", text: "text-amb" },
   Reunión: { bg: "bg-grn-lt", text: "text-grn" },
-  Otro: { bg: "bg-slate-100", text: "text-sub" },
+  Otro: { bg: "bg-border", text: "text-sub" },
 };
 
 function EventoForm({
@@ -54,7 +54,7 @@ function EventoForm({
         </h3>
         <form action={formAction} className="space-y-3">
           <div>
-            <label className="mb-[3px] block text-[11px] font-bold uppercase tracking-[.4px] text-[#1e3a6e]/70">
+            <label className="mb-[3px] block text-[11px] font-bold uppercase tracking-[.4px] text-muted">
               Título *
             </label>
             <input
@@ -66,7 +66,7 @@ function EventoForm({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-[3px] block text-[11px] font-bold uppercase tracking-[.4px] text-[#1e3a6e]/70">
+              <label className="mb-[3px] block text-[11px] font-bold uppercase tracking-[.4px] text-muted">
                 Tipo *
               </label>
               <select
@@ -80,7 +80,7 @@ function EventoForm({
               </select>
             </div>
             <div>
-              <label className="mb-[3px] block text-[11px] font-bold uppercase tracking-[.4px] text-[#1e3a6e]/70">
+              <label className="mb-[3px] block text-[11px] font-bold uppercase tracking-[.4px] text-muted">
                 Fecha *
               </label>
               <input
@@ -94,7 +94,7 @@ function EventoForm({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-[3px] block text-[11px] font-bold uppercase tracking-[.4px] text-[#1e3a6e]/70">
+              <label className="mb-[3px] block text-[11px] font-bold uppercase tracking-[.4px] text-muted">
                 Hora
               </label>
               <input
@@ -105,7 +105,7 @@ function EventoForm({
               />
             </div>
             <div>
-              <label className="mb-[3px] block text-[11px] font-bold uppercase tracking-[.4px] text-[#1e3a6e]/70">
+              <label className="mb-[3px] block text-[11px] font-bold uppercase tracking-[.4px] text-muted">
                 Lugar
               </label>
               <input
@@ -116,7 +116,7 @@ function EventoForm({
             </div>
           </div>
           <div>
-            <label className="mb-[3px] block text-[11px] font-bold uppercase tracking-[.4px] text-[#1e3a6e]/70">
+            <label className="mb-[3px] block text-[11px] font-bold uppercase tracking-[.4px] text-muted">
               Notas
             </label>
             <textarea
@@ -206,16 +206,19 @@ function EventoRow({ evento, onEdit, onDelete }: { evento: Evento; onEdit: () =>
   );
 }
 
-export default function EventosSection({
+export interface EventosSectionRef {
+  openForm: () => void;
+}
+
+const EventosSection = forwardRef<EventosSectionRef, { causaId: string; naked?: boolean }>(
+function EventosSection({
   causaId,
   naked = false,
-}: {
-  causaId: string;
-  naked?: boolean;
-}) {
+}, ref) {
   const router = useRouter();
   const { data, loading, error, reload } = useEventos(causaId);
   const [formEvento, setFormEvento] = useState<Evento | null | "new">(null);
+  useImperativeHandle(ref, () => ({ openForm: () => setFormEvento("new") }), []);
   const showToast = useUIStore((s) => s.showToast);
 
   const afterChange = (msg: string) => {
@@ -234,8 +237,8 @@ export default function EventosSection({
 
   const inner = loading ? (
     <div className="space-y-2 py-3" aria-busy="true">
-      <div className="h-[14px] w-3/4 animate-pulse rounded bg-slate-100" />
-      <div className="h-[14px] w-1/2 animate-pulse rounded bg-slate-100" />
+      <div className="h-[14px] w-3/4 animate-pulse rounded bg-border" />
+      <div className="h-[14px] w-1/2 animate-pulse rounded bg-border" />
     </div>
   ) : error ? (
     <p className="py-3 text-[13px] text-red">No se pudieron cargar los eventos: {error}</p>
@@ -254,23 +257,10 @@ export default function EventosSection({
     </div>
   );
 
-  const addBtn = (
-    <button
-      type="button"
-      onClick={() => setFormEvento("new")}
-      className="cursor-pointer text-[13px] font-semibold text-blue hover:underline"
-    >
-      + Agregar
-    </button>
-  );
-
   return (
     <>
       {naked ? (
-        <div>
-          <div className="flex justify-end px-[13px] pb-2 pt-1">{addBtn}</div>
-          <div className="px-[13px] pb-3">{inner}</div>
-        </div>
+        <div className="px-[13px] pb-3">{inner}</div>
       ) : (
         <CardSection title="Eventos" action={<CardAction onClick={() => setFormEvento("new")}>+ Agregar</CardAction>}>
           <div className="px-[13px] py-2">{inner}</div>
@@ -287,4 +277,6 @@ export default function EventosSection({
       )}
     </>
   );
-}
+});
+
+export default EventosSection;

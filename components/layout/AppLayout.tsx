@@ -12,10 +12,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const [profile, counts] = await Promise.all([getCurrentProfile(), getLayoutCounts()]);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden">
+    <div className="flex h-screen w-full overflow-hidden gap-2 p-3 pl-2">
       <AuthHydrator profile={profile} />
       <Sidebar profile={profile} counts={counts} />
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+      {/* Área derecha: topbar + contenido sobre bg (sin card wrapper) */}
+      <div
+        className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl"
+        style={{ background: "var(--color-bg)" }}
+      >
         <Topbar
           fecha={formatLongDate(todayISO())}
           alertas={counts.alertas}
@@ -23,7 +27,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           notificaciones={counts.notificaciones}
           sinLeer={counts.notificacionesSinLeer}
         />
-        <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
+        <main className="min-h-0 flex-1 overflow-y-auto">
+          {children}
+        </main>
       </div>
       <Toaster />
     </div>

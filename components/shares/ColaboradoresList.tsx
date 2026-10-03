@@ -8,7 +8,7 @@ import type { CausaShareConUsuario } from "@/types";
 function Persona({ nombre, email, etiqueta, action }: { nombre: string | null; email: string; etiqueta?: string; action?: React.ReactNode }) {
   return (
     <div className="flex items-center gap-[10px] py-[8px] last:pb-0">
-      <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border border-slate-300/80 bg-white/70 text-[9px] font-semibold text-sub/75 shadow-sm">
+      <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border border-border bg-card text-[9px] font-semibold text-sub shadow-sm">
         {getInitials(nombre, email[0]?.toUpperCase())}
       </span>
       <span className="min-w-0 flex-1">
@@ -16,7 +16,7 @@ function Persona({ nombre, email, etiqueta, action }: { nombre: string | null; e
         {nombre && <span className="block truncate text-[12.5px] text-muted">{email}</span>}
       </span>
       {etiqueta && (
-        <span className="shrink-0 rounded-[4px] bg-[#FEF9C3] px-2 py-[2px] text-[12px] font-medium text-[#713F12]">{etiqueta}</span>
+        <span className="shrink-0 rounded-[4px] px-2 py-[2px] text-[12px] font-medium" style={{ background: "var(--color-amb-lt)", color: "var(--color-amb)" }}>{etiqueta}</span>
       )}
       {action}
     </div>
@@ -37,7 +37,7 @@ const PersonasList = ({ owner, shares, loading, esTitular, onRevoke }: Omit<Cola
     {owner && <Persona nombre={owner.nombre_completo} email={owner.email} etiqueta="Titular" />}
     {loading ? (
       <div className="py-2">
-        <div className="h-[14px] w-1/2 animate-pulse rounded bg-slate-100" />
+        <div className="h-[14px] w-1/2 animate-pulse rounded bg-border" />
       </div>
     ) : (
       shares.map((s) =>

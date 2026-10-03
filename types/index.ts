@@ -6,9 +6,11 @@ import type {
   TIPOS_EVENTO,
   TIPOS_MOVIMIENTO,
   TIPOS_VENCIMIENTO,
+  VIAS_PROCESO,
 } from "@/utils/constants";
 
 export type Fuero = (typeof FUEROS)[number];
+export type ViaProceso = (typeof VIAS_PROCESO)[number];
 export type TipoAviso = (typeof TIPOS_AVISO)[number];
 export type EstadoCausa = (typeof ESTADOS_CAUSA)[number];
 export type Anticipacion = (typeof ANTICIPACION_ALERTA)[number];
@@ -69,6 +71,7 @@ export interface Causa {
   parte_demandada: string | null;
   cliente_id: string | null;
   estado: EstadoCausa;
+  via_proceso: ViaProceso | null;
   fecha_inicio: string | null;
   proximo_vencimiento: string | null;
   tipo_vencimiento: TipoAviso | null;
@@ -106,6 +109,7 @@ export type CausaInput = Pick<
   | "parte_demandada"
   | "cliente_id"
   | "estado"
+  | "via_proceso"
   | "fecha_inicio"
   | "proximo_vencimiento"
   | "tipo_vencimiento"

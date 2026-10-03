@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { forwardRef, useImperativeHandle, useState } from "react";
 import { useRouter } from "next/navigation";
 import { removeMovimiento } from "@/app/(app)/causas/detailActions";
 import CardSection, { CardAction } from "@/components/ui/CardSection";
@@ -9,25 +9,22 @@ import { useUIStore } from "@/store/uiStore";
 import MovimientoForm from "./MovimientoForm";
 import MovimientoTimeline from "./MovimientoTimeline";
 
-export default function MovimientosSection({
-  causaId,
-  userId,
-  naked = false,
-}: {
-  causaId: string;
-  userId: string;
-  naked?: boolean;
-}) {
+export interface MovimientosSectionRef {
+  openForm: () => void;
+}
+
+const MovimientosSection = forwardRef<
+  MovimientosSectionRef,
+  { causaId: string; userId: string; naked?: boolean }
+>(function MovimientosSection({ causaId, userId, naked = false }, ref) {
   const router = useRouter();
   const { data, loading, error, reload } = useMovimientos(causaId);
   const [formOpen, setFormOpen] = useState(false);
   const showToast = useUIStore((s) => s.showToast);
 
-  // Recarga el historial y refresca la causa (último movimiento / editor)
-  const afterChange = () => {
-    reload();
-    router.refresh();
-  };
+  useImperativeHandle(ref, () => ({ openForm: () => setFormOpen(true) }), []);
+
+  const afterChange = () => { reload(); router.refresh(); };
 
   const onDelete = async (id: string) => {
     if (!confirm("¿Eliminar este movimiento?")) return;
@@ -40,7 +37,7 @@ export default function MovimientosSection({
   const inner = loading ? (
     <div className="space-y-3 px-[13px] py-4" aria-busy="true">
       {[0, 1, 2].map((i) => (
-        <div key={i} className="h-[14px] animate-pulse rounded bg-slate-100" style={{ width: `${90 - i * 18}%` }} />
+        <div key={i} className="h-[14px] animate-pulse rounded bg-border" style={{ width: `${90 - i * 18}%` }} />
       ))}
     </div>
   ) : error ? (
@@ -54,18 +51,8 @@ export default function MovimientosSection({
   return (
     <>
       {naked ? (
-        <div>
-          <div className="flex justify-end px-[13px] pb-2 pt-1">
-            <button
-              type="button"
-              onClick={() => setFormOpen(true)}
-              className="cursor-pointer text-[13px] font-semibold text-blue hover:underline"
-            >
-              + Agregar
-            </button>
-          </div>
-          {inner}
-        </div>
+        // En modo naked el botón + Agregar lo maneja el padre vía ref.openForm()
+        <div>{inner}</div>
       ) : (
         <CardSection
           title="Historial de movimientos"
@@ -88,5 +75,6 @@ export default function MovimientosSection({
       )}
     </>
   );
-}
+});
 
+export default MovimientosSection;

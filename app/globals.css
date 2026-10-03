@@ -1,52 +1,175 @@
 @import "tailwindcss";
 
-/* Design tokens de MANALEG (fuente: crm-causas-mockup.html).
-   Tailwind v4 genera las utilidades a partir de estas variables:
-   --color-navy → bg-navy, text-navy, border-navy, etc. */
-@theme {
-  --color-navy: #0d1b30; /* sidebar background */
-  --color-bg: #ebf0f7; /* page background */
-  --color-card: #ffffff; /* card/surface */
-  --color-border: #dde3ed; /* borders */
-  --color-text: #0f172a; /* primary text */
-  --color-sub: #475569; /* secondary text */
-  --color-muted: #94a3b8; /* placeholder/muted */
-  --color-blue: #1d4ed8; /* primary accent */
-  --color-blue-lt: #eff6ff;
-  --color-red: #b91c1c; /* urgente */
-  --color-red-lt: #fef2f2;
-  --color-red-bd: #fecaca;
-  --color-amb: #b45309; /* advertencia */
-  --color-amb-lt: #fffbeb;
-  --color-amb-bd: #fde68a;
-  --color-grn: #047857; /* ok / cobrado */
-  --color-grn-lt: #f0fdf9;
-  --color-pur: #5b21b6; /* iniciada / new */
-  --color-pur-lt: #f5f3ff;
+/* ─── DESIGN TOKENS — LIGHT (default) ─── */
+:root {
+  /* Page / surfaces */
+  --color-bg:      #f0f4f8;
+  --color-card:    #ffffff;
+  --color-border:  #e2e8f0;
 
-  --font-mono: "Courier New", monospace;
+  /* Text */
+  --color-text:    #0f172a;
+  --color-sub:     #475569;
+  --color-muted:   #94a3b8;
+
+  /* Accent */
+  --color-blue:    #2563eb;
+  --color-blue-lt: #eff6ff;
+
+  /* Semáforo */
+  --color-red:     #b91c1c;
+  --color-red-lt:  #fef2f2;
+  --color-red-bd:  #fecaca;
+  --color-amb:     #b45309;
+  --color-amb-lt:  #fffbeb;
+  --color-amb-bd:  #fde68a;
+  --color-grn:     #047857;
+  --color-grn-lt:  #f0fdf9;
+  --color-pur:     #5b21b6;
+  --color-pur-lt:  #f5f3ff;
+
+  /* Calendario */
+  --cal-out:       rgba(0,0,0,.03);
+  --cal-wknd:      rgba(0,0,0,.025);
+  --cal-inh:       #fff7ed;
+
+  /* Sidebar */
+  --sb-bg:         #ffffff;
+  --sb-fg:         #64748b;
+  --sb-act-bg:     rgba(37,99,235,.10);
+  --sb-act-fg:     #2563eb;
+  --sb-shadow:     0 2px 8px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.06), 0 0 0 1px rgba(0,0,0,.04);
+
+  /* Topbar */
+  --tb-bg:         #ffffff;
+  --tb-border:     #e2e8f0;
+
+  color-scheme: light;
 }
 
-/* Roboto Slab (cargada en app/layout.tsx con next/font) */
+/* ─── DARK MODE — media query ─── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg:      #0d0d0f;
+    --color-card:    #191a1e;
+    --color-border:  #2a2b30;
+    --color-text:    #e8e8e8;
+    --color-sub:     #9b9da6;
+    --color-muted:   #5a5c66;
+    --color-blue:    #60a5fa;
+    --color-blue-lt: rgba(96,165,250,.13);
+    --color-red:     #f87171;
+    --color-red-lt:  rgba(248,113,113,.12);
+    --color-red-bd:  rgba(248,113,113,.25);
+    --color-amb:     #fbbf24;
+    --color-amb-lt:  rgba(251,191,36,.12);
+    --color-amb-bd:  rgba(251,191,36,.25);
+    --color-grn:     #34d399;
+    --color-grn-lt:  rgba(52,211,153,.12);
+    --color-pur:     #a5b4fc;
+    --color-pur-lt:  rgba(165,180,252,.12);
+    --cal-out:       rgba(255,255,255,.02);
+    --cal-wknd:      rgba(255,255,255,.035);
+    --cal-inh:       rgba(251,146,60,.13);
+
+    --sb-bg:         #191a1e;
+    --sb-fg:         #9b9da6;
+    --sb-act-bg:     rgba(96,165,250,.14);
+    --sb-act-fg:     #93c5fd;
+    --sb-shadow:     0 0 0 1px rgba(255,255,255,.06), 0 4px 16px rgba(0,0,0,.4);
+    --tb-bg:         transparent;
+    --tb-border:     #2a2b30;
+    --hover-row:     rgba(255,255,255,.05);
+    color-scheme: dark;
+  }
+}
+
+/* ─── DARK MODE — data-theme="dark" (toggle manual) ─── */
+:root[data-theme="dark"] {
+  --color-bg:      #0d0d0f;
+  --color-card:    #191a1e;
+  --color-border:  #2a2b30;
+  --color-text:    #e8e8e8;
+  --color-sub:     #9b9da6;
+  --color-muted:   #5a5c66;
+  --color-blue:    #60a5fa;
+  --color-blue-lt: rgba(96,165,250,.13);
+  --color-red:     #f87171;
+  --color-red-lt:  rgba(248,113,113,.12);
+  --color-red-bd:  rgba(248,113,113,.25);
+  --color-amb:     #fbbf24;
+  --color-amb-lt:  rgba(251,191,36,.12);
+  --color-amb-bd:  rgba(251,191,36,.25);
+  --color-grn:     #34d399;
+  --color-grn-lt:  rgba(52,211,153,.12);
+  --color-pur:     #a5b4fc;
+  --color-pur-lt:  rgba(165,180,252,.12);
+  --cal-out:       rgba(255,255,255,.02);
+  --cal-wknd:      rgba(255,255,255,.035);
+  --cal-inh:       rgba(251,146,60,.13);
+
+  --sb-bg:         #191a1e;
+  --sb-fg:         #9b9da6;
+  --sb-act-bg:     rgba(96,165,250,.14);
+  --sb-act-fg:     #93c5fd;
+  --sb-shadow:     0 0 0 1px rgba(255,255,255,.06), 0 4px 16px rgba(0,0,0,.4);
+  --tb-bg:         transparent;
+  --tb-border:     #2a2b30;
+  --hover-row:     rgba(255,255,255,.05);
+  color-scheme: dark;
+}
+
+/* light también necesita hover-row */
+:root {
+  --hover-row: #edf0f4;
+}
+
+/* ─── TAILWIND v4 THEME ─── */
 @theme inline {
-  --font-sans: var(--font-roboto-slab), Georgia, serif;
+  --color-bg:      var(--color-bg);
+  --color-card:    var(--color-card);
+  --color-border:  var(--color-border);
+  --color-text:    var(--color-text);
+  --color-sub:     var(--color-sub);
+  --color-muted:   var(--color-muted);
+  --color-blue:    var(--color-blue);
+  --color-blue-lt: var(--color-blue-lt);
+  --color-red:     var(--color-red);
+  --color-red-lt:  var(--color-red-lt);
+  --color-red-bd:  var(--color-red-bd);
+  --color-amb:     var(--color-amb);
+  --color-amb-lt:  var(--color-amb-lt);
+  --color-amb-bd:  var(--color-amb-bd);
+  --color-grn:     var(--color-grn);
+  --color-grn-lt:  var(--color-grn-lt);
+  --color-pur:     var(--color-pur);
+  --color-pur-lt:  var(--color-pur-lt);
+
+  --font-mono: "Courier New", monospace;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
 }
 
 @layer base {
   body {
     @apply bg-bg font-sans text-text;
     font-size: 15px;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  /* Transición suave al cambiar tema en todos los elementos */
+  *, *::before, *::after {
+    transition-property: background-color, border-color, color;
+    transition-duration: 0.2s;
+    transition-timing-function: ease;
+  }
+
+  /* Excluir elementos donde la transición se ve mal */
+  button, a, input, select, textarea, [role="button"] {
+    transition-duration: 0.15s;
   }
 }
 
-/* Scrollbars finos como en el mockup */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 2px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+/* Scrollbars finos */
+::-webkit-scrollbar       { width: 6px; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
+::-webkit-scrollbar-track { background: transparent; }

@@ -96,12 +96,13 @@ export default function CausaDetail({ causa, userId, className = "" }: CausaDeta
         <div className="flex flex-wrap items-center gap-[6px]">
           <Badge estado={causa.estado} size="lg" />
           {(causa.fuero || causa.juzgado_camara) && (
-            <span className="rounded-[4px] bg-slate-100 px-2 py-[2px] text-[12px] font-medium text-sub">
+            <span className="rounded-[4px] px-2 py-[2px] text-[12px] font-medium text-sub" style={{ background: "var(--color-border)" }}>
               {[causa.fuero, causa.juzgado_camara].filter(Boolean).join(" — ")}
             </span>
           )}
           <span
-            className="rounded-[4px] bg-[#FEF9C3] px-2 py-[2px] text-[12px] font-medium text-[#713F12]"
+            className="rounded-[4px] px-2 py-[2px] text-[12px] font-medium"
+            style={{ background: "var(--color-amb-lt)", color: "var(--color-amb)" }}
             title={ownerName}
           >
             Titular: {getInitials(causa.owner?.nombre_completo, causa.owner?.email[0]?.toUpperCase())}

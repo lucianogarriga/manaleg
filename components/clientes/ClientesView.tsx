@@ -83,7 +83,9 @@ export default function ClientesView({ clientes }: ClientesViewProps) {
               {clientes.map((c, i) => (
                 <tr
                   key={c.id}
-                  className={`border-b border-b-slate-100 last:border-b-0 ${i % 2 === 0 ? "bg-card" : "bg-[#FAFAFA]"}`}
+                  className="border-b border-border last:border-b-0 bg-card transition-colors"
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--hover-row)"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--color-card)"; }}
                 >
                   <td className="px-[14px] py-[10px]">
                     <div className="text-[14px] font-semibold text-text">{c.nombre_completo}</div>

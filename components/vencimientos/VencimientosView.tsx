@@ -44,9 +44,9 @@ function BucketSection({ label, style, items, onSelect }: {
               key={item.causaId}
               type="button"
               onClick={() => onSelect(item.causaId)}
-              className={`block w-full cursor-pointer border-b border-b-slate-100 px-[14px] py-[10px] text-left last:border-b-0 transition-colors hover:bg-[#FAFAFA] ${
-                i % 2 === 0 ? "bg-card" : "bg-[#FAFBFC]"
-              }`}
+              className="block w-full cursor-pointer border-b border-b-border px-[14px] py-[10px] text-left last:border-b-0 transition-colors bg-card"
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--hover-row)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--color-card)"; }}
             >
               <div className="flex items-start gap-3">
                 <div className="shrink-0 pt-px text-right">
@@ -71,7 +71,7 @@ function BucketSection({ label, style, items, onSelect }: {
                       {item.tipo}
                     </span>
                   )}
-                  <span className="hidden rounded-[4px] bg-slate-100 px-2 py-[2px] text-[11px] text-sub sm:block">
+                  <span className="hidden rounded-[4px] px-2 py-[2px] text-[11px] text-sub sm:block" style={{ background: "var(--color-border)" }}>
                     {item.estado}
                   </span>
                 </div>

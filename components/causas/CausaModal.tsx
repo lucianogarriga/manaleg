@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { X, Share2, Pencil } from "lucide-react";
 import { quitarAcceso } from "@/app/(app)/causas/shareActions";
@@ -12,8 +12,8 @@ import CollapsibleSection from "@/components/ui/CollapsibleSection";
 import DriveLink from "@/components/ui/DriveLink";
 import FieldGrid, { type Field } from "@/components/ui/FieldGrid";
 import HonorariosCard from "@/components/honorarios/HonorariosCard";
-import EventosSection from "@/components/eventos/EventosSection";
-import MovimientosSection from "@/components/movimientos/MovimientosSection";
+import EventosSection, { type EventosSectionRef } from "@/components/eventos/EventosSection";
+import MovimientosSection, { type MovimientosSectionRef } from "@/components/movimientos/MovimientosSection";
 import { useShares } from "@/hooks/useCausaData";
 import { useCausasStore } from "@/store/causasStore";
 import { useUIStore } from "@/store/uiStore";
@@ -33,6 +33,8 @@ export default function CausaModal({ causa, userId }: Props) {
   const showToast = useUIStore((s) => s.showToast);
   const { data: shares, loading: sharesLoading, reload: reloadShares } = useShares(causa.id);
   const [shareOpen, setShareOpen] = useState(false);
+  const movRef = useRef<MovimientosSectionRef>(null);
+  const evRef = useRef<EventosSectionRef>(null);
 
   const cerrada = causa.estado === "Cerrada";
   const urgency = getUrgency(causa.proximo_vencimiento, cerrada);
@@ -65,7 +67,7 @@ export default function CausaModal({ causa, userId }: Props) {
   const ownerName = causa.owner?.nombre_completo ?? causa.owner?.email ?? "—";
 
   const datos: Field[] = [
-    { label: "Nro Expediente", value: causa.nro_expediente ?? "—", variant: "mono" },
+    { label: "Nro Expediente", value: causa.nro_expediente ?? "—" },
     { label: "Fuero", value: causa.fuero ?? "—" },
     { label: "Tipo de juicio", value: causa.tipo_juicio ?? "—" },
     { label: "Juzgado / Cámara", value: causa.juzgado_camara ?? "—" },
@@ -102,7 +104,7 @@ export default function CausaModal({ causa, userId }: Props) {
       {/* Modal: 97vh en mobile, 95vh en desktop — siempre flotando sobre el backdrop */}
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         <div
-          className="relative flex h-[97vh] w-[calc(100%-16px)] flex-col overflow-hidden rounded-xl bg-bg shadow-2xl md:h-[95vh] md:w-[95%] md:rounded-2xl"
+          className="relative flex h-[95vh] w-[calc(100%-16px)] flex-col overflow-hidden rounded-xl bg-bg shadow-2xl md:h-[92vh] md:w-[95%] md:rounded-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header fijo */}
@@ -121,7 +123,9 @@ export default function CausaModal({ causa, userId }: Props) {
                 type="button"
                 onClick={() => select(null)}
                 title="Cerrar (Esc)"
-                className="mt-[2px] shrink-0 cursor-pointer rounded-lg p-[5px] text-sub transition-colors hover:bg-slate-100 hover:text-text"
+                className="mt-[2px] shrink-0 cursor-pointer rounded-lg p-[5px] text-sub transition-colors"
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--hover-row)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = ""; }}
               >
                 <X size={17} />
               </button>
@@ -131,17 +135,18 @@ export default function CausaModal({ causa, userId }: Props) {
             <div className="flex flex-wrap items-center gap-[6px]">
               <Badge estado={causa.estado} size="lg" />
               {causa.fuero && (
-                <span className="rounded-[4px] bg-slate-100 px-2 py-[2px] text-[12px] font-medium text-sub">
+                <span className="rounded-[4px] px-2 py-[2px] text-[12px] font-medium text-sub" style={{ background: "var(--color-border)" }}>
                   {causa.fuero}
                 </span>
               )}
               {causa.juzgado_camara && (
-                <span className="hidden rounded-[4px] bg-slate-100 px-2 py-[2px] text-[12px] font-medium text-sub sm:inline">
+                <span className="hidden rounded-[4px] px-2 py-[2px] text-[12px] font-medium text-sub sm:inline" style={{ background: "var(--color-border)" }}>
                   {causa.juzgado_camara}
                 </span>
               )}
               <span
-                className="rounded-[4px] bg-[#FEF9C3] px-2 py-[2px] text-[12px] font-medium text-[#713F12]"
+                className="rounded-[4px] px-2 py-[2px] text-[12px] font-medium"
+                style={{ background: "var(--color-amb-lt)", color: "var(--color-amb)" }}
                 title={ownerName}
               >
                 {getInitials(causa.owner?.nombre_completo, causa.owner?.email[0]?.toUpperCase())}
@@ -208,12 +213,35 @@ export default function CausaModal({ causa, userId }: Props) {
                 )}
               </CollapsibleSection>
 
-              <CollapsibleSection title="Historial de movimientos" defaultOpen>
-                <MovimientosSection causaId={causa.id} userId={userId} naked />
+              <CollapsibleSection
+                title="Historial de movimientos"
+                defaultOpen
+                headerAction={
+                  <button
+                    type="button"
+                    onClick={() => movRef.current?.openForm()}
+                    className="cursor-pointer text-[13px] font-semibold text-blue hover:underline"
+                  >
+                    + Agregar
+                  </button>
+                }
+              >
+                <MovimientosSection ref={movRef} causaId={causa.id} userId={userId} naked />
               </CollapsibleSection>
 
-              <CollapsibleSection title="Eventos">
-                <EventosSection causaId={causa.id} naked />
+              <CollapsibleSection
+                title="Eventos"
+                headerAction={
+                  <button
+                    type="button"
+                    onClick={() => evRef.current?.openForm()}
+                    className="cursor-pointer text-[13px] font-semibold text-blue hover:underline"
+                  >
+                    + Agregar
+                  </button>
+                }
+              >
+                <EventosSection ref={evRef} causaId={causa.id} naked />
               </CollapsibleSection>
 
               <CollapsibleSection title="Vencimientos y alertas">

@@ -30,7 +30,7 @@ CREATE POLICY "eventos_select" ON public.eventos
       WHERE c.id = eventos.causa_id
         AND (
           c.user_id = auth.uid()
-          OR EXISTS (SELECT 1 FROM public.causa_shares cs WHERE cs.causa_id = c.id AND cs.user_id = auth.uid())
+          OR EXISTS (SELECT 1 FROM public.causa_shares cs WHERE cs.causa_id = c.id AND cs.shared_with_user_id = auth.uid())
         )
     )
   );
@@ -40,10 +40,10 @@ CREATE POLICY "eventos_insert" ON public.eventos
   FOR INSERT WITH CHECK (
     EXISTS (
       SELECT 1 FROM public.causas c
-      WHERE c.id = causa_id
+      WHERE c.id = eventos.causa_id
         AND (
           c.user_id = auth.uid()
-          OR EXISTS (SELECT 1 FROM public.causa_shares cs WHERE cs.causa_id = c.id AND cs.user_id = auth.uid())
+          OR EXISTS (SELECT 1 FROM public.causa_shares cs WHERE cs.causa_id = c.id AND cs.shared_with_user_id = auth.uid())
         )
     )
   );
@@ -55,7 +55,7 @@ CREATE POLICY "eventos_update" ON public.eventos
       WHERE c.id = eventos.causa_id
         AND (
           c.user_id = auth.uid()
-          OR EXISTS (SELECT 1 FROM public.causa_shares cs WHERE cs.causa_id = c.id AND cs.user_id = auth.uid())
+          OR EXISTS (SELECT 1 FROM public.causa_shares cs WHERE cs.causa_id = c.id AND cs.shared_with_user_id = auth.uid())
         )
     )
   );

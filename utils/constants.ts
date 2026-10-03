@@ -7,6 +7,13 @@ export const FUEROS = [
   "Administrativo",
 ] as const;
 
+export const VIAS_PROCESO = [
+  "Judicial",
+  "Mediación",
+  "Administrativo",
+  "Extrajudicial",
+] as const;
+
 // Tipo del próximo aviso de una causa
 export const TIPOS_AVISO = ["Vencimiento", "Alerta"] as const;
 

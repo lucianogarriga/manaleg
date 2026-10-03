@@ -103,7 +103,7 @@ export default function CalculadoraView({ hoy, inhabiles, causas }: CalculadoraV
                 </div>
                 <div className="grid gap-x-4 sm:grid-cols-2">
                   {resultado.omitidos.map((o) => (
-                    <div key={o.fecha} className="flex items-baseline gap-2 border-b border-slate-100 px-3 py-[6px] text-[13.5px]">
+                    <div key={o.fecha} className="flex items-baseline gap-2 border-b border-border px-3 py-[6px] text-[13.5px]">
                       <span className="w-[92px] shrink-0 font-medium text-text">{formatLongDate(o.fecha).split(" ").slice(0, 3).join(" ")}</span>
                       <span className="truncate text-muted">
                         {o.motivo === "Inhábil" ? (descripciones.get(o.fecha) ?? "Día inhábil") : o.motivo}

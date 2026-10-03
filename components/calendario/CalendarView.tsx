@@ -111,7 +111,7 @@ export default function CalendarView({ hoy, avisos, inhabiles, userId }: Calenda
           </button>
         </div>
 
-        <div className="grid grid-cols-7 border-b border-border bg-bg text-center text-[12px] font-bold tracking-[.4px] text-muted uppercase">
+        <div className="grid grid-cols-7 border-b border-border bg-transparent text-center text-[12px] font-bold tracking-[.4px] text-muted uppercase">
           {DIAS.map((d) => (
             <div key={d} className="py-[6px]">{d}</div>
           ))}
@@ -132,13 +132,35 @@ export default function CalendarView({ hoy, avisos, inhabiles, userId }: Calenda
                 onClick={() => setSelected(activa ? null : fecha)}
                 aria-label={formatLongDate(fecha)}
                 aria-pressed={activa}
-                className={`flex min-h-[64px] cursor-pointer flex-col items-start gap-1 border-r border-b border-slate-100 p-[6px] text-left transition-colors sm:min-h-[76px] ${
-                  !delMes ? "bg-slate-50/70 text-muted" : inh.length ? "bg-[#FFF7ED]" : finde ? "bg-slate-50" : "bg-card hover:bg-blue-lt/50"
-                } ${activa ? "ring-2 ring-blue ring-inset" : ""}`}
+                className={`flex min-h-[64px] cursor-pointer flex-col items-start gap-1 border-r border-b p-[6px] text-left transition-colors duration-150 sm:min-h-[76px] ${activa ? "ring-2 ring-blue ring-inset" : ""}`}
+                style={{
+                  borderColor: "var(--color-border)",
+                  background: !delMes
+                    ? "var(--cal-out)"
+                    : inh.length
+                    ? "var(--cal-inh)"
+                    : finde
+                    ? "var(--cal-wknd)"
+                    : "var(--color-card)",
+                }}
+                onMouseEnter={(e) => {
+                  if (delMes && !inh.length && !finde)
+                    (e.currentTarget as HTMLElement).style.background = "var(--color-blue-lt)";
+                }}
+                onMouseLeave={(e) => {
+                  if (delMes && !inh.length && !finde)
+                    (e.currentTarget as HTMLElement).style.background = "var(--color-card)";
+                }}
               >
                 <span
                   className={`flex h-[24px] min-w-[24px] items-center justify-center rounded-full px-1 text-[13px] font-semibold ${
-                    esHoy ? "bg-blue text-white" : delMes ? "text-text" : "text-muted"
+                    esHoy
+                      ? "bg-blue text-white"
+                      : !delMes
+                      ? "text-muted opacity-40"
+                      : finde
+                      ? "text-sub"
+                      : "text-text"
                   }`}
                 >
                   {Number(fecha.slice(8))}
@@ -168,7 +190,7 @@ export default function CalendarView({ hoy, avisos, inhabiles, userId }: Calenda
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border px-3 py-2 text-[12.5px] text-sub">
           <span className="flex items-center gap-1"><span className="h-[9px] w-[9px] rounded-full bg-red" /> Vencimiento</span>
           <span className="flex items-center gap-1"><span className="h-[9px] w-[9px] rounded-full bg-amb" /> Alerta</span>
-          <span className="flex items-center gap-1"><span className="h-[11px] w-[11px] rounded-[3px] bg-[#FFF7ED] ring-1 ring-amb-bd" /> Día inhábil</span>
+          <span className="flex items-center gap-1"><span className="h-[11px] w-[11px] rounded-[3px] ring-1 ring-amb-bd" style={{ background: "var(--cal-inh)" }} /> Día inhábil</span>
           <span className="ml-auto text-muted">
             Feriados nacionales cargados: {aniosConFeriados.join(", ") || "ninguno"}
           </span>
@@ -259,7 +281,7 @@ function AvisoRow({ aviso, conFecha }: { aviso: AlertaItem; conFecha?: boolean }
   const esAlerta = aviso.tipo === "Alerta";
   const Icon = esAlerta ? Bell : CalendarClock;
   return (
-    <div className="flex items-start gap-2 border-b border-slate-100 px-3 py-[9px] last:border-b-0">
+    <div className="flex items-start gap-2 border-b border-border px-3 py-[9px] last:border-b-0">
       <Icon size={15} className={`mt-[3px] shrink-0 ${esAlerta ? "text-amb" : "text-red"}`} />
       <div className="min-w-0 flex-1">
         <OpenCausaButton causaId={aviso.causaId} className="block max-w-full truncate text-[14px] font-semibold text-text hover:text-blue">
@@ -287,7 +309,7 @@ function InhabilRow({
   conFecha?: boolean;
 }) {
   return (
-    <div className="flex items-start gap-2 border-b border-slate-100 bg-[#FFF7ED]/60 px-3 py-[9px] last:border-b-0">
+    <div className="flex items-start gap-2 border-b border-border px-3 py-[9px] last:border-b-0" style={{ background: "var(--cal-inh)" }}>
       <span className="mt-[6px] h-[9px] w-[9px] shrink-0 rounded-[3px] bg-amb-bd" />
       <div className="min-w-0 flex-1">
         <div className="text-[14px] font-medium text-text">{dia.descripcion}</div>

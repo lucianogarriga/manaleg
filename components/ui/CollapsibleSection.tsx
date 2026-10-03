@@ -20,27 +20,32 @@ export default function CollapsibleSection({
 
   return (
     <div className="mx-4 mb-[6px] overflow-hidden rounded-xl border border-border bg-card shadow-[0_1px_4px_0_rgba(0,0,0,0.06)] last:mb-0">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className={`flex w-full cursor-pointer items-center gap-[10px] px-4 py-[11px] text-left transition-colors ${open ? "bg-card" : "hover:bg-slate-50/80"}`}
+      {/* Fila del header: toggle-button + action separados para evitar button-dentro-de-button */}
+      <div
+        className="flex items-center gap-[10px] px-4 transition-colors duration-150"
+        style={{ background: open ? "var(--color-card)" : undefined }}
+        onMouseEnter={(e) => { if (!open) (e.currentTarget as HTMLElement).style.background = "var(--hover-row)"; }}
+        onMouseLeave={(e) => { if (!open) (e.currentTarget as HTMLElement).style.background = ""; }}
       >
-        <ChevronDown
-          size={14}
-          className={`shrink-0 text-blue/70 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-        />
-        <span className="flex-1 text-[12px] font-bold uppercase tracking-[.5px] text-sub">
-          {title}
-        </span>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="flex flex-1 cursor-pointer items-center gap-[10px] py-[11px] text-left"
+        >
+          <ChevronDown
+            size={14}
+            className={`shrink-0 text-blue/70 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          />
+          <span className="text-[12px] font-bold uppercase tracking-[.5px] text-sub">
+            {title}
+          </span>
+        </button>
         {headerAction && open && (
-          <span
-            onClick={(e) => e.stopPropagation()}
-            className="text-[13px] font-semibold normal-case tracking-normal text-blue hover:underline"
-          >
+          <span className="shrink-0 py-[11px]">
             {headerAction}
           </span>
         )}
-      </button>
+      </div>
 
       <div
         className={`grid transition-[grid-template-rows] duration-200 ${

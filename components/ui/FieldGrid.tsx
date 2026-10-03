@@ -16,7 +16,7 @@ export default function FieldGrid({ fields }: { fields: Field[] }) {
     <div className="grid grid-cols-1 gap-x-[18px] gap-y-[10px] px-[14px] py-3 sm:grid-cols-2">
       {fields.map((f) => (
         <div key={f.label} className={f.full ? "sm:col-span-2" : undefined}>
-          <div className="mb-[2px] text-[10px] font-bold uppercase tracking-[.4px] text-[#1e3a6e]/70">
+          <div className="mb-[2px] text-[10px] font-bold uppercase tracking-[.4px] text-muted">
             {f.label}
           </div>
           <div className={`break-words whitespace-pre-line ${VARIANTS[f.variant ?? "default"]}`}>

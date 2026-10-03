@@ -48,8 +48,8 @@ export default function HonorariosCard({ causaId, naked = false }: { causaId: st
 
   const inner = loading ? (
     <div className="space-y-2 px-[13px] py-[14px]" aria-busy="true">
-      <div className="h-[14px] w-3/5 animate-pulse rounded bg-slate-100" />
-      <div className="h-[5px] w-full animate-pulse rounded bg-slate-100" />
+      <div className="h-[14px] w-3/5 animate-pulse rounded bg-border" />
+      <div className="h-[5px] w-full animate-pulse rounded bg-border" />
     </div>
   ) : error ? (
     <p className="px-[13px] py-4 text-[13px] text-red">No se pudieron cargar los honorarios: {error}</p>
@@ -72,7 +72,7 @@ export default function HonorariosCard({ causaId, naked = false }: { causaId: st
         </div>
       </div>
       {pagos.map((p) => (
-        <div key={p.id} className="group flex items-center gap-2 border-t border-slate-100 px-[14px] py-[5px]">
+        <div key={p.id} className="group flex items-center gap-2 border-t border-border px-[14px] py-[5px]">
           <span className="w-[62px] shrink-0 text-[11px] text-muted">{formatDate(p.fecha_pago)}</span>
           <span className="min-w-0 flex-1 truncate text-[13px] text-sub">{p.descripcion ?? "Pago"}</span>
           {p.comprobante_drive && (

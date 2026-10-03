@@ -23,110 +23,174 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
   const selectCausa = useCausasStore((s) => s.select);
   const [hovered, setHovered] = useState(false);
 
-  // Desktop: collapsed by default, expands on hover.
-  // Mobile: controlled by sidebarOpen drawer.
   const exp = sidebarOpen || hovered;
 
   const pillFor = (item: NavItem) => {
     if (!exp) return null;
     if (item.badge === "causas" && counts.causasActivas > 0)
-      return <span className="ml-auto rounded-[10px] bg-white/10 px-[5px] py-px text-[10.5px] font-bold text-white/70">{counts.causasActivas}</span>;
+      return (
+        <span className="ml-auto rounded-[10px] bg-blue/10 px-[5px] py-px text-[10.5px] font-bold text-blue">
+          {counts.causasActivas}
+        </span>
+      );
     if (item.badge === "vencimientos" && counts.vencimientosProximos > 0)
-      return <span className="ml-auto rounded-[10px] bg-amb px-[5px] py-px text-[10.5px] font-bold text-white">{counts.vencimientosProximos}</span>;
+      return (
+        <span className="ml-auto rounded-[10px] bg-red/10 px-[5px] py-px text-[10.5px] font-bold text-red">
+          {counts.vencimientosProximos}
+        </span>
+      );
     return null;
   };
 
   return (
     <>
+      {/* Backdrop mobile */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-30 bg-navy/40 md:hidden" onClick={closeSidebar} />
+        <div className="fixed inset-0 z-30 bg-black/30 md:hidden" onClick={closeSidebar} />
       )}
 
+      {/* Wrapper — maneja el ancho, sin fondo propio */}
       <aside
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        className={`fixed inset-y-0 left-0 z-40 flex shrink-0 flex-col border-r border-white/5 bg-navy transition-[width,transform] duration-200 ease-in-out md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex shrink-0 flex-col p-2 transition-[width] duration-300 ease-in-out md:static md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } ${exp ? "w-[228px]" : "md:w-[52px]"} w-[228px]`}
+        } ${exp ? "w-[208px]" : "md:w-[56px]"} w-[208px]`}
       >
-        {/* Logo */}
-        <div className={`flex h-[60px] shrink-0 items-center border-b border-white/[.06] overflow-hidden ${exp ? "px-[15px]" : "justify-center px-0"}`}>
-          {exp ? (
-            <div>
-              <div className="text-[15px] font-bold tracking-[.2px] text-white">MANALEG</div>
-              <div className="mt-px text-[11px] text-white/30">{profile.empresa ?? "Gestión Jurídica"}</div>
+        {/* Pill — la superficie flotante */}
+        <div
+          className="flex flex-1 flex-col overflow-hidden rounded-xl"
+          style={{
+            background: "var(--sb-bg)",
+            boxShadow: "var(--sb-shadow)",
+          }}
+        >
+          {/* Logo */}
+          <div
+            className={`flex h-[52px] shrink-0 items-center border-b overflow-hidden ${
+              exp ? "px-[14px] gap-2" : "justify-center px-0"
+            }`}
+            style={{ borderColor: "var(--color-border)" }}
+          >
+            <div
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] text-[13px] font-bold text-white"
+              style={{ background: "var(--color-blue)" }}
+            >
+              M
             </div>
-          ) : (
-            <div className="hidden md:flex h-7 w-7 items-center justify-center rounded-[6px] bg-blue/40 text-[11px] font-bold text-white">M</div>
-          )}
-        </div>
+            {exp && (
+              <span
+                className="whitespace-nowrap text-[14px] font-bold"
+                style={{ color: "var(--color-blue)" }}
+              >
+                MANALEG
+              </span>
+            )}
+          </div>
 
-        {/* Nav */}
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2">
-          {NAV_SECTIONS.map((section, i) => (
-            <div key={section.title} className={i > 0 ? "mt-[6px]" : undefined}>
-              {/* Section title: visible only expanded */}
-              <div className={`overflow-hidden transition-[max-height,opacity] duration-150 ${exp ? "max-h-8 opacity-100" : "max-h-0 opacity-0"}`}>
-                <div className="px-[15px] pt-[10px] pb-1 text-[10px] font-bold uppercase tracking-[.9px] text-white/[.22]">
-                  {section.title}
+          {/* Nav */}
+          <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2">
+            {NAV_SECTIONS.map((section, i) => (
+              <div key={section.title} className={i > 0 ? "mt-1" : undefined}>
+                {/* Título de sección: solo cuando expandido */}
+                <div
+                  className={`overflow-hidden transition-[max-height,opacity] duration-150 ${
+                    exp ? "max-h-8 opacity-100" : "max-h-0 opacity-0"
+                  }`}
+                >
+                  <div
+                    className="px-[13px] pt-[10px] pb-[3px] text-[9px] font-bold uppercase tracking-[.9px]"
+                    style={{ color: "var(--sb-fg)", opacity: 0.5 }}
+                  >
+                    {section.title}
+                  </div>
+                </div>
+
+                {section.items.map((item) => {
+                  const active =
+                    item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      title={!exp ? item.label : undefined}
+                      onClick={() => {
+                        closeSidebar();
+                        if (item.href === "/causas") selectCausa(null);
+                      }}
+                      className={`mx-[5px] my-px flex items-center rounded-[7px] py-[7px] overflow-hidden transition-colors duration-100 ${
+                        exp ? "gap-[9px] pr-3 pl-[10px]" : "justify-center px-0"
+                      }`}
+                      style={{
+                        background: active ? "var(--sb-act-bg)" : "transparent",
+                        color: active ? "var(--sb-act-fg)" : "var(--sb-fg)",
+                      }}
+                    >
+                      <Icon
+                        size={15}
+                        strokeWidth={2}
+                        className="w-4 shrink-0"
+                        style={{ color: active ? "var(--sb-act-fg)" : item.iconColor }}
+                      />
+                      <span
+                        className={`whitespace-nowrap text-[12px] overflow-hidden transition-[opacity,max-width] duration-200 ${
+                          exp ? "opacity-100 max-w-[140px]" : "opacity-0 max-w-0"
+                        } ${active ? "font-semibold" : "font-medium"}`}
+                      >
+                        {item.label}
+                      </span>
+                      {pillFor(item)}
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
+          </nav>
+
+          {/* Footer */}
+          <div className="flex shrink-0 flex-col overflow-hidden pt-2 pb-2 gap-1">
+            {/* Usuario */}
+            <div
+              className={`flex items-center overflow-hidden ${
+                exp ? "gap-[9px] px-[10px]" : "justify-center px-0"
+              }`}
+            >
+              <div
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-bold text-white"
+                style={{ background: "linear-gradient(135deg, #2563eb, #7c3aed)" }}
+              >
+                {getInitials(profile.nombre_completo, profile.email[0]?.toUpperCase())}
+              </div>
+              <div
+                className={`min-w-0 flex-1 overflow-hidden transition-[opacity,max-width] duration-150 ${
+                  exp ? "opacity-100 max-w-[100px]" : "opacity-0 max-w-0"
+                }`}
+              >
+                <div
+                  className="truncate text-[12.5px] font-medium"
+                  style={{ color: "var(--color-text)" }}
+                >
+                  {profile.nombre_completo ?? profile.email}
+                </div>
+                <div className="text-[10.5px]" style={{ color: "var(--sb-fg)" }}>
+                  {profile.plan === "pro" ? "Plan Pro" : "Plan Free"}
                 </div>
               </div>
-              {section.items.map((item) => {
-                const active = pathname.startsWith(item.href);
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    title={!exp ? item.label : undefined}
-                    onClick={() => {
-                      closeSidebar();
-                      if (item.href === "/causas") selectCausa(null);
-                    }}
-                    className={`mx-[6px] my-px flex items-center rounded-[6px] py-[7.5px] transition-colors duration-100 overflow-hidden ${
-                      exp ? "gap-[9px] pr-3 pl-[14px]" : "justify-center px-0"
-                    } ${
-                      active
-                        ? "bg-blue/35 font-semibold text-white"
-                        : "text-white/55 hover:bg-white/[.07] hover:text-white/85"
-                    }`}
+              {exp && (
+                <form action={logout}>
+                  <button
+                    type="submit"
+                    title="Cerrar sesión"
+                    className="flex cursor-pointer rounded p-1 transition-colors"
+                    style={{ color: "var(--sb-fg)" }}
                   >
-                    <Icon size={14} strokeWidth={2} className="w-4 shrink-0" />
-                    <span className={`whitespace-nowrap transition-[opacity,max-width] duration-150 overflow-hidden text-[14.5px] ${exp ? "opacity-100 max-w-[160px]" : "opacity-0 max-w-0"}`}>
-                      {item.label}
-                    </span>
-                    {pillFor(item)}
-                  </Link>
-                );
-              })}
-            </div>
-          ))}
-        </nav>
-
-        {/* Footer: user */}
-        <div className={`flex shrink-0 items-center border-t border-white/[.06] py-[11px] overflow-hidden ${exp ? "gap-[9px] px-[14px]" : "justify-center px-0"}`}>
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-linear-135 from-blue to-pur text-[12.5px] font-bold text-white">
-            {getInitials(profile.nombre_completo, profile.email[0]?.toUpperCase())}
-          </div>
-          <div className={`min-w-0 flex-1 overflow-hidden transition-[opacity,max-width] duration-150 ${exp ? "opacity-100 max-w-[140px]" : "opacity-0 max-w-0"}`}>
-            <div className="truncate text-[13.5px] font-medium text-white/80">
-              {profile.nombre_completo ?? profile.email}
-            </div>
-            <div className="text-[11px] text-white/[.28]">
-              {profile.plan === "pro" ? "Plan Pro" : "Plan Free"}
+                    <LogOut size={13} />
+                  </button>
+                </form>
+              )}
             </div>
           </div>
-          {exp && (
-            <form action={logout}>
-              <button
-                type="submit"
-                title="Cerrar sesión"
-                className="flex cursor-pointer rounded p-1 text-white/30 transition-colors hover:bg-white/[.07] hover:text-white/80"
-              >
-                <LogOut size={13} />
-              </button>
-            </form>
-          )}
         </div>
       </aside>
     </>

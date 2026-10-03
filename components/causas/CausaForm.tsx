@@ -7,7 +7,7 @@ import Modal from "@/components/ui/Modal";
 import { FormSection, SelectField, TextAreaField, TextField } from "@/components/ui/FormControls";
 import { useCausasStore } from "@/store/causasStore";
 import { useUIStore } from "@/store/uiStore";
-import { ANTICIPACION_ALERTA, ESTADOS_CAUSA, FUEROS, TIPOS_AVISO } from "@/utils/constants";
+import { ANTICIPACION_ALERTA, ESTADOS_CAUSA, FUEROS, TIPOS_AVISO, VIAS_PROCESO } from "@/utils/constants";
 import type { ClienteOption } from "@/services/supabase/clientes";
 import type { CausaConRelaciones } from "@/types";
 
@@ -121,6 +121,7 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
           </div>
           <TextField label="Nro expediente" name="nro_expediente" defaultValue={v?.nro_expediente ?? ""} placeholder="2024-0042581" />
           <SelectField label="Estado" name="estado" options={ESTADOS_CAUSA} defaultValue={v?.estado ?? "Iniciada"} />
+          <SelectField label="Vía de proceso" name="via_proceso" options={VIAS_PROCESO} placeholder="Seleccionar…" defaultValue={v?.via_proceso ?? ""} />
           <SelectField label="Fuero" name="fuero" options={FUEROS} placeholder="Seleccionar…" defaultValue={v?.fuero ?? ""} />
           <TextField label="Tipo de juicio" name="tipo_juicio" defaultValue={v?.tipo_juicio ?? ""} placeholder="Despido, daños y perjuicios…" />
           <TextField label="Juzgado / Cámara" name="juzgado_camara" defaultValue={v?.juzgado_camara ?? ""} placeholder="Cámara 6°" />

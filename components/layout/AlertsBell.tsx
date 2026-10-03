@@ -158,7 +158,7 @@ function AlertasTab({ alertas, onOpen }: { alertas: AlertaItem[]; onOpen: (causa
                   key={a.causaId}
                   type="button"
                   onClick={() => onOpen(a.causaId)}
-                  className="flex w-full cursor-pointer items-start gap-[9px] border-b border-slate-100 px-[13px] py-[9px] text-left hover:bg-bg"
+                  className="flex w-full cursor-pointer items-start gap-[9px] border-b border-border px-[13px] py-[9px] text-left hover:bg-bg"
                 >
                   <span className={`mt-[7px] h-[8px] w-[8px] shrink-0 rounded-full ${URGENCY_DOT[urgency]}`} />
                   <span className="min-w-0 flex-1">
@@ -206,7 +206,7 @@ function ColegasTab({
   return (
     <>
       {sinLeer > 0 && (
-        <div className="flex justify-end border-b border-slate-100 px-[13px] py-[6px]">
+        <div className="flex justify-end border-b border-border px-[13px] py-[6px]">
           <button type="button" onClick={onMarkAll} className="cursor-pointer text-[12.5px] font-semibold text-blue hover:underline">
             Marcar todas como leídas
           </button>
@@ -219,7 +219,7 @@ function ColegasTab({
             key={n.id}
             type="button"
             onClick={() => onOpen(n)}
-            className={`flex w-full cursor-pointer items-start gap-[9px] border-b border-slate-100 px-[13px] py-[10px] text-left hover:bg-bg ${
+            className={`flex w-full cursor-pointer items-start gap-[9px] border-b border-border px-[13px] py-[10px] text-left hover:bg-bg ${
               n.leida ? "" : "bg-blue-lt/60"
             }`}
           >
