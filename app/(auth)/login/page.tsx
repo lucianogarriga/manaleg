@@ -80,8 +80,8 @@ export default function LoginPage() {
 
       <form action={action} className="space-y-5">
         <div className="mb-2">
-          <h1 className="text-[24px] font-bold text-text">Bienvenido</h1>
-          <p className="mt-1 text-[13.5px] text-muted">Ingresá a tu cuenta para continuar</p>
+          <h1 className="text-[24px] font-bold" style={{ color: "#0f172a" }}>Bienvenido</h1>
+          <p className="mt-1 text-[13.5px]" style={{ color: "#94a3b8" }}>Ingresá a tu cuenta para continuar</p>
         </div>
 
         <FormAlert state={state} />
@@ -110,9 +110,9 @@ export default function LoginPage() {
           Ingresar
         </SubmitButton>
 
-        <p className="pt-1 text-center text-[13px] text-sub">
+        <p className="pt-1 text-center text-[13px]" style={{ color: "#64748b" }}>
           ¿No tenés cuenta?{" "}
-          <Link href="/register" className="font-semibold text-blue hover:underline">
+          <Link href="/register" className="font-semibold hover:underline" style={{ color: "#2563eb" }}>
             Registrate gratis
           </Link>
         </p>

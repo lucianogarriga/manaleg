@@ -15,11 +15,11 @@ export default function RegisterPage() {
     return (
       <div className="space-y-4">
         <div className="mb-2">
-          <h1 className="text-[24px] font-bold text-text">Revisá tu email</h1>
-          <p className="mt-1 text-[13.5px] text-muted">Te enviamos un link de confirmación.</p>
+          <h1 className="text-[24px] font-bold" style={{ color: "#0f172a" }}>Revisá tu email</h1>
+          <p className="mt-1 text-[13.5px]" style={{ color: "#94a3b8" }}>Te enviamos un link de confirmación.</p>
         </div>
         <FormAlert state={state} />
-        <Link href="/login" className="block text-center text-[13px] font-semibold text-blue hover:underline">
+        <Link href="/login" className="block text-center text-[13px] font-semibold hover:underline" style={{ color: "#2563eb" }}>
           Volver a ingresar
         </Link>
       </div>
@@ -29,8 +29,8 @@ export default function RegisterPage() {
   return (
     <form action={action} className="space-y-5">
       <div className="mb-2">
-        <h1 className="text-[24px] font-bold text-text">Crear cuenta</h1>
-        <p className="mt-1 text-[13.5px] text-muted">Empezá a gestionar tus causas hoy</p>
+        <h1 className="text-[24px] font-bold" style={{ color: "#0f172a" }}>Crear cuenta</h1>
+        <p className="mt-1 text-[13.5px]" style={{ color: "#94a3b8" }}>Empezá a gestionar tus causas hoy</p>
       </div>
 
       <FormAlert state={state} />
@@ -79,9 +79,9 @@ export default function RegisterPage() {
         Crear cuenta
       </SubmitButton>
 
-      <p className="pt-1 text-center text-[13px] text-sub">
+      <p className="pt-1 text-center text-[13px]" style={{ color: "#64748b" }}>
         ¿Ya tenés cuenta?{" "}
-        <Link href="/login" className="font-semibold text-blue hover:underline">
+        <Link href="/login" className="font-semibold hover:underline" style={{ color: "#2563eb" }}>
           Ingresá
         </Link>
       </p>
