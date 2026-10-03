@@ -182,34 +182,83 @@ function armarAsunto(causas: CausaConAviso[], hoy: string): string {
 
 function armarHtml(perfil: Destinatario, causas: CausaConAviso[], hoy: string): string {
   const appUrl = process.env.APP_URL;
-  const saludo = perfil.nombre_completo ? `Hola ${escapeHtml(perfil.nombre_completo)},` : "Hola,";
+  const nombre = perfil.nombre_completo ? escapeHtml(perfil.nombre_completo) : null;
+  const saludo = nombre ? `Hola, ${nombre}` : "Hola";
+  const resumen = causas.length === 1 ? "un vencimiento" : `${causas.length} vencimientos`;
 
-  const filas = causas
+  const cards = causas
     .map((c) => {
       const esAlerta = c.tipo_vencimiento === "Alerta";
-      const color = esAlerta ? "#B45309" : "#B91C1C";
+      const borderColor  = esAlerta ? "#D97706" : "#DC2626";
+      const bgColor      = esAlerta ? "#FFFDF5"  : "#FFFAFA";
+      const wrapBorder   = esAlerta ? "#FDE68A"  : "#FEE2E2";
+      const labelBg      = esAlerta ? "#FEF3C7"  : "#FEE2E2";
+      const labelColor   = esAlerta ? "#B45309"  : "#B91C1C";
+      const chipText     = esAlerta ? "ALERTA"   : "VENCIMIENTO";
+      const tipoTexto    = esAlerta ? "Alerta"   : "Vence";
+      const fechaTexto   = escapeHtml(cuando(c.proximo_vencimiento, hoy));
+      const motivo       = c.motivo_vencimiento ? ` · ${escapeHtml(c.motivo_vencimiento)}` : "";
+      const expte        = c.nro_expediente
+        ? `<div style="font-family:monospace;font-size:11px;color:#94A3B8;margin-bottom:6px">${escapeHtml(c.nro_expediente)}</div>`
+        : "";
       return `
-        <tr>
-          <td style="padding:12px 14px;border-bottom:1px solid #DDE3ED">
-            <div style="font-size:15px;font-weight:600;color:#0F172A">${escapeHtml(c.caratula)}</div>
-            ${c.nro_expediente ? `<div style="font-size:12px;color:#94A3B8;font-family:monospace">${escapeHtml(c.nro_expediente)}</div>` : ""}
-            <div style="margin-top:4px;font-size:14px;color:${color};font-weight:600">${esAlerta ? "Alerta" : "Vencimiento"} ${escapeHtml(cuando(c.proximo_vencimiento, hoy))}${c.motivo_vencimiento ? ` — ${escapeHtml(c.motivo_vencimiento)}` : ""}</div>
-          </td>
-        </tr>`;
+        <div style="border:1px solid ${wrapBorder};border-left:4px solid ${borderColor};border-radius:8px;padding:14px 16px;margin-bottom:10px;background:${bgColor}">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
+            <td style="vertical-align:top">
+              <div style="font-size:14px;font-weight:700;color:#0F172A;margin-bottom:3px;line-height:1.3">${escapeHtml(c.caratula)}</div>
+              ${expte}
+              <div style="font-size:13px;color:${labelColor};font-weight:600">${tipoTexto} ${fechaTexto}${motivo}</div>
+            </td>
+            <td style="vertical-align:top;padding-left:10px;white-space:nowrap">
+              <span style="display:inline-block;background:${labelBg};color:${labelColor};font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px">${chipText}</span>
+            </td>
+          </tr></table>
+        </div>`;
     })
     .join("");
 
+  const ctaBtn = appUrl
+    ? `<p style="margin:22px 0 0"><a href="${escapeHtml(appUrl)}/causas" style="display:inline-block;background:#2563EB;color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:11px 22px;border-radius:8px;letter-spacing:.1px">Abrir MANALEG →</a></p>`
+    : "";
+
+  const settingsUrl = appUrl ? `${escapeHtml(appUrl)}` : "#";
+
   return `<!doctype html>
-<html lang="es"><body style="margin:0;background:#EBF0F7;padding:24px;font-family:-apple-system,'Segoe UI',Roboto,sans-serif">
-  <div style="max-width:520px;margin:0 auto">
-    <div style="background:#0D1B30;color:#fff;padding:14px 18px;border-radius:8px 8px 0 0;font-weight:700;letter-spacing:.2px">MANALEG</div>
-    <div style="background:#fff;border:1px solid #DDE3ED;border-top:0;border-radius:0 0 8px 8px;padding:18px">
-      <p style="margin:0 0 4px;font-size:15px;color:#0F172A">${saludo}</p>
-      <p style="margin:0 0 14px;font-size:14px;color:#475569">Tenés ${causas.length === 1 ? "un aviso próximo" : `${causas.length} avisos próximos`}:</p>
-      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #DDE3ED;border-radius:7px;border-collapse:separate">${filas}</table>
-      ${appUrl ? `<p style="margin:16px 0 0"><a href="${escapeHtml(appUrl)}/causas" style="display:inline-block;background:#1D4ED8;color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:9px 16px;border-radius:6px">Abrir MANALEG</a></p>` : ""}
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:32px 16px;background:#F1F5F9;font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif">
+  <div style="max-width:560px;margin:0 auto">
+
+    <!-- Header -->
+    <div style="background:#0F1F3D;border-radius:12px 12px 0 0;padding:20px 28px">
+      <table role="presentation" cellspacing="0" cellpadding="0"><tr>
+        <td style="vertical-align:middle;padding-right:12px">
+          <div style="width:32px;height:32px;background:#2563EB;border-radius:8px;text-align:center;line-height:32px;font-weight:800;font-size:15px;color:#fff;letter-spacing:-.3px">M</div>
+        </td>
+        <td style="vertical-align:middle">
+          <span style="font-size:15px;font-weight:700;color:#fff;letter-spacing:.4px">MANALEG</span>
+        </td>
+      </tr></table>
     </div>
-    <p style="text-align:center;font-size:12px;color:#94A3B8;margin:14px 0 0">Aviso automático de MANALEG.</p>
+
+    <!-- Body -->
+    <div style="background:#fff;border:1px solid #DDE3ED;border-top:0;border-radius:0 0 12px 12px;padding:28px">
+      <p style="margin:0 0 6px;font-size:16px;font-weight:600;color:#0F172A">${saludo}</p>
+      <p style="margin:0 0 22px;font-size:14px;color:#64748B;line-height:1.55">Tenés <strong style="color:#0F172A">${resumen}</strong> para el próximo día hábil.</p>
+      ${cards}
+      ${ctaBtn}
+    </div>
+
+    <!-- Footer -->
+    <div style="padding:16px 0 0;text-align:center">
+      <p style="margin:0 0 4px;font-size:12px;color:#94A3B8">Este email fue generado automáticamente por MANALEG.</p>
+      <p style="margin:0;font-size:12px;color:#94A3B8">
+        Podés desactivar estas alertas desde <a href="${settingsUrl}" style="color:#2563EB;text-decoration:none">tu configuración</a>
+        &nbsp;·&nbsp;
+        <a href="mailto:contacto@manaleg.com.ar" style="color:#94A3B8;text-decoration:none">contacto@manaleg.com.ar</a>
+      </p>
+    </div>
+
   </div>
 </body></html>`;
 }

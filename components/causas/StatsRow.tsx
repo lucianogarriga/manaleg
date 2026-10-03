@@ -45,7 +45,7 @@ export default function StatsRow({ causas }: { causas: CausaConRelaciones[] }) {
   }).length;
 
   return (
-    <div className="flex gap-[10px] px-[14px] pt-[14px] pb-[10px]">
+    <div className="grid grid-cols-2 gap-[10px] px-[14px] pt-[14px] pb-[10px] sm:grid-cols-4">
       <StatCard label="Vencen hoy / vencidas" value={venceHoyOVencida} variant="red" />
       <StatCard label="Vencen en 3 días" value={venceEn3} variant="amb" />
       <StatCard label="Sin movimiento +7d" value={sinMovimiento} variant="muted" />
