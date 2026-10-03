@@ -169,6 +169,39 @@
   }
 }
 
+/* ─── AUTH TRANSITION ANIMATION ─── */
+@keyframes auth-glow-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.12); }
+}
+@keyframes auth-glow-pulse-2 {
+  0%, 100% { opacity: 0.3; transform: scale(1.1); }
+  50%       { opacity: 0.7; transform: scale(0.95); }
+}
+@keyframes auth-fade-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes auth-logo-glow {
+  0%, 100% { box-shadow: 0 0 24px rgba(37,99,235,.35); }
+  50%       { box-shadow: 0 0 48px rgba(37,99,235,.6), 0 0 80px rgba(37,99,235,.2); }
+}
+@keyframes auth-dots {
+  0%   { content: "Preparando tu espacio"; }
+  25%  { content: "Preparando tu espacio."; }
+  50%  { content: "Preparando tu espacio.."; }
+  75%  { content: "Preparando tu espacio..."; }
+}
+
+.auth-glow-1 { animation: auth-glow-pulse   2.4s ease-in-out infinite; }
+.auth-glow-2 { animation: auth-glow-pulse-2 2.4s ease-in-out infinite 0.4s; }
+.auth-fade-in { animation: auth-fade-in 0.5s ease forwards; }
+.auth-logo    { animation: auth-logo-glow 2s ease-in-out infinite; }
+.auth-dots::after {
+  content: "";
+  animation: auth-dots 1.8s steps(1) infinite;
+}
+
 /* Scrollbars finos */
 ::-webkit-scrollbar       { width: 6px; }
 ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }

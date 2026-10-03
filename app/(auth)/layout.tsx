@@ -1,83 +1,76 @@
-import { Scale, BellDot, Users, ShieldCheck } from "lucide-react";
+import { Scale, BellDot, Users, FileText } from "lucide-react";
 
 const FEATURES = [
   {
-    icon: Scale,
-    title: "Expedientes organizados",
-    desc: "Todas tus causas y datos procesales en un solo lugar.",
+    icon: FileText,
+    title: "Todos tus expedientes, sin caos",
+    desc: "Seguí el estado de cada causa, cargá movimientos y tenés todo en un solo lugar.",
   },
   {
     icon: BellDot,
-    title: "Alertas automáticas",
-    desc: "Nunca pierdas un vencimiento. Configurá avisos con anticipación.",
+    title: "Nunca más un vencimiento perdido",
+    desc: "Alertas automáticas con la anticipación que vos elegís. Siempre un paso adelante.",
   },
   {
     icon: Users,
-    title: "Trabajo en equipo",
-    desc: "Compartí causas con colegas y gestioná accesos.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Seguro y privado",
-    desc: "Tus datos cifrados, accesibles solo para vos.",
+    title: "Tu equipo, sincronizado",
+    desc: "Delegá causas a colegas, gestioná accesos y trabajen juntos sin pisarse.",
   },
 ];
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="flex min-h-screen">
+    /* data-theme="light" fuerza colores claros en la pantalla de auth
+       independientemente del modo del sistema operativo */
+    <main className="flex min-h-screen" data-theme="light">
       {/* ── Panel izquierdo — marca ── */}
       <div
-        className="relative hidden flex-col justify-between overflow-hidden px-10 py-12 md:flex"
+        className="relative hidden flex-col justify-between overflow-hidden px-11 py-12 md:flex"
         style={{
           width: "44%",
-          background: "linear-gradient(160deg, #0f2460 0%, #1e3a8a 45%, #1d4ed8 100%)",
+          background: "linear-gradient(160deg, #0a1628 0%, #0f2460 28%, #1e3a8a 62%, #2563eb 100%)",
         }}
       >
-        {/* Fondo geométrico sutil */}
-        <svg
-          className="pointer-events-none absolute inset-0 h-full w-full opacity-[.06]"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <defs>
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#grid)" />
-        </svg>
-        {/* Círculo decorativo */}
+        {/* Orbe grande inferior-derecha */}
         <div
-          className="pointer-events-none absolute -bottom-32 -right-32 h-[420px] w-[420px] rounded-full opacity-[.08]"
-          style={{ background: "radial-gradient(circle, #93c5fd, transparent 70%)" }}
+          className="pointer-events-none absolute -bottom-48 -right-48 h-[560px] w-[560px] rounded-full"
+          style={{ background: "radial-gradient(circle, rgba(147,197,253,.13) 0%, transparent 65%)" }}
+        />
+        {/* Orbe pequeño superior */}
+        <div
+          className="pointer-events-none absolute top-0 left-1/2 h-[260px] w-[260px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{ background: "radial-gradient(circle, rgba(191,219,254,.08) 0%, transparent 70%)" }}
         />
 
-        {/* Logo */}
-        <div className="relative flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-white/15 backdrop-blur-sm">
-            <Scale size={18} strokeWidth={2} className="text-white" />
+        {/* Logo — solo icono + nombre, sin nada a la izquierda del texto */}
+        <div className="relative">
+          <div className="mb-2 flex h-[38px] w-[38px] items-center justify-center rounded-[10px] bg-white/15">
+            <Scale size={19} strokeWidth={2} className="text-white" />
           </div>
-          <span className="text-[18px] font-bold tracking-wide text-white">Manaleg</span>
+          <span className="text-[22px] font-bold tracking-[.5px] text-white">MANALEG</span>
         </div>
 
-        {/* Headline */}
+        {/* Headline + features */}
         <div className="relative">
-          <h1 className="mb-3 text-[32px] font-bold leading-[1.2] text-white">
-            Gestión legal<br />inteligente
+          <p className="mb-2 text-[11.5px] font-semibold uppercase tracking-[1.4px] text-blue-300/60">
+            El CRM legal que necesitás
+          </p>
+          <h1 className="mb-4 text-[28px] font-bold leading-[1.22] text-white">
+            Tu manager de causas,<br />siempre al día
           </h1>
-          <p className="mb-10 text-[15px] leading-relaxed text-blue-200/80">
-            La plataforma para estudios jurídicos que quieren trabajar con claridad y sin perder el control.
+          <p className="mb-10 max-w-[300px] text-[13.5px] leading-[1.65] text-blue-100/70">
+            Organizá tu estudio jurídico, seguí cada expediente y nunca más pierdas el hilo de lo que pasa en tu cartera de clientes.
           </p>
 
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-[20px]">
             {FEATURES.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="flex items-start gap-4">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] bg-white/12">
-                  <Icon size={15} strokeWidth={2} className="text-blue-200" />
+              <div key={title} className="flex items-start gap-[14px]">
+                <div className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[7px] bg-white/10 ring-1 ring-white/[.08]">
+                  <Icon size={14} strokeWidth={2} className="text-blue-200" />
                 </div>
                 <div>
-                  <div className="text-[13.5px] font-semibold text-white">{title}</div>
-                  <div className="text-[12.5px] leading-snug text-blue-200/70">{desc}</div>
+                  <div className="text-[13px] font-semibold leading-tight text-white">{title}</div>
+                  <div className="mt-[3px] text-[12px] leading-snug text-blue-200/60">{desc}</div>
                 </div>
               </div>
             ))}
@@ -85,27 +78,27 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         {/* Footer */}
-        <div className="relative text-[11px] text-blue-300/60">
+        <div className="relative text-[11px] text-blue-300/40">
           © {new Date().getFullYear()} Manaleg · Todos los derechos reservados
         </div>
       </div>
 
-      {/* ── Panel derecho — formulario ── */}
-      <div className="flex flex-1 flex-col items-center justify-center bg-bg px-6 py-12">
+      {/* ── Panel derecho — card flotante (fondo neutro) ── */}
+      <div className="flex flex-1 flex-col items-center justify-center bg-[#f0f4f8] px-6 py-12">
         {/* Logo solo en mobile */}
-        <div className="mb-8 flex flex-col items-center gap-2 md:hidden">
+        <div className="mb-6 flex flex-col items-center gap-2 md:hidden">
           <div className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-blue">
             <Scale size={20} strokeWidth={2} className="text-white" />
           </div>
-          <div className="text-[17px] font-bold text-text">Manaleg</div>
+          <div className="text-[17px] font-bold text-[#0f172a]">MANALEG</div>
         </div>
 
-        <div className="w-full max-w-[400px]">
-          <div className="rounded-2xl border border-border bg-card px-8 py-9 shadow-sm">
+        <div className="w-full max-w-[390px]">
+          <div className="rounded-2xl border border-[#e2e8f0] bg-white p-8 shadow-[0_4px_24px_rgba(0,0,0,.08)]">
             {children}
           </div>
-          <p className="mt-5 text-center text-[12px] text-muted">
-            Plataforma segura · Datos protegidos
+          <p className="mt-5 text-center text-[11.5px] text-[#94a3b8]">
+            Plataforma segura · Tus datos siempre protegidos
           </p>
         </div>
       </div>
