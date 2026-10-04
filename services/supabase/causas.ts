@@ -11,6 +11,10 @@ const CAUSA_SELECT = `
   causa_shares(id)
 `;
 
+// Límite conservador mientras no exista paginación del lado del servidor.
+// Un abogado con > 500 causas activas necesitará paginación real (TODO).
+const CAUSAS_LIMIT = 500;
+
 export async function getCausas(): Promise<CausaConRelaciones[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -18,6 +22,7 @@ export async function getCausas(): Promise<CausaConRelaciones[]> {
     .select(CAUSA_SELECT)
     .order("proximo_vencimiento", { ascending: true, nullsFirst: false })
     .order("updated_at", { ascending: false })
+    .limit(CAUSAS_LIMIT)
     .returns<CausaConRelaciones[]>();
 
   if (error) throw new Error(`No se pudieron cargar las causas: ${error.message}`);

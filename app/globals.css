@@ -152,8 +152,12 @@
 @layer base {
   body {
     @apply bg-bg font-sans text-text;
-    font-size: 15px;
+    font-size: 14px;
     transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  @media (min-width: 640px) {
+    body { font-size: 15px; }
   }
 
   /* Transición suave al cambiar tema en todos los elementos */

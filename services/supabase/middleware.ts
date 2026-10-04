@@ -27,8 +27,10 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  // No meter código entre createServerClient y getClaims:
-  // getClaims es lo que valida y refresca el token.
+  // getClaims() valida y refresca el token desde la cookie local sin hacer un
+  // round-trip a Supabase Auth. Usar getUser() solo cuando se necesite verificar
+  // el estado real del usuario en el servidor (ej.: revocar sesiones al vuelo).
+  // En el middleware se prefiere getClaims() por rendimiento.
   const { data } = await supabase.auth.getClaims();
   const isLoggedIn = Boolean(data?.claims);
 
@@ -37,7 +39,7 @@ export async function updateSession(request: NextRequest) {
   const isPublic = PUBLIC_PREFIXES.some((p) => path.startsWith(p));
 
   if (!isLoggedIn && !isPublic) return redirectTo(request, response, "/login");
-  if (isLoggedIn && isAuthPage) return redirectTo(request, response, "/causas");
+  if (isLoggedIn && isAuthPage) return redirectTo(request, response, "/");
 
   return response;
 }
