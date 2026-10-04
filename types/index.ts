@@ -43,6 +43,7 @@ export interface Profile {
   empresa: string | null;
   plan: "free" | "pro";
   estado_pago: "activo" | "vencido" | "prueba";
+  causas_max: number;
   notificaciones_email: boolean;
   tyc_accepted_at: string | null;
   created_at: string;

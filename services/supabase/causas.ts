@@ -73,6 +73,25 @@ export async function getCausaById(id: string): Promise<CausaConRelaciones | nul
 // user_id y ultimo_editor_id los completa la base (default auth.uid() / trigger)
 export async function createCausa(input: CausaInput) {
   const supabase = await createClient();
+
+  // Verificar límite del plan antes de insertar
+  const [countResult, profileResult] = await Promise.all([
+    supabase.from("causas").select("id", { count: "exact", head: true }),
+    supabase.from("profiles").select("causas_max").single<{ causas_max: number }>(),
+  ]);
+
+  const total = countResult.count ?? 0;
+  const max = profileResult.data?.causas_max ?? 100;
+
+  if (total >= max) {
+    return {
+      data: null,
+      error: {
+        message: `Alcanzaste el límite de ${max} causas de tu plan actual. Contactá al equipo de MANALEG para ampliar tu límite.`,
+      },
+    } as const;
+  }
+
   return supabase.from("causas").insert(input).select("id").single<{ id: string }>();
 }
 

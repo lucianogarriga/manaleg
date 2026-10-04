@@ -10,5 +10,12 @@ export default async function CausasPage() {
     getClienteOptions(),
   ]);
 
-  return <CausasView causas={causas} clientes={clientes} userId={profile.id} />;
+  return (
+    <CausasView
+      causas={causas}
+      clientes={clientes}
+      userId={profile.id}
+      causasMax={profile.causas_max}
+    />
+  );
 }

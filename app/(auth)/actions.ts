@@ -30,7 +30,7 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
 
   if (error) return { error: traducirError(error.message), values };
 
-  redirect("/causas");
+  redirect("/");
 }
 
 export async function register(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -66,7 +66,7 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
   if (error) return { error: traducirError(error.message), values };
 
   // Si "Confirm email" está desactivado en Supabase, ya hay sesión
-  if (data.session) redirect("/causas");
+  if (data.session) redirect("/");
 
   return {
     message: `Te enviamos un email a ${email}. Confirmá tu cuenta desde el link para poder ingresar.`,

@@ -21,10 +21,14 @@ interface CausasViewProps {
   causas: CausaConRelaciones[];
   clientes: ClienteOption[];
   userId: string;
+  causasMax: number;
 }
 
-export default function CausasView({ causas, clientes, userId }: CausasViewProps) {
+export default function CausasView({ causas, clientes, userId, causasMax }: CausasViewProps) {
   const { causas: visibles, total } = useCausas(causas, userId);
+  // Solo causas propias cuentan para el límite (las compartidas no son del usuario)
+  const causasPropias = causas.filter((c) => c.user_id === userId).length;
+  const atLimit = causasPropias >= causasMax;
   const selectedId = useCausasStore((s) => s.selectedId);
   const formOpen = useCausasStore((s) => s.formOpen);
   const editingId = useCausasStore((s) => s.editingId);
@@ -59,8 +63,9 @@ export default function CausasView({ causas, clientes, userId }: CausasViewProps
         >
           <button
             type="button"
-            onClick={openCreate}
-            className="cursor-pointer rounded-[6px] bg-blue px-4 py-[7px] text-[14px] font-semibold text-white hover:opacity-90"
+            onClick={atLimit ? undefined : openCreate}
+            disabled={atLimit}
+            className="cursor-pointer rounded-[6px] bg-blue px-4 py-[7px] text-[14px] font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             + Nueva causa
           </button>
@@ -69,11 +74,18 @@ export default function CausasView({ causas, clientes, userId }: CausasViewProps
         <div className="flex h-full flex-col overflow-hidden">
           <StatsRow causas={causas} />
 
-          {/* FilterChips + toggle de vista */}
+          {/* FilterChips + badge de uso + toggle de vista */}
           <div className="flex items-center gap-2 pr-3">
             <div className="flex-1">
               <FilterChips total={total} />
             </div>
+            <span
+              className="shrink-0 text-[11px] tabular-nums"
+              style={{ color: atLimit ? "#dc2626" : "var(--color-muted)" }}
+              title={`${causasPropias} de ${causasMax} causas usadas`}
+            >
+              {causasPropias}/{causasMax}
+            </span>
             <div
               className="flex shrink-0 items-center gap-[2px] rounded-[7px] p-[3px]"
               style={{ background: "var(--color-border)" }}
@@ -149,7 +161,13 @@ export default function CausasView({ causas, clientes, userId }: CausasViewProps
 
       {selected && <CausaModal causa={selected} userId={userId} />}
 
-      {total > 0 && <FAB onClick={openCreate} label="Nueva causa" />}
+      {total > 0 && (
+        <FAB
+          onClick={atLimit ? undefined : openCreate}
+          label={atLimit ? `Límite alcanzado (${causasMax})` : "Nueva causa"}
+          disabled={atLimit}
+        />
+      )}
       {formOpen && (
         <CausaForm key={editingId ?? "new"} causa={editing} clientes={clientes} userId={userId} />
       )}

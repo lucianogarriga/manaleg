@@ -55,7 +55,7 @@ export async function guardarEvento(
     } else {
       await createEvento(causaId, input);
     }
-    revalidatePath(`/causas`);
+    revalidatePath("/", "layout");
     return { message: eventoId ? "Evento actualizado." : "Evento agregado." };
   } catch (e) {
     return { error: (e as Error).message };
@@ -65,7 +65,7 @@ export async function guardarEvento(
 export async function eliminarEvento(id: string): Promise<ActionResult> {
   try {
     await deleteEvento(id);
-    revalidatePath(`/causas`);
+    revalidatePath("/", "layout");
     return { message: "Evento eliminado." };
   } catch (e) {
     return { error: (e as Error).message };
