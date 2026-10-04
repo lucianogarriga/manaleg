@@ -104,7 +104,7 @@ export default function CausaModal({ causa, userId }: Props) {
       {/* Modal: 97vh en mobile, 95vh en desktop — siempre flotando sobre el backdrop */}
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         <div
-          className="relative flex h-[95vh] w-[calc(100%-16px)] flex-col overflow-hidden rounded-xl bg-bg shadow-2xl md:h-[92vh] md:w-[95%] md:rounded-2xl"
+          className="relative flex h-[92dvh] w-[calc(100%-16px)] flex-col overflow-hidden rounded-xl bg-bg shadow-2xl md:w-[95%] md:rounded-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header fijo */}

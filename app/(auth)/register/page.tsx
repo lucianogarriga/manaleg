@@ -82,7 +82,7 @@ export default function RegisterPage() {
           name="tyc"
           value="on"
           required
-          className="mt-[3px] h-[15px] w-[15px] shrink-0 cursor-pointer accent-[#2563eb]"
+          className="mt-[3px] h-[15px] w-[15px] shrink-0 cursor-pointer rounded-[3px] border border-[#cbd5e1] bg-white accent-[#2563eb] checked:border-[#2563eb]"
         />
         <span className="text-[12.5px] leading-[1.5]" style={{ color: "#64748b" }}>
           Leí y acepto los{" "}

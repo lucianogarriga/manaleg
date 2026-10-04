@@ -20,7 +20,7 @@ const FEATURES = [
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main className="flex min-h-screen" data-theme="light">
+    <main className="flex min-h-dvh" data-theme="light">
       {/* ── Panel izquierdo — marca ── */}
       <div
         className="relative hidden flex-col justify-between overflow-hidden px-10 py-10 md:flex"
@@ -81,7 +81,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       {/* ── Panel derecho — card flotante sobre fondo claro ── */}
-      <div className="flex flex-1 flex-col items-center justify-center px-6 py-12" style={{ background: "#f0f4f8" }}>
+      <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-8" style={{ background: "#f0f4f8" }}>
         {/* Logo solo en mobile */}
         <div className="mb-6 flex flex-col items-center gap-2 md:hidden">
           <div className="flex h-10 w-10 items-center justify-center rounded-[10px]" style={{ background: "#2563eb" }}>

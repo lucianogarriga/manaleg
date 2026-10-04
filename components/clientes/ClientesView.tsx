@@ -61,7 +61,7 @@ export default function ClientesView({ clientes }: ClientesViewProps) {
 
   return (
     <>
-      <div className="overflow-y-auto px-4 py-4 md:px-6">
+      <div className="overflow-y-auto px-4 py-4 pb-20 md:px-6 md:pb-4">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-[16px] font-bold text-text">
             {clientes.length} {clientes.length === 1 ? "cliente" : "clientes"}

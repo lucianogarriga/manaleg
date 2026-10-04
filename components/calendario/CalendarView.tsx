@@ -86,7 +86,7 @@ export default function CalendarView({ hoy, avisos, inhabiles, userId }: Calenda
   };
 
   return (
-    <div className="mx-auto flex max-w-[1100px] flex-col gap-3 p-3 md:flex-row">
+    <div className="mx-auto flex max-w-[1100px] flex-col gap-3 p-3 pb-20 md:flex-row md:pb-3">
       {/* ── Calendario ── */}
       <section className="min-w-0 flex-1 overflow-hidden rounded-[7px] border border-border bg-card">
         <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2">

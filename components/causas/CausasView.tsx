@@ -109,7 +109,7 @@ export default function CausasView({ causas, clientes, userId }: CausasViewProps
 
           {/* Lista o grid */}
           {viewMode === "list" ? (
-            <div className="flex-1 overflow-y-auto py-1">
+            <div className="flex-1 overflow-y-auto py-1 pb-16">
               {visibles.map((causa) => (
                 <CausaRow
                   key={causa.id}
@@ -126,7 +126,7 @@ export default function CausasView({ causas, clientes, userId }: CausasViewProps
               )}
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto p-3">
+            <div className="flex-1 overflow-y-auto p-3 pb-16">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {visibles.map((causa) => (
                   <CausaCard

@@ -104,7 +104,7 @@ export default function VencimientosView({ items }: VencimientosViewProps) {
   const total = items.length;
 
   return (
-    <div className="overflow-y-auto py-4">
+    <div className="overflow-y-auto py-4 pb-8">
       <div className="mb-4 px-4 md:px-6">
         <p className="text-[13px] text-muted">
           {total === 0

@@ -90,7 +90,7 @@ function StatCard({
   trend, sparkline, sparkColor, barPct, barColor, href,
 }: StatCardProps) {
   const inner = (
-    <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 transition-colors h-full">
+    <div className="flex flex-col gap-2 rounded-xl border border-border bg-card p-3 transition-colors h-full sm:gap-3 sm:p-4">
       {/* Top row: icon + label + trend */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-[9px] min-w-0">
@@ -104,13 +104,13 @@ function StatCard({
             {label}
           </span>
         </div>
-        {trend !== undefined && <Trend value={trend ?? null} />}
+        {trend !== undefined && <span className="hidden sm:block"><Trend value={trend ?? null} /></span>}
       </div>
 
       {/* Number */}
       <div>
-        <div className="text-[28px] font-bold leading-none text-text">{value}</div>
-        {sub && <div className="mt-[5px] text-[11.5px] text-muted">{sub}</div>}
+        <div className="text-[22px] font-bold leading-none text-text sm:text-[28px]">{value}</div>
+        {sub && <div className="mt-[5px] text-[11px] text-muted sm:text-[11.5px]">{sub}</div>}
       </div>
 
       {/* Bar bottom */}
@@ -319,7 +319,7 @@ export default function DashboardView({ nombre, causasActivas, alertas, eventos,
   ];
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6 md:px-6">
+    <div className="mx-auto max-w-5xl px-4 py-6 pb-20 md:px-6 md:pb-6">
       {/* Encabezado */}
       <div className="mb-6">
         <h1 className="text-[20px] font-bold text-text">{saludo}, {primerNombre}</h1>

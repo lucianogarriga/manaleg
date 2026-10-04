@@ -12,7 +12,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const [profile, counts] = await Promise.all([getCurrentProfile(), getLayoutCounts()]);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden gap-2 p-3 pl-2">
+    <div className="flex h-dvh w-full overflow-hidden gap-2 p-3 pl-2">
       <AuthHydrator profile={profile} />
       <Sidebar profile={profile} counts={counts} />
       {/* Área derecha: topbar + contenido sobre bg (sin card wrapper) */}

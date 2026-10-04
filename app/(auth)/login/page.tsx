@@ -41,7 +41,7 @@ function LoginTransition() {
         <div className="flex flex-col items-center gap-1">
           <span className="text-[18px] font-bold text-text">Manaleg</span>
           <span className="text-[13px] text-muted">
-            <span className="auth-dots">Preparando tu espacio</span>
+            <span className="auth-dots" />
           </span>
         </div>
         <div className="mt-2 h-[3px] w-[160px] overflow-hidden rounded-full bg-border">
