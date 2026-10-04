@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { Settings, Bell, BellOff, FileText, ShieldCheck, LogOut } from "lucide-react";
+import { Settings, Bell, BellOff, FileText, ShieldCheck, LogOut, MessageSquare } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { toggleNotificacionesEmail } from "@/app/(app)/ajustes/actions";
 import { getInitials } from "@/utils/formatters";
@@ -119,6 +119,23 @@ export default function UserSettings({ profile }: Props) {
                 ? "Recibís un email por día con todos los vencimientos del próximo día hábil."
                 : "No se enviarán alertas por email."}
             </p>
+          </div>
+
+          {/* Feedback beta */}
+          <div className="px-3 py-2 border-b" style={{ borderColor: "var(--color-border)" }}>
+            <div className="text-[10px] font-bold uppercase tracking-[.6px] text-muted px-1 pb-1">Beta</div>
+            <a
+              href="https://forms.gle/REEMPLAZAR_CON_TU_FORM"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 rounded-[8px] px-2 py-[8px] text-[13px] text-sub transition-colors"
+              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--hover-row)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "")}
+            >
+              <MessageSquare size={14} strokeWidth={2} className="shrink-0 text-muted" />
+              Enviar feedback
+            </a>
           </div>
 
           {/* Legal */}
