@@ -63,7 +63,7 @@ function BucketSection({ label, style, items, onSelect }: {
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   {item.tipo && (
-                    <span className={`rounded-[4px] px-2 py-[2px] text-[11px] font-medium ${
+                    <span className={`hidden sm:inline rounded-[4px] px-2 py-[2px] text-[11px] font-medium ${
                       item.tipo === "Vencimiento"
                         ? "bg-red-lt text-red"
                         : "bg-amb-lt text-amb"
