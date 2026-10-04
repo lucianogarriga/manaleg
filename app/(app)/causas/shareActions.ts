@@ -25,11 +25,9 @@ export async function compartirCausa(_prev: FormState, formData: FormData): Prom
     .maybeSingle<{ id: string; user_id: string }>();
   if (!causa) return { error: "No se encontró la causa." };
 
-  // auth guarda los emails en minúscula y profiles los copia tal cual
+  // Usa función SECURITY DEFINER para buscar por email sin exponer RLS
   const { data: colega } = await supabase
-    .from("profiles")
-    .select("id, nombre_completo, email")
-    .eq("email", email)
+    .rpc("buscar_perfil_por_email", { p_email: email })
     .maybeSingle<{ id: string; nombre_completo: string | null; email: string }>();
 
   if (!colega) {

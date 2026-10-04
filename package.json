@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "gen:types": "supabase gen types typescript --project-id vxcdtaribgdilhofdwvg > types/database.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
