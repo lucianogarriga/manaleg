@@ -37,8 +37,14 @@ export default function AlertsBell({ alertas, urgentes, notificaciones, sinLeer 
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<Tab>("alertas");
+  const [alertasVistas, setAlertasVistas] = useState(false);
+  const [colegasVistos, setColegasVistos] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const total = urgentes + sinLeer;
+
+  // Badge visual: se oculta una vez que el usuario abrió esa pestaña
+  const badgeUrgentes = alertasVistas ? 0 : urgentes;
+  const badgeSinLeer  = colegasVistos ? 0 : sinLeer;
+  const total = badgeUrgentes + badgeSinLeer;
 
   useEffect(() => {
     if (!open) return;
@@ -73,7 +79,15 @@ export default function AlertsBell({ alertas, urgentes, notificaciones, sinLeer 
     <div ref={ref} className="relative shrink-0">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          const next = !open;
+          setOpen(next);
+          // Al abrir: marcar la pestaña activa como vista
+          if (next) {
+            if (tab === "alertas") setAlertasVistas(true);
+            else { setColegasVistos(true); void marcarNotificacionesLeidas(); }
+          }
+        }}
         aria-label={`Notificaciones (${total} pendientes)`}
         aria-expanded={open}
         className="relative flex h-[34px] w-[34px] cursor-pointer items-center justify-center rounded-full bg-amb-lt text-amb"
@@ -90,8 +104,8 @@ export default function AlertsBell({ alertas, urgentes, notificaciones, sinLeer 
         <div className="fixed inset-x-3 top-[56px] z-40 flex max-h-[75vh] flex-col overflow-hidden rounded-[8px] border border-border bg-card shadow-xl sm:absolute sm:inset-x-auto sm:top-full sm:right-0 sm:mt-2 sm:w-[420px]">
           {/* Pestañas */}
           <div role="tablist" className="flex shrink-0 border-b border-border">
-            <TabButton active={tab === "alertas"} onClick={() => setTab("alertas")} count={urgentes} label="Alertas y vencimientos" />
-            <TabButton active={tab === "colegas"} onClick={() => setTab("colegas")} count={sinLeer} label="Colegas" />
+            <TabButton active={tab === "alertas"} onClick={() => { setTab("alertas"); setAlertasVistas(true); }} count={badgeUrgentes} label="Alertas y vencimientos" />
+            <TabButton active={tab === "colegas"} onClick={() => { setTab("colegas"); setColegasVistos(true); void marcarNotificacionesLeidas(); }} count={badgeSinLeer} label="Colegas" />
           </div>
 
           <div className="overflow-y-auto">

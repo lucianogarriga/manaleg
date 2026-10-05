@@ -22,10 +22,9 @@ export default function PrivacidadPage() {
           <Section title="1. Responsable del tratamiento">
             <p>Esta Política distingue dos categorías de datos con regímenes de responsabilidad diferenciados:</p>
             <ul>
-              <li><strong>Datos de cuenta:</strong> MANALEG es el responsable del tratamiento de los datos personales que recopila directamente de sus usuarios al momento del registro y durante el uso de la plataforma (nombre, email, datos de facturación y datos técnicos de sesión), en los términos de la Ley N° 25.326 de Protección de los Datos Personales.</li>
-              <li><strong>Datos de causas y clientes:</strong> Los datos que el usuario (profesional del derecho) ingresa sobre sus propios clientes, partes y terceros relacionados con sus expedientes son tratados por MANALEG en calidad de <strong>encargado del tratamiento</strong>, actuando por cuenta y bajo instrucción del usuario, quien reviste la condición de <strong>responsable del tratamiento</strong> respecto de dichos datos. MANALEG no accede a ese contenido con fines propios ni lo cede a terceros, salvo requerimiento legal.</li>
+              <li><strong>Datos de cuenta:</strong> MANALEG es el responsable del tratamiento de los datos personales que recopila directamente al momento del registro y durante el uso de la plataforma (nombre, email, datos técnicos de sesión), en los términos de la Ley N° 25.326 de Protección de los Datos Personales.</li>
+              <li><strong>Datos de causas y clientes:</strong> Los datos que el usuario ingresa sobre sus propios clientes, partes y terceros relacionados con sus expedientes son tratados por MANALEG en calidad de <strong>encargado del tratamiento</strong>, actuando por cuenta e instrucción del usuario, quien reviste la condición de <strong>responsable del tratamiento</strong> respecto de dichos datos. MANALEG no accede a ese contenido con fines propios ni lo cede a terceros, salvo requerimiento legal.</li>
             </ul>
-            <p>Contacto: <strong>contacto@manaleg.com.ar</strong></p>
           </Section>
 
           <Section title="2. Datos que recopilamos">
@@ -114,11 +113,12 @@ export default function PrivacidadPage() {
       </div>
 
       <style>{`
-        .prose-legal { display: flex; flex-direction: column; gap: 28px; }
-        .prose-section h2 { font-size: 15px; font-weight: 700; color: var(--color-text); margin-bottom: 8px; }
-        .prose-section p { font-size: 14px; color: var(--color-sub); line-height: 1.65; margin-bottom: 8px; }
-        .prose-section ul { padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
-        .prose-section ul li { font-size: 14px; color: var(--color-sub); line-height: 1.55; }
+        .prose-legal { display: flex; flex-direction: column; gap: 12px; }
+        .prose-section h2 { font-size: 14px; font-weight: 700; color: var(--color-text); margin-bottom: 3px; }
+        .prose-section p { font-size: 13.5px; color: var(--color-sub); line-height: 1.6; margin-bottom: 2px; text-align: justify; }
+        .prose-section ul { padding: 0; margin: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; }
+        .prose-section ul li { font-size: 13.5px; color: var(--color-sub); line-height: 1.55; text-align: justify; }
+        .prose-section ul li::before { content: "— "; color: var(--color-muted); }
         strong { color: var(--color-text); }
       `}</style>
     </div>

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/services/supabase/client";
-import type { CausaShareConUsuario, Evento, HonorarioConPagos, MovimientoConAutor } from "@/types";
+import type { CausaShareConUsuario, Evento, Gasto, HonorarioConPagos, MovimientoConAutor } from "@/types";
 
 interface Loaded<T> {
   causaId: string;
@@ -81,6 +81,19 @@ export function useEventos(causaId: string) {
       .order("fecha", { ascending: true })
       .order("hora", { ascending: true })
       .returns<Evento[]>(),
+  );
+}
+
+const EMPTY_GASTOS: Gasto[] = [];
+
+export function useGastos(causaId: string) {
+  return useCausaQuery<Gasto[]>(causaId, EMPTY_GASTOS, (supabase, id) =>
+    supabase
+      .from("gastos")
+      .select("*")
+      .eq("causa_id", id)
+      .order("fecha", { ascending: false })
+      .returns<Gasto[]>(),
   );
 }
 

@@ -11,11 +11,12 @@ import {
 } from "@/utils/urgencyHelpers";
 import type { CausaConRelaciones } from "@/types";
 
-const VIA_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  "Judicial":       { bg: "rgba(37,99,235,.12)",  text: "#2563eb", label: "JUD" },
-  "Mediación":      { bg: "rgba(124,58,237,.12)", text: "#7c3aed", label: "MED" },
-  "Administrativo": { bg: "rgba(4,120,87,.12)",   text: "#047857", label: "ADM" },
-  "Extrajudicial":  { bg: "rgba(180,83,9,.12)",   text: "#b45309", label: "EXT" },
+const VIA_LABELS: Record<string, string> = {
+  "Judicial":               "JUD",
+  "Mediación":              "MED",
+  "Administrativo":         "ADM",
+  "Extrajudicial":          "EXT",
+  "Defensa del Consumidor": "DEF",
 };
 
 interface CausaRowProps {
@@ -32,14 +33,14 @@ export default function CausaRow({ causa, active, onSelect, wide = false }: Caus
     ? `Cerrada ${formatDate(causa.updated_at)}`
     : getRowDeadlineText(causa.proximo_vencimiento, causa.tipo_vencimiento, causa.motivo_vencimiento);
   const initials = getInitials(causa.owner?.nombre_completo, causa.owner?.email[0]?.toUpperCase());
-  const via = causa.via_proceso ? VIA_STYLES[causa.via_proceso] : null;
+  const viaLabel = causa.via_proceso ? (VIA_LABELS[causa.via_proceso] ?? null) : null;
 
   if (wide) {
     return (
       <button
         type="button"
         onClick={onSelect}
-        className={`mx-3 my-[5px] flex w-[calc(100%-24px)] cursor-pointer items-center gap-3 rounded-xl border border-l-[3px] px-4 py-[10px] text-left transition-colors duration-100 ${URGENCY_BORDER[urgency]} ${cerrada ? "opacity-55" : ""}`}
+        className={`mx-3 my-[5px] flex w-[calc(100%-24px)] cursor-pointer items-center gap-3 rounded-xl border border-l-[3px] px-4 py-[9px] text-left transition-colors duration-100 ${URGENCY_BORDER[urgency]} ${cerrada ? "opacity-55" : ""}`}
         style={{
           background: active ? "var(--color-blue-lt)" : "var(--color-card)",
           borderColor: "var(--color-border)",
@@ -48,33 +49,40 @@ export default function CausaRow({ causa, active, onSelect, wide = false }: Caus
         onMouseEnter={(e) => { if (!active) (e.currentTarget as HTMLElement).style.background = "var(--hover-row)"; }}
         onMouseLeave={(e) => { if (!active) (e.currentTarget as HTMLElement).style.background = ""; }}
       >
-        {/* Badges estado + vía */}
-        <div className="hidden shrink-0 items-center gap-[5px] sm:flex">
-          <Badge estado={causa.estado} />
-          {via && (
-            <span
-              className="rounded-[5px] px-[6px] py-[2px] text-[10px] font-bold"
-              style={{ background: via.bg, color: via.text }}
-            >
-              {via.label}
-            </span>
-          )}
+        {/* Carátula + badges debajo */}
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[12.5px] font-semibold text-text">
+            {causa.nro_expediente && (
+              <span className="mr-[5px] font-mono text-[11px] font-normal text-muted">
+                {causa.nro_expediente} ·
+              </span>
+            )}
+            {causa.caratula}
+          </div>
+          <div className="mt-[4px] flex flex-wrap items-center gap-[4px]">
+            <Badge estado={causa.estado} />
+            {viaLabel && (
+              <span
+                className="rounded-[4px] px-[5px] py-[1px] text-[10px] font-bold text-muted"
+                style={{ background: "var(--color-border)" }}
+              >
+                {viaLabel}
+              </span>
+            )}
+            {causa.tipo_juicio && (
+              <span className="text-[11px] text-muted truncate max-w-[160px]">
+                {causa.tipo_juicio}
+              </span>
+            )}
+          </div>
         </div>
-
-        {/* Carátula con expte inline */}
-        <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold text-text">
-          {causa.nro_expediente && (
-            <span className="mr-[6px]">
-              Expte N° {causa.nro_expediente} ·
-            </span>
-          )}
-          {causa.caratula}
-        </span>
 
         {/* Deadline + owner */}
         <div className="flex shrink-0 items-center gap-[6px]">
-          <span className={`h-[6px] w-[6px] rounded-full ${URGENCY_DOT[urgency]}`} />
-          <span className={`hidden text-[12px] sm:block ${URGENCY_TEXT[urgency]}`}>{deadline}</span>
+          <span className={`h-[6px] w-[6px] shrink-0 rounded-full ${URGENCY_DOT[urgency]}`} />
+          <span className={`hidden max-w-[160px] truncate text-[11.5px] sm:block ${URGENCY_TEXT[urgency]}`}>
+            {deadline}
+          </span>
           <span
             className="rounded-[4px] px-[5px] py-px text-[10px] font-bold text-sub"
             style={{ background: "var(--color-border)" }}
@@ -87,7 +95,7 @@ export default function CausaRow({ causa, active, onSelect, wide = false }: Caus
     );
   }
 
-  // Variante compacta (panel lateral, no usada actualmente)
+  // Variante compacta
   return (
     <button
       type="button"
@@ -101,11 +109,14 @@ export default function CausaRow({ causa, active, onSelect, wide = false }: Caus
       onMouseLeave={(e) => { if (!active) (e.currentTarget as HTMLElement).style.background = ""; }}
     >
       <div className="mb-[3px] truncate text-[13.5px] font-semibold text-text">{causa.caratula}</div>
-      <div className="mb-[3px] flex items-center gap-[5px]">
+      <div className="mb-[3px] flex flex-wrap items-center gap-[4px]">
         {causa.nro_expediente && (
-          <span className="truncate font-mono text-[11px] text-muted">{causa.nro_expediente}</span>
+          <span className="font-mono text-[11px] text-muted">{causa.nro_expediente}</span>
         )}
         <Badge estado={causa.estado} />
+        {causa.tipo_juicio && (
+          <span className="text-[11px] text-muted">{causa.tipo_juicio}</span>
+        )}
       </div>
       <div className="flex items-center gap-[5px]">
         <span className={`h-[6px] w-[6px] shrink-0 rounded-full ${URGENCY_DOT[urgency]}`} />

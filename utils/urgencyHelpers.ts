@@ -55,17 +55,19 @@ export function getDeadlineLabel(
   return formatDate(proximoVencimiento);
 }
 
-// Texto de la fila: "Vence mañana — Contestación demanda" / "Vencimiento 15/10/2026 — Audiencia"
+// Texto compacto para la fila del listado de causas
 export function getRowDeadlineText(
   proximoVencimiento: string | null,
   tipo: TipoAviso | null,
   motivo: string | null,
 ): string {
   const days = getDaysUntil(proximoVencimiento);
-  if (days === null) return "Sin próximo vencimiento";
-  const label =
-    days > 5
-      ? `${tipo ?? "Vencimiento"} ${formatDate(proximoVencimiento)}`
-      : getDeadlineLabel(proximoVencimiento, tipo)!;
-  return motivo ? `${label} — ${motivo}` : label;
+  if (days === null) return "Sin vto";
+  let label: string;
+  if (days < 0) label = "Vencido";
+  else if (days === 0) label = "Hoy";
+  else if (days === 1) label = "Mañana";
+  else if (days <= 5) label = `(${days} días)`;
+  else label = formatDate(proximoVencimiento)!;
+  return motivo ? `${label} · ${motivo}` : label;
 }

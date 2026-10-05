@@ -22,7 +22,8 @@ export default function Toaster() {
   return (
     <div
       role="status"
-      className="fixed bottom-6 left-1/2 z-[60] flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-4 rounded-[10px] bg-navy px-6 py-4 text-[17px] text-white shadow-xl"
+      className="fixed bottom-6 left-1/2 z-[60] flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-4 rounded-[10px] px-6 py-4 text-[14px] shadow-xl"
+      style={{ background: "#1e293b", color: "#f1f5f9" }}
     >
       <CheckCircle2 size={22} className="shrink-0 text-[#34D399]" />
       <span>{toast.message}</span>
@@ -33,7 +34,7 @@ export default function Toaster() {
             dismiss();
             toast.onAction?.();
           }}
-          className="cursor-pointer rounded-[6px] bg-white/15 px-3 py-[6px] text-[15px] font-semibold whitespace-nowrap hover:bg-white/25"
+          className="cursor-pointer rounded-[6px] bg-white/15 px-3 py-[6px] text-[13px] font-semibold whitespace-nowrap hover:bg-white/25"
         >
           {toast.actionLabel}
         </button>

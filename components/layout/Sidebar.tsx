@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useUIStore } from "@/store/uiStore";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { useUIStore, loadPin } from "@/store/uiStore";
 import { useCausasStore } from "@/store/causasStore";
 import type { Profile } from "@/types";
 import type { LayoutCounts } from "@/services/supabase/layoutCounts";
@@ -16,11 +17,16 @@ interface SidebarProps {
 
 export default function Sidebar({ profile, counts }: SidebarProps) {
   const pathname = usePathname();
-  const { sidebarOpen, closeSidebar } = useUIStore();
+  const { sidebarOpen, closeSidebar, sidebarPinned, toggleSidebarPin } = useUIStore();
   const selectCausa = useCausasStore((s) => s.select);
   const [hovered, setHovered] = useState(false);
 
-  const exp = sidebarOpen || hovered;
+  // Hidratar el pin desde localStorage en el cliente
+  useEffect(() => {
+    if (loadPin()) useUIStore.setState({ sidebarPinned: true });
+  }, []);
+
+  const exp = sidebarOpen || sidebarPinned || hovered;
 
   const pillFor = (item: NavItem) => {
     if (!exp) return null;
@@ -145,6 +151,33 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
             ))}
           </nav>
 
+          {/* Pin button — solo desktop */}
+          <div
+            className="hidden shrink-0 border-t md:flex"
+            style={{ borderColor: "var(--color-border)" }}
+          >
+            <button
+              type="button"
+              onClick={toggleSidebarPin}
+              title={sidebarPinned ? "Colapsar sidebar" : "Fijar sidebar expandido"}
+              className={`flex w-full cursor-pointer items-center py-[9px] transition-colors hover:bg-black/5 ${
+                exp ? "gap-[9px] px-[14px]" : "justify-center px-0"
+              }`}
+              style={{ color: "var(--sb-fg)", opacity: 0.6 }}
+            >
+              {sidebarPinned
+                ? <PanelLeftClose size={14} strokeWidth={2} className="shrink-0" />
+                : <PanelLeftOpen size={14} strokeWidth={2} className="shrink-0" />
+              }
+              <span
+                className={`whitespace-nowrap text-[11.5px] font-medium transition-[opacity,max-width] duration-200 ${
+                  exp ? "opacity-100 max-w-[140px]" : "opacity-0 max-w-0 overflow-hidden"
+                }`}
+              >
+                {sidebarPinned ? "Colapsar" : "Fijar expandido"}
+              </span>
+            </button>
+          </div>
         </div>
       </aside>
     </>

@@ -13,6 +13,7 @@ import Badge from "@/components/ui/Badge";
 import CardSection from "@/components/ui/CardSection";
 import DriveLink from "@/components/ui/DriveLink";
 import FieldGrid, { type Field } from "@/components/ui/FieldGrid";
+import GastosCard from "@/components/gastos/GastosCard";
 import HonorariosCard from "@/components/honorarios/HonorariosCard";
 import MovimientosSection from "@/components/movimientos/MovimientosSection";
 import { useCausasStore } from "@/store/causasStore";
@@ -62,7 +63,12 @@ export default function CausaDetail({ causa, userId, className = "" }: CausaDeta
     { label: "Tipo de juicio", value: causa.tipo_juicio ?? "—" },
     { label: "Juzgado / Cámara", value: causa.juzgado_camara ?? "—" },
     { label: "Parte actora", value: causa.parte_actora ?? "—" },
-    { label: "Parte demandada", value: causa.parte_demandada ?? "—" },
+    {
+      label: "Parte/s demandada/s",
+      value: causa.parte_demandada
+        ? causa.parte_demandada.split("\n").filter(Boolean).join(" · ")
+        : "—",
+    },
     { label: "Fecha de inicio", value: formatDate(causa.fecha_inicio) },
     { label: "Monto reclamado", value: formatCurrency(causa.monto_reclamado) },
     { label: "Cliente", value: causa.cliente?.nombre_completo ?? "—" },
@@ -162,6 +168,7 @@ export default function CausaDetail({ causa, userId, className = "" }: CausaDeta
       )}
 
       <HonorariosCard causaId={causa.id} />
+      <GastosCard causaId={causa.id} />
 
       <CardSection title="Vencimientos">
         <FieldGrid fields={vencimientos} />

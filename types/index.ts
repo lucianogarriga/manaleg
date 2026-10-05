@@ -197,11 +197,28 @@ export interface Honorario {
   creado_por_id: string;
   monto_acordado: number;
   porcentaje: number | null;
+  monto_adicional: number | null;
   fecha_pacto: string | null;
+  moneda: "ARS" | "USD";
+  consulta_cobrada: boolean;
+  monto_consulta: number | null;
+  notas_honorarios: string | null;
   monto_cobrado: number;
   saldo_pendiente: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface Gasto {
+  id: string;
+  causa_id: string;
+  user_id: string;
+  descripcion: string;
+  monto: number;
+  fecha: string;
+  tipo: string | null;
+  comprobante_url: string | null;
+  created_at: string;
 }
 
 export interface Pago {

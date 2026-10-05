@@ -349,11 +349,11 @@ export default function DashboardView({ nombre, causasActivas, alertas, eventos,
               <span className="text-[12px] font-bold uppercase tracking-[.5px] text-sub">Vencimientos próximos</span>
               <Link href="/vencimientos" className="text-[12px] font-semibold text-blue hover:underline">Ver todos</Link>
             </div>
-            {alertas.length === 0 ? (
+            {alertas.filter(a => (getDaysUntil(a.fecha) ?? -1) >= 0).length === 0 ? (
               <p className="px-4 py-5 text-[13.5px] text-muted">Sin vencimientos en los próximos 30 días.</p>
             ) : (
               <ul className="divide-y divide-border/50">
-                {alertas.slice(0, 6).map(a => {
+                {alertas.filter(a => (getDaysUntil(a.fecha) ?? -1) >= 0).slice(0, 6).map(a => {
                   const urgency = getUrgency(a.fecha);
                   return (
                     <li key={a.causaId} className="flex items-start gap-3 px-4 py-[10px]">

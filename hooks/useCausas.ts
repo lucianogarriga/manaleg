@@ -22,12 +22,24 @@ export function useCausas(causas: CausaConRelaciones[], userId: string) {
 
     const matchers: Record<CausasFilter, (c: CausaConRelaciones) => boolean> = {
       todas: () => true,
-      // Mis causas = soy owner y no hay colaboradores (causa propia, sin compartir)
       mias: (c) => c.user_id === userId && sharesCount(c) === 0,
-      // Compartidas = cualquier causa con shares activos (ya sea que yo compartí o me compartieron)
       compartidas: (c) => sharesCount(c) > 0,
       urgentes: isUrgente,
       cerradas: isCerrada,
+      vencen_hoy: (c) => {
+        if (!c.proximo_vencimiento || isCerrada(c)) return false;
+        return (getDaysUntil(c.proximo_vencimiento) ?? Infinity) <= 1;
+      },
+      vencen_3dias: (c) => {
+        if (!c.proximo_vencimiento || isCerrada(c)) return false;
+        const d = getDaysUntil(c.proximo_vencimiento) ?? Infinity;
+        return d > 1 && d <= 3;
+      },
+      sin_movimiento: (c) => {
+        if (isCerrada(c)) return false;
+        const ref = c.fecha_ultimo_movimiento ?? c.created_at.slice(0, 10);
+        return -(getDaysUntil(ref) ?? 0) >= 7;
+      },
     };
 
     const q = normalize(search.trim());

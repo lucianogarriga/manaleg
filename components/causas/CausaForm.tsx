@@ -4,10 +4,12 @@ import { useActionState, useEffect, useState, useTransition } from "react";
 import { removeCausa, saveCausa, type CausaFormState } from "@/app/(app)/causas/actions";
 import FormAlert from "@/components/auth/FormAlert";
 import Modal from "@/components/ui/Modal";
+import { Plus, Trash2 } from "lucide-react";
+import AutocompleteField from "@/components/ui/AutocompleteField";
 import { FormSection, SelectField, TextAreaField, TextField } from "@/components/ui/FormControls";
 import { useCausasStore } from "@/store/causasStore";
 import { useUIStore } from "@/store/uiStore";
-import { ANTICIPACION_ALERTA, ESTADOS_CAUSA, FUEROS, TIPOS_AVISO, VIAS_PROCESO } from "@/utils/constants";
+import { ANTICIPACION_ALERTA, ESTADOS_CAUSA, FUEROS, TIPOS_AVISO, TIPOS_JUICIO_POR_FUERO, VIAS_PROCESO } from "@/utils/constants";
 import type { ClienteOption } from "@/services/supabase/clientes";
 import type { CausaConRelaciones } from "@/types";
 
@@ -61,8 +63,21 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
     });
   };
 
-  const v = causa; // valores iniciales (undefined en alta)
+  const v = causa;
   const busy = pending || deleting;
+
+  // Demandados dinámicos: se serializa como texto separado por "\n" en parte_demandada
+  const initDemandados = () => {
+    const raw = v?.parte_demandada ?? "";
+    const parts = raw.split("\n").filter(Boolean);
+    return parts.length > 0 ? parts : [""];
+  };
+  const [demandados, setDemandados] = useState<string[]>(initDemandados);
+  const [selectedFuero, setSelectedFuero] = useState<string>(v?.fuero ?? "");
+  const addDemandado = () => setDemandados((d) => [...d, ""]);
+  const removeDemandado = (i: number) => setDemandados((d) => d.filter((_, idx) => idx !== i));
+  const updateDemandado = (i: number, val: string) =>
+    setDemandados((d) => d.map((x, idx) => (idx === i ? val : x)));
 
   return (
     <Modal
@@ -122,15 +137,64 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
           <TextField label="Nro expediente" name="nro_expediente" defaultValue={v?.nro_expediente ?? ""} placeholder="2024-0042581" />
           <SelectField label="Estado" name="estado" options={ESTADOS_CAUSA} defaultValue={v?.estado ?? "Iniciada"} />
           <SelectField label="Vía de proceso" name="via_proceso" options={VIAS_PROCESO} placeholder="Seleccionar…" defaultValue={v?.via_proceso ?? ""} />
-          <SelectField label="Fuero" name="fuero" options={FUEROS} placeholder="Seleccionar…" defaultValue={v?.fuero ?? ""} />
-          <TextField label="Tipo de juicio" name="tipo_juicio" defaultValue={v?.tipo_juicio ?? ""} placeholder="Despido, daños y perjuicios…" />
+          <SelectField
+            label="Fuero"
+            name="fuero"
+            options={FUEROS}
+            placeholder="Seleccionar…"
+            defaultValue={v?.fuero ?? ""}
+            onChange={(e) => setSelectedFuero(e.target.value)}
+          />
+          <AutocompleteField
+            label="Tipo de juicio"
+            name="tipo_juicio"
+            defaultValue={v?.tipo_juicio ?? ""}
+            placeholder="Despido, daños y perjuicios…"
+            options={
+              selectedFuero && TIPOS_JUICIO_POR_FUERO[selectedFuero]
+                ? TIPOS_JUICIO_POR_FUERO[selectedFuero]
+                : Object.values(TIPOS_JUICIO_POR_FUERO).flat()
+            }
+          />
           <TextField label="Juzgado / Cámara" name="juzgado_camara" defaultValue={v?.juzgado_camara ?? ""} placeholder="Cámara 6°" />
           <TextField label="Fecha de inicio" name="fecha_inicio" type="date" defaultValue={v?.fecha_inicio ?? ""} />
         </FormSection>
 
         <FormSection title="Partes y cliente">
           <TextField label="Parte actora" name="parte_actora" defaultValue={v?.parte_actora ?? ""} />
-          <TextField label="Parte demandada" name="parte_demandada" defaultValue={v?.parte_demandada ?? ""} />
+          {/* Demandados: campo oculto con el valor serializado + lista dinámica */}
+          <input type="hidden" name="parte_demandada" value={demandados.filter(Boolean).join("\n")} />
+          <div className="sm:col-span-2 flex flex-col gap-[6px]">
+            <label className="block text-[12px] font-semibold text-sub">Parte/s demandada/s</label>
+            {demandados.map((dem, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={dem}
+                  onChange={(e) => updateDemandado(i, e.target.value)}
+                  placeholder={i === 0 ? "Nombre del demandado principal" : `Demandado ${i + 1}`}
+                  className="flex-1 rounded-[6px] border border-border bg-bg px-3 py-[7px] text-[13px] text-text placeholder:text-muted outline-none focus:border-blue focus:ring-1 focus:ring-blue"
+                />
+                {demandados.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeDemandado(i)}
+                    className="flex cursor-pointer items-center justify-center rounded-[5px] p-[6px] text-muted hover:text-red hover:bg-red-lt/40 transition-colors"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                )}
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addDemandado}
+              className="flex w-fit cursor-pointer items-center gap-1 text-[12.5px] font-semibold text-blue hover:underline"
+            >
+              <Plus size={12} />
+              Agregar demandado
+            </button>
+          </div>
           <SelectField
             label="Cliente"
             name="cliente_id"

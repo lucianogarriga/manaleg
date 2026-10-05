@@ -58,6 +58,11 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
   const monto = parseMonto(text(formData, "monto_acordado"));
   const porcentajeRaw = text(formData, "porcentaje");
   const fechaPacto = text(formData, "fecha_pacto");
+  const moneda = text(formData, "moneda") === "USD" ? "USD" : "ARS";
+  const montoAdicionalRaw = text(formData, "monto_adicional");
+  const consultaCobrada = formData.get("consulta_cobrada") === "true";
+  const montoConsultaRaw = text(formData, "monto_consulta");
+  const notasHonorarios = text(formData, "notas_honorarios") || null;
 
   if (!causaId) return { error: "Falta la causa." };
   if (monto === null || monto === "invalid") return { error: "Ingresá un monto acordado válido." };
@@ -70,7 +75,30 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
       return { error: "El porcentaje debe estar entre 0 y 100." };
   }
 
-  const values = { monto_acordado: monto, porcentaje, fecha_pacto: fechaPacto };
+  let monto_adicional: number | null = null;
+  if (montoAdicionalRaw) {
+    const v = parseMonto(montoAdicionalRaw);
+    if (v === "invalid" || (v !== null && v < 0)) return { error: "El monto adicional no es válido." };
+    monto_adicional = v;
+  }
+
+  let monto_consulta: number | null = null;
+  if (consultaCobrada && montoConsultaRaw) {
+    const v = parseMonto(montoConsultaRaw);
+    if (v === "invalid" || (v !== null && v < 0)) return { error: "El monto de consulta no es válido." };
+    monto_consulta = v;
+  }
+
+  const values = {
+    monto_acordado: monto,
+    porcentaje,
+    fecha_pacto: fechaPacto,
+    moneda,
+    monto_adicional,
+    consulta_cobrada: consultaCobrada,
+    monto_consulta: consultaCobrada ? monto_consulta : null,
+    notas_honorarios: notasHonorarios,
+  };
   const supabase = await createClient();
   const { error } = id
     ? await supabase.from("honorarios").update(values).eq("id", id)

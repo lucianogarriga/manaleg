@@ -105,11 +105,12 @@ export default function TerminosPage() {
       </div>
 
       <style>{`
-        .prose-legal { display: flex; flex-direction: column; gap: 28px; }
-        .prose-section h2 { font-size: 15px; font-weight: 700; color: var(--color-text); margin-bottom: 8px; }
-        .prose-section p { font-size: 14px; color: var(--color-sub); line-height: 1.65; margin-bottom: 8px; }
-        .prose-section ul { padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
-        .prose-section ul li { font-size: 14px; color: var(--color-sub); line-height: 1.55; }
+        .prose-legal { display: flex; flex-direction: column; gap: 12px; }
+        .prose-section h2 { font-size: 14px; font-weight: 700; color: var(--color-text); margin-bottom: 3px; }
+        .prose-section p { font-size: 13.5px; color: var(--color-sub); line-height: 1.6; margin-bottom: 2px; text-align: justify; }
+        .prose-section ul { padding: 0; margin: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; }
+        .prose-section ul li { font-size: 13.5px; color: var(--color-sub); line-height: 1.55; text-align: justify; }
+        .prose-section ul li::before { content: "— "; color: var(--color-muted); }
         strong { color: var(--color-text); }
       `}</style>
     </div>

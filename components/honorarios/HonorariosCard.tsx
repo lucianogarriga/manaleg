@@ -61,15 +61,35 @@ export default function HonorariosCard({ causaId, naked = false }: { causaId: st
     <>
       <div className="px-[13px] py-[11px]">
         <div className="mb-[7px] flex flex-wrap items-baseline justify-between gap-x-3">
-          <span className="text-[15px] font-bold text-text">Total acordado: {formatCurrency(acordado)}</span>
-          <span className="text-[13.5px] font-semibold text-grn">Cobrado: {formatCurrency(cobrado)}</span>
+          <span className="text-[15px] font-bold text-text">
+            Total acordado: {honorario.moneda === "USD" ? "USD " : ""}{formatCurrency(acordado)}
+          </span>
+          <span className="text-[13.5px] font-semibold text-grn">
+            Cobrado: {honorario.moneda === "USD" ? "USD " : ""}{formatCurrency(cobrado)}
+          </span>
         </div>
         <ProgressBar percent={percent} />
         <div className="text-[11px] text-muted">
           {Math.round(percent)}% cobrado · {pagos.length} {pagos.length === 1 ? "pago registrado" : "pagos registrados"} ·
           Saldo: {formatCurrency(honorario.saldo_pendiente)}
           {honorario.porcentaje !== null && ` · ${honorario.porcentaje}% del monto`}
+          {honorario.moneda === "USD" && " · USD"}
         </div>
+        {(honorario.monto_adicional || honorario.consulta_cobrada || honorario.notas_honorarios) && (
+          <div className="mt-[6px] flex flex-wrap gap-x-3 gap-y-[2px] text-[11px] text-muted">
+            {honorario.monto_adicional ? (
+              <span>Adicional fijo: {honorario.moneda} {formatCurrency(honorario.monto_adicional)}</span>
+            ) : null}
+            {honorario.consulta_cobrada && (
+              <span>
+                Consulta: {honorario.monto_consulta ? `${honorario.moneda} ${formatCurrency(honorario.monto_consulta)}` : "cobrada"}
+              </span>
+            )}
+            {honorario.notas_honorarios && (
+              <span className="w-full italic">{honorario.notas_honorarios}</span>
+            )}
+          </div>
+        )}
       </div>
       {pagos.map((p) => (
         <div key={p.id} className="group flex items-center gap-2 border-t border-border px-[14px] py-[5px]">

@@ -1,15 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { User, Mail, Lock } from "lucide-react";
 import { register } from "../actions";
 import AuthField from "@/components/auth/AuthField";
 import FormAlert from "@/components/auth/FormAlert";
 import SubmitButton from "@/components/auth/SubmitButton";
+import LegalModal from "@/components/ui/LegalModal";
 
 export default function RegisterPage() {
   const [state, action, pending] = useActionState(register, {});
+  const [legalModal, setLegalModal] = useState<"terminos" | "privacidad" | null>(null);
 
   if (state.message) {
     return (
@@ -86,26 +88,28 @@ export default function RegisterPage() {
         />
         <span className="text-[12.5px] leading-[1.5]" style={{ color: "#64748b" }}>
           Leí y acepto los{" "}
-          <Link
-            href="/legal/terminos"
-            target="_blank"
-            className="font-semibold hover:underline"
+          <button
+            type="button"
+            onClick={() => setLegalModal("terminos")}
+            className="font-semibold hover:underline cursor-pointer"
             style={{ color: "#2563eb" }}
           >
             Términos y Condiciones
-          </Link>{" "}
+          </button>{" "}
           y la{" "}
-          <Link
-            href="/legal/privacidad"
-            target="_blank"
-            className="font-semibold hover:underline"
+          <button
+            type="button"
+            onClick={() => setLegalModal("privacidad")}
+            className="font-semibold hover:underline cursor-pointer"
             style={{ color: "#2563eb" }}
           >
             Política de Privacidad
-          </Link>
+          </button>
           .
         </span>
       </label>
+
+      {legalModal && <LegalModal type={legalModal} onClose={() => setLegalModal(null)} />}
 
       <SubmitButton pending={pending} pendingText="Creando cuenta…">
         Crear cuenta
