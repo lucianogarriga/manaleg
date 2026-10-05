@@ -13,8 +13,8 @@ function buildCsp(): string {
 
   const directives = [
     "default-src 'self'",
-    // Next.js necesita 'unsafe-inline' para hidratación y 'unsafe-eval' para Turbopack
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    // Next.js necesita 'unsafe-inline' para hidratación. 'unsafe-eval' solo en dev (Turbopack).
+    `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : ""}`,
     // Tailwind genera estilos inline
     "style-src 'self' 'unsafe-inline'",
     // Conexiones permitidas: propia app + Supabase REST/Auth + Supabase Realtime (wss)
@@ -35,7 +35,7 @@ function buildCsp(): string {
 
 function buildHeaders() {
   return [
-    { key: "X-Frame-Options",             value: "SAMEORIGIN" },
+    { key: "X-Frame-Options",             value: "DENY" },
     { key: "X-Content-Type-Options",       value: "nosniff" },
     { key: "Referrer-Policy",              value: "strict-origin-when-cross-origin" },
     { key: "Permissions-Policy",           value: "camera=(), microphone=(), geolocation=()" },

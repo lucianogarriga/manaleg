@@ -111,20 +111,21 @@ export default function LegalModal({ type, onClose }: LegalModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-end justify-center sm:items-center"
-      style={{ background: "rgba(0,0,0,.55)" }}
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,.6)" }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        className="flex w-full flex-col overflow-hidden rounded-t-[16px] sm:rounded-[14px] sm:max-w-[680px]"
+        className="flex w-full flex-col overflow-hidden rounded-[14px]"
         style={{
           background: "var(--color-card)",
-          maxHeight: "90dvh",
+          maxHeight: "88dvh",
+          maxWidth: "620px",
         }}
       >
         {/* Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-4">
-          <h2 className="text-[16px] font-bold text-text">
+        <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
+          <h2 className="text-[14px] font-bold text-text">
             {type === "terminos" ? "Términos y Condiciones" : "Política de Privacidad"}
           </h2>
           <button
@@ -133,25 +134,26 @@ export default function LegalModal({ type, onClose }: LegalModalProps) {
             aria-label="Cerrar"
             className="flex cursor-pointer rounded-[6px] p-1 text-muted hover:bg-border hover:text-text"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
         {/* Scroll body */}
-        <div className="overflow-y-auto px-5 py-4">
-          <p className="mb-4 text-[11.5px] text-muted">Versión 1.0 — vigente desde el 1 de octubre de 2026</p>
+        <div className="overflow-y-auto px-4 py-3">
+          <p className="mb-3 text-[11px] text-muted">Versión 1.0 — vigente desde el 1 de octubre de 2026</p>
           <div className="legal-prose">
             {type === "terminos" ? TERMINOS : PRIVACIDAD}
           </div>
+          <div className="mt-4 pb-2" />
         </div>
       </div>
 
       <style>{`
-        .legal-prose { display: flex; flex-direction: column; gap: 10px; }
-        .legal-section h3 { font-size: 13px; font-weight: 700; color: var(--color-text); margin-bottom: 3px; }
-        .legal-section p { font-size: 13px; color: var(--color-sub); line-height: 1.6; margin-bottom: 2px; text-align: justify; }
-        .legal-section ul { padding: 0; margin: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; }
-        .legal-section ul li { font-size: 13px; color: var(--color-sub); line-height: 1.55; text-align: justify; }
+        .legal-prose { display: flex; flex-direction: column; gap: 9px; }
+        .legal-section h3 { font-size: 12px; font-weight: 700; color: var(--color-text); margin-bottom: 2px; }
+        .legal-section p { font-size: 12px; color: var(--color-sub); line-height: 1.55; margin-bottom: 1px; text-align: justify; }
+        .legal-section ul { padding: 0; margin: 0; list-style: none; display: flex; flex-direction: column; gap: 1px; }
+        .legal-section ul li { font-size: 12px; color: var(--color-sub); line-height: 1.5; text-align: justify; }
         .legal-section ul li::before { content: "— "; color: var(--color-muted); }
         .legal-section strong { color: var(--color-text); }
       `}</style>

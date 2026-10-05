@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useCausasStore, type CausasFilter } from "@/store/causasStore";
+import { getDaysUntil } from "@/utils/formatters";
 import { getUrgency } from "@/utils/urgencyHelpers";
 import type { CausaConRelaciones } from "@/types";
 

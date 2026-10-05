@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ExternalLink, Trash2 } from "lucide-react";
-import { addGasto, removeGasto, TIPOS_GASTO } from "@/app/(app)/causas/gastoActions";
+import { addGasto, removeGasto } from "@/app/(app)/causas/gastoActions";
+import { TIPOS_GASTO } from "@/utils/constants";
 import CardSection, { CardAction } from "@/components/ui/CardSection";
 import Modal from "@/components/ui/Modal";
 import FormAlert from "@/components/auth/FormAlert";
@@ -24,18 +25,17 @@ function GastoForm({
   const [state, action, pending] = useActionState<FormState, FormData>(addGasto, {});
   const [, startSubmit] = useTransition();
 
+  useEffect(() => {
+    if (state.message) onSaved(state.message);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.message]);
+
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    startSubmit(() =>
-      action(fd).then((s) => {
-        if (s.message) onSaved(s.message);
-      }),
-    );
+    startSubmit(() => action(fd));
   };
 
-  // Cierra el modal cuando el Server Action devuelve éxito
-  // (useActionState no expone Promise directamente; usamos useEffect vía onSaved en action)
   return (
     <Modal open title="Registrar gasto" onClose={onClose}
       footer={
@@ -94,7 +94,7 @@ function GastoForm({
   );
 }
 
-export default function GastosCard({ causaId }: { causaId: string }) {
+export default function GastosCard({ causaId, naked = false }: { causaId: string; naked?: boolean }) {
   const router = useRouter();
   const { data: gastos, loading, error, reload } = useGastos(causaId);
   const [formOpen, setFormOpen] = useState(false);
@@ -162,9 +162,26 @@ export default function GastosCard({ causaId }: { causaId: string }) {
 
   return (
     <>
-      <CardSection title="Gastos" action={<CardAction onClick={() => setFormOpen(true)}>+ Registrar gasto</CardAction>}>
-        {inner}
-      </CardSection>
+      {naked ? (
+        <div>
+          {!loading && (
+            <div className="flex justify-end px-[13px] pb-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setFormOpen(true)}
+                className="cursor-pointer text-[13px] font-semibold text-blue hover:underline"
+              >
+                + Registrar gasto
+              </button>
+            </div>
+          )}
+          {inner}
+        </div>
+      ) : (
+        <CardSection title="Gastos" action={<CardAction onClick={() => setFormOpen(true)}>+ Registrar gasto</CardAction>}>
+          {inner}
+        </CardSection>
+      )}
       {formOpen && <GastoForm causaId={causaId} onClose={() => setFormOpen(false)} onSaved={afterAdd} />}
     </>
   );

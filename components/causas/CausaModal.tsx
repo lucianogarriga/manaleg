@@ -11,6 +11,7 @@ import Badge from "@/components/ui/Badge";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
 import DriveLink from "@/components/ui/DriveLink";
 import FieldGrid, { type Field } from "@/components/ui/FieldGrid";
+import GastosCard from "@/components/gastos/GastosCard";
 import HonorariosCard from "@/components/honorarios/HonorariosCard";
 import EventosSection, { type EventosSectionRef } from "@/components/eventos/EventosSection";
 import MovimientosSection, { type MovimientosSectionRef } from "@/components/movimientos/MovimientosSection";
@@ -250,6 +251,10 @@ export default function CausaModal({ causa, userId }: Props) {
 
               <CollapsibleSection title="Honorarios">
                 <HonorariosCard causaId={causa.id} naked />
+              </CollapsibleSection>
+
+              <CollapsibleSection title="Gastos">
+                <GastosCard causaId={causa.id} naked />
               </CollapsibleSection>
 
               <CollapsibleSection

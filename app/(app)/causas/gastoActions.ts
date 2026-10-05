@@ -5,16 +5,7 @@ import { createClient } from "@/services/supabase/server";
 import { isISODate, parseMonto, text } from "@/utils/formData";
 import type { FormState } from "@/types";
 
-const TIPOS_GASTO = [
-  "Carta documento",
-  "Notificación",
-  "Tasa de justicia",
-  "Aporte previsional",
-  "Pericial",
-  "Honorarios peritos",
-  "Medida cautelar",
-  "Otro",
-] as const;
+import { TIPOS_GASTO } from "@/utils/constants";
 
 const refresh = () => revalidatePath("/", "layout");
 
@@ -59,4 +50,3 @@ export async function removeGasto(id: string): Promise<FormState> {
   return { message: "Gasto eliminado." };
 }
 
-export { TIPOS_GASTO };

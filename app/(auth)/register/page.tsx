@@ -29,6 +29,7 @@ export default function RegisterPage() {
   }
 
   return (
+    <>
     <form action={action} className="space-y-5">
       <div className="mb-2">
         <h1 className="text-[24px] font-bold" style={{ color: "#0f172a" }}>Crear cuenta</h1>
@@ -109,8 +110,6 @@ export default function RegisterPage() {
         </span>
       </label>
 
-      {legalModal && <LegalModal type={legalModal} onClose={() => setLegalModal(null)} />}
-
       <SubmitButton pending={pending} pendingText="Creando cuenta…">
         Crear cuenta
       </SubmitButton>
@@ -122,5 +121,7 @@ export default function RegisterPage() {
         </Link>
       </p>
     </form>
+    {legalModal && <LegalModal type={legalModal} onClose={() => setLegalModal(null)} />}
+    </>
   );
 }

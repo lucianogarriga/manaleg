@@ -1,3 +1,14 @@
+export const TIPOS_GASTO = [
+  "Carta documento",
+  "Notificación",
+  "Tasa de justicia",
+  "Aporte previsional",
+  "Pericial",
+  "Honorarios peritos",
+  "Medida cautelar",
+  "Otro",
+] as const;
+
 export const FUEROS = [
   "Civil y Comercial",
   "Laboral",

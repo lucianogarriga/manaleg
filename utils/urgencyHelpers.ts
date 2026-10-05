@@ -28,7 +28,7 @@ export const URGENCY_DOT: Record<Urgency, string> = {
   red: "bg-red",
   amber: "bg-amb",
   green: "bg-grn",
-  none: "bg-slate-300",
+  none: "bg-slate-300 dark:bg-slate-600",
 };
 
 export const URGENCY_TEXT: Record<Urgency, string> = {
