@@ -7,9 +7,7 @@ const CHIPS: { value: CausasFilter; label: string; urgent?: boolean; color?: str
   { value: "mias",         label: "Mis causas" },
   { value: "compartidas",  label: "Compartidas" },
   { value: "urgentes",     label: "Urgentes", urgent: true },
-  { value: "audiencias",   label: "Audiencias",   color: "purple" },
-  { value: "vencimientos", label: "Vencimientos", color: "amber" },
-  { value: "recordatorios",label: "Recordatorios",color: "blue" },
+  { value: "recordatorios",label: "Recordatorios", color: "blue" },
   { value: "cerradas",     label: "Cerradas" },
 ];
 

@@ -7,6 +7,12 @@ import { isISODate, oneOf, parseMonto, text } from "@/utils/formData";
 import { todayISO } from "@/utils/formatters";
 import type { FormState } from "@/types";
 
+async function getAuthUserId() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  return user?.id ?? null;
+}
+
 // Acciones sobre los datos de una causa: movimientos, honorarios y pagos.
 // RLS valida el acceso a la causa; acá se valida el formato de los datos.
 
@@ -41,6 +47,7 @@ export async function addMovimiento(_prev: FormState, formData: FormData): Promi
 }
 
 export async function removeMovimiento(id: string): Promise<FormState> {
+  if (!await getAuthUserId()) return { error: "No autenticado." };
   const supabase = await createClient();
   const { data, error } = await supabase.from("movimientos").delete().eq("id", id).select("id");
   if (error) return { error: `No se pudo eliminar el movimiento: ${error.message}` };
@@ -65,6 +72,7 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
   const notasHonorarios = text(formData, "notas_honorarios") || null;
 
   if (!causaId) return { error: "Falta la causa." };
+  if (notasHonorarios && notasHonorarios.length > 500) return { error: "Las notas son demasiado largas (máx. 500 caracteres)." };
   if (monto === null || monto === "invalid") return { error: "Ingresá un monto acordado válido." };
   if (fechaPacto && !isISODate(fechaPacto)) return { error: "La fecha del pacto no es válida." };
 
@@ -100,11 +108,14 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
     notas_honorarios: notasHonorarios,
   };
   const supabase = await createClient();
-  const { error } = id
-    ? await supabase.from("honorarios").update(values).eq("id", id)
-    : await supabase.from("honorarios").insert({ causa_id: causaId, ...values });
-
-  if (error) return { error: `No se pudieron guardar los honorarios: ${error.message}` };
+  if (id) {
+    const { data, error } = await supabase.from("honorarios").update(values).eq("id", id).select("id");
+    if (error) return { error: `No se pudieron guardar los honorarios: ${error.message}` };
+    if (!data || data.length === 0) return { error: "No se encontraron los honorarios o no tenés acceso." };
+  } else {
+    const { error } = await supabase.from("honorarios").insert({ causa_id: causaId, ...values });
+    if (error) return { error: `No se pudieron guardar los honorarios: ${error.message}` };
+  }
 
   refresh();
   return { message: id ? "Honorarios actualizados." : "Honorarios definidos." };
@@ -119,10 +130,13 @@ export async function addPago(_prev: FormState, formData: FormData): Promise<For
   const fecha = text(formData, "fecha_pago") ?? todayISO();
   const link = text(formData, "comprobante_drive");
 
+  const descPago = text(formData, "descripcion");
+
   if (!causaId || !honorarioId) return { error: "Faltan los honorarios de la causa." };
   if (monto === null || monto === "invalid" || monto <= 0) return { error: "Ingresá un monto mayor a 0." };
   if (!isISODate(fecha)) return { error: "La fecha del pago no es válida." };
   if (link && !/^https?:\/\//i.test(link)) return { error: "El link del comprobante debe empezar con https://" };
+  if (descPago && descPago.length > 500) return { error: "La descripción es demasiado larga (máx. 500 caracteres)." };
 
   const supabase = await createClient();
   const { error } = await supabase.from("pagos").insert({
@@ -130,7 +144,7 @@ export async function addPago(_prev: FormState, formData: FormData): Promise<For
     honorario_id: honorarioId,
     fecha_pago: fecha,
     monto,
-    descripcion: text(formData, "descripcion"),
+    descripcion: descPago,
     comprobante_drive: link,
   });
   if (error) return { error: `No se pudo registrar el pago: ${error.message}` };
@@ -154,32 +168,37 @@ export async function updateVencimiento(_prev: FormState, formData: FormData): P
     ? (["Vencimiento", "Recordatorio", "Audiencia"].includes(tipoRaw ?? "") ? tipoRaw : "Vencimiento")
     : null;
 
+  if (!await getAuthUserId()) return { error: "No autenticado." };
   const supabase = await createClient();
-  const { error } = await supabase.from("causas").update({
+  const { data, error } = await supabase.from("causas").update({
     proximo_vencimiento: proximoVencimiento || null,
     motivo_vencimiento: proximoVencimiento ? motivo || null : null,
     tipo_vencimiento: tipo,
-  }).eq("id", causaId);
+  }).eq("id", causaId).select("id");
 
   if (error) return { error: `No se pudo actualizar el vencimiento: ${error.message}` };
+  if (!data || data.length === 0) return { error: "No se encontró la causa o no tenés acceso." };
   refresh();
   return { message: "Vencimiento actualizado." };
 }
 
 export async function clearVencimiento(causaId: string): Promise<FormState> {
+  if (!await getAuthUserId()) return { error: "No autenticado." };
   const supabase = await createClient();
-  const { error } = await supabase.from("causas").update({
+  const { data, error } = await supabase.from("causas").update({
     proximo_vencimiento: null,
     motivo_vencimiento: null,
     tipo_vencimiento: null,
-  }).eq("id", causaId);
+  }).eq("id", causaId).select("id");
 
   if (error) return { error: `No se pudo eliminar el vencimiento: ${error.message}` };
+  if (!data || data.length === 0) return { error: "No se encontró la causa o no tenés acceso." };
   refresh();
   return { message: "Vencimiento eliminado." };
 }
 
 export async function removePago(id: string): Promise<FormState> {
+  if (!await getAuthUserId()) return { error: "No autenticado." };
   const supabase = await createClient();
   const { data, error } = await supabase.from("pagos").delete().eq("id", id).select("id");
   if (error) return { error: `No se pudo eliminar el pago: ${error.message}` };

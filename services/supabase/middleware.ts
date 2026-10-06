@@ -27,12 +27,11 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  // getClaims() valida y refresca el token desde la cookie local sin hacer un
-  // round-trip a Supabase Auth. Usar getUser() solo cuando se necesite verificar
-  // el estado real del usuario en el servidor (ej.: revocar sesiones al vuelo).
-  // En el middleware se prefiere getClaims() por rendimiento.
-  const { data } = await supabase.auth.getClaims();
-  const isLoggedIn = Boolean(data?.claims);
+  // getUser() verifica la sesión contra los servidores de Supabase Auth,
+  // lo que permite revocar sesiones al vuelo (ej. cuentas comprometidas).
+  // El costo es un round-trip extra por request, aceptable para una SaaS legal.
+  const { data } = await supabase.auth.getUser();
+  const isLoggedIn = Boolean(data?.user);
 
   const path = request.nextUrl.pathname;
   const isAuthPage = AUTH_PAGES.some((p) => path.startsWith(p));

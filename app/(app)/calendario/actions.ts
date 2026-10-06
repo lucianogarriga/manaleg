@@ -20,6 +20,7 @@ export async function addDiaInhabil(_prev: FormState, formData: FormData): Promi
   if (!isISODate(desde) || !isISODate(hasta)) return { error: "Indicá la fecha del día inhábil." };
   if (hasta < desde) return { error: "La fecha “hasta” no puede ser anterior a “desde”." };
   if (!descripcion) return { error: "Escribí una descripción (ej. Feria judicial de invierno)." };
+  if (descripcion.length > 200) return { error: "La descripción es demasiado larga (máx. 200 caracteres)." };
 
   const fechas: string[] = [];
   for (let d = desde; d <= hasta; d = addDaysISO(d, 1)) {

@@ -57,12 +57,14 @@ export async function createEvento(causaId: string, input: EventoInput): Promise
 
 export async function updateEvento(id: string, input: Partial<EventoInput>): Promise<void> {
   const supabase = await createClient();
-  const { error } = await supabase.from("eventos").update(input).eq("id", id);
+  const { data, error } = await supabase.from("eventos").update(input).eq("id", id).select("id");
   if (error) throw new Error(`No se pudo actualizar el evento: ${error.message}`);
+  if (!data || data.length === 0) throw new Error("No tenés permiso para editar este evento.");
 }
 
 export async function deleteEvento(id: string): Promise<void> {
   const supabase = await createClient();
-  const { error } = await supabase.from("eventos").delete().eq("id", id);
+  const { data, error } = await supabase.from("eventos").delete().eq("id", id).select("id");
   if (error) throw new Error(`No se pudo eliminar el evento: ${error.message}`);
+  if (!data || data.length === 0) throw new Error("No tenés permiso para eliminar este evento.");
 }

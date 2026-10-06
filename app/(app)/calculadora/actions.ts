@@ -14,6 +14,7 @@ export async function guardarVencimientoEnCausa(_prev: FormState, formData: Form
   const motivo = text(formData, "motivo");
 
   if (!causaId) return { error: "Elegí la causa donde querés cargar el vencimiento." };
+  if (motivo && motivo.length > 100) return { error: "El motivo es demasiado largo (máx. 100 caracteres)." };
   if (!isISODate(fecha)) return { error: "Falta la fecha calculada." };
 
   const supabase = await createClient();

@@ -41,5 +41,5 @@ export async function updateCliente(id: string, input: ClienteInput) {
 
 export async function deleteCliente(id: string) {
   const supabase = await createClient();
-  return supabase.from("clientes").delete().eq("id", id);
+  return supabase.from("clientes").delete().eq("id", id).select("id");
 }

@@ -11,9 +11,8 @@ const CAUSA_SELECT = `
   causa_shares(id)
 `;
 
-// Límite conservador mientras no exista paginación del lado del servidor.
-// Un abogado con > 500 causas activas necesitará paginación real (TODO).
-const CAUSAS_LIMIT = 500;
+// Límite de carga para fase beta. Incrementar cuando se implemente paginación.
+const CAUSAS_LIMIT = 60;
 
 export async function getCausas(): Promise<CausaConRelaciones[]> {
   const supabase = await createClient();

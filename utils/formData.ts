@@ -9,12 +9,14 @@ export function oneOf<T extends string>(value: string | null, options: readonly 
   return value !== null && (options as readonly string[]).includes(value) ? (value as T) : null;
 }
 
-// "4.200.000" / "$ 4200000,50" → 4200000.5. null si está vacío, "invalid" si no es número.
+const MONTO_MAX = 999_999_999; // 9 dígitos — tope para pesos argentinos
+
+// "4.200.000" / "$ 4200000,50" → 4200000.5. null si está vacío, "invalid" si no es número o supera el tope.
 export function parseMonto(value: string | null): number | null | "invalid" {
   if (value === null) return null;
   const normalized = value.replace(/[$\s.]/g, "").replace(",", ".");
   const n = Number(normalized);
-  return Number.isFinite(n) && n >= 0 ? n : "invalid";
+  return Number.isFinite(n) && n >= 0 && n <= MONTO_MAX ? n : "invalid";
 }
 
 export function isISODate(value: string | null): value is string {
