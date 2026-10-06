@@ -209,6 +209,15 @@ export interface Honorario {
   updated_at: string;
 }
 
+export interface Todo {
+  id: string;
+  user_id: string;
+  causa_id: string | null;
+  texto: string;
+  completado: boolean;
+  created_at: string;
+}
+
 export interface Gasto {
   id: string;
   causa_id: string;

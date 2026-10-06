@@ -41,6 +41,12 @@ export function useCausas(causas: CausaConRelaciones[], userId: string) {
         const ref = c.fecha_ultimo_movimiento ?? c.created_at.slice(0, 10);
         return -(getDaysUntil(ref) ?? 0) >= 7;
       },
+      audiencias: (c) =>
+        !isCerrada(c) && c.tipo_vencimiento === "Audiencia" && c.proximo_vencimiento !== null,
+      recordatorios: (c) =>
+        !isCerrada(c) && (c.tipo_vencimiento === "Recordatorio" || c.tipo_vencimiento === "Alerta") && c.proximo_vencimiento !== null,
+      vencimientos: (c) =>
+        !isCerrada(c) && c.tipo_vencimiento === "Vencimiento" && c.proximo_vencimiento !== null,
     };
 
     const q = normalize(search.trim());
@@ -55,6 +61,11 @@ export function useCausas(causas: CausaConRelaciones[], userId: string) {
       // Cerradas al final, el resto mantiene el orden por vencimiento
       .sort((a, b) => Number(isCerrada(a)) - Number(isCerrada(b)));
 
-    return { causas: filtered, total: causas.length };
+    const counts = {} as Record<CausasFilter, number>;
+    for (const key of Object.keys(matchers) as CausasFilter[]) {
+      counts[key] = causas.filter(matchers[key]).length;
+    }
+
+    return { causas: filtered, total: causas.length, counts };
   }, [causas, filter, search, userId]);
 }

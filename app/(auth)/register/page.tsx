@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useState, useTransition } from "react";
 import { User, Mail, Lock } from "lucide-react";
 import { register } from "../actions";
 import AuthField from "@/components/auth/AuthField";
@@ -10,8 +10,11 @@ import SubmitButton from "@/components/auth/SubmitButton";
 import LegalModal from "@/components/ui/LegalModal";
 
 export default function RegisterPage() {
-  const [state, action, pending] = useActionState(register, {});
+  const [state, action] = useActionState(register, {});
+  const [, startTransition] = useTransition();
   const [legalModal, setLegalModal] = useState<"terminos" | "privacidad" | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [pending, setPending] = useState(false);
 
   if (state.message) {
     return (
@@ -28,100 +31,139 @@ export default function RegisterPage() {
     );
   }
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const errs: Record<string, string> = {};
+
+    const nombre = (fd.get("nombre") as string ?? "").trim();
+    const email = (fd.get("email") as string ?? "").trim();
+    const password = fd.get("password") as string ?? "";
+    const confirm = fd.get("confirm") as string ?? "";
+    const tyc = fd.get("tyc");
+
+    if (!nombre) errs.nombre = "Ingresá tu nombre completo.";
+    if (!email) errs.email = "Ingresá tu email.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "El email no es válido.";
+    if (!password) errs.password = "Ingresá una contraseña.";
+    else if (password.length < 8) errs.password = "Mínimo 8 caracteres.";
+    if (!confirm) errs.confirm = "Repetí la contraseña.";
+    else if (password && password !== confirm) errs.confirm = "Las contraseñas no coinciden.";
+    if (!tyc) errs.tyc = "Debés aceptar los términos y condiciones para continuar.";
+
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs);
+      return;
+    }
+
+    setFieldErrors({});
+    setPending(true);
+    startTransition(() => {
+      action(fd);
+      setPending(false);
+    });
+  };
+
   return (
     <>
-    <form action={action} className="space-y-5">
-      <div className="mb-2">
-        <h1 className="text-[24px] font-bold" style={{ color: "#0f172a" }}>Crear cuenta</h1>
-        <p className="mt-1 text-[13.5px]" style={{ color: "#94a3b8" }}>Empezá a gestionar tus causas hoy</p>
-      </div>
+      <form onSubmit={handleSubmit} noValidate className="space-y-5">
+        <div className="mb-2">
+          <h1 className="text-[24px] font-bold" style={{ color: "#0f172a" }}>Crear cuenta</h1>
+          <p className="mt-1 text-[13.5px]" style={{ color: "#94a3b8" }}>Empezá a gestionar tus causas hoy</p>
+        </div>
 
-      <FormAlert state={state} />
+        <FormAlert state={state} />
 
-      <AuthField
-        label="Nombre completo"
-        name="nombre"
-        autoComplete="name"
-        placeholder="Juan Pérez"
-        defaultValue={state.values?.nombre}
-        icon={User}
-        required
-      />
-      <AuthField
-        label="Email"
-        name="email"
-        type="email"
-        autoComplete="email"
-        placeholder="nombre@email.com"
-        defaultValue={state.values?.email}
-        icon={Mail}
-        required
-      />
-      <AuthField
-        label="Contraseña"
-        name="password"
-        type="password"
-        autoComplete="new-password"
-        placeholder="Mínimo 8 caracteres"
-        icon={Lock}
-        minLength={8}
-        required
-      />
-      <AuthField
-        label="Repetir contraseña"
-        name="confirm"
-        type="password"
-        autoComplete="new-password"
-        placeholder="••••••••"
-        icon={Lock}
-        minLength={8}
-        required
-      />
-
-      {/* Checkbox T&C */}
-      <label className="flex items-start gap-[10px] cursor-pointer select-none">
-        <input
-          type="checkbox"
-          name="tyc"
-          value="on"
-          required
-          className="mt-[3px] h-[15px] w-[15px] shrink-0 cursor-pointer rounded-[3px] border border-[#cbd5e1] bg-white accent-[#2563eb] checked:border-[#2563eb]"
+        <AuthField
+          label="Nombre completo"
+          name="nombre"
+          autoComplete="name"
+          placeholder="Juan Pérez"
+          defaultValue={state.values?.nombre}
+          icon={User}
+          error={fieldErrors.nombre}
         />
-        <span className="text-[12.5px] leading-[1.5]" style={{ color: "#64748b" }}>
-          Leí y acepto los{" "}
-          <button
-            type="button"
-            onClick={() => setLegalModal("terminos")}
-            className="font-semibold hover:underline cursor-pointer"
-            style={{ color: "#2563eb" }}
-          >
-            Términos y Condiciones
-          </button>{" "}
-          y la{" "}
-          <button
-            type="button"
-            onClick={() => setLegalModal("privacidad")}
-            className="font-semibold hover:underline cursor-pointer"
-            style={{ color: "#2563eb" }}
-          >
-            Política de Privacidad
-          </button>
-          .
-        </span>
-      </label>
+        <AuthField
+          label="Email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          placeholder="nombre@email.com"
+          defaultValue={state.values?.email}
+          icon={Mail}
+          error={fieldErrors.email}
+        />
+        <AuthField
+          label="Contraseña"
+          name="password"
+          type="password"
+          autoComplete="new-password"
+          placeholder="Mínimo 8 caracteres"
+          icon={Lock}
+          error={fieldErrors.password}
+        />
+        <AuthField
+          label="Repetir contraseña"
+          name="confirm"
+          type="password"
+          autoComplete="new-password"
+          placeholder="••••••••"
+          icon={Lock}
+          error={fieldErrors.confirm}
+        />
 
-      <SubmitButton pending={pending} pendingText="Creando cuenta…">
-        Crear cuenta
-      </SubmitButton>
+        {/* Checkbox T&C */}
+        <div>
+          <label className="flex cursor-pointer select-none items-start gap-[10px]">
+            <input
+              type="checkbox"
+              name="tyc"
+              value="on"
+              style={{ colorScheme: "light", accentColor: "#2563eb" }}
+              className="mt-[3px] h-[15px] w-[15px] shrink-0 cursor-pointer"
+              onChange={() => {
+                if (fieldErrors.tyc) setFieldErrors((p) => ({ ...p, tyc: "" }));
+              }}
+            />
+            <span className="text-[12.5px] leading-[1.5]" style={{ color: "#64748b" }}>
+              Leí y acepto los{" "}
+              <button
+                type="button"
+                onClick={() => setLegalModal("terminos")}
+                className="cursor-pointer font-semibold hover:underline"
+                style={{ color: "#2563eb" }}
+              >
+                Términos y Condiciones
+              </button>{" "}
+              y la{" "}
+              <button
+                type="button"
+                onClick={() => setLegalModal("privacidad")}
+                className="cursor-pointer font-semibold hover:underline"
+                style={{ color: "#2563eb" }}
+              >
+                Política de Privacidad
+              </button>
+              .
+            </span>
+          </label>
+          {fieldErrors.tyc && (
+            <p className="mt-[5px] text-[12px]" style={{ color: "#ef4444" }}>{fieldErrors.tyc}</p>
+          )}
+        </div>
 
-      <p className="pt-1 text-center text-[13px]" style={{ color: "#64748b" }}>
-        ¿Ya tenés cuenta?{" "}
-        <Link href="/login" className="font-semibold hover:underline" style={{ color: "#2563eb" }}>
-          Ingresá
-        </Link>
-      </p>
-    </form>
-    {legalModal && <LegalModal type={legalModal} onClose={() => setLegalModal(null)} />}
+        <SubmitButton pending={pending} pendingText="Creando cuenta…">
+          Crear cuenta
+        </SubmitButton>
+
+        <p className="pt-1 text-center text-[13px]" style={{ color: "#64748b" }}>
+          ¿Ya tenés cuenta?{" "}
+          <Link href="/login" className="font-semibold hover:underline" style={{ color: "#2563eb" }}>
+            Ingresá
+          </Link>
+        </p>
+      </form>
+      {legalModal && <LegalModal type={legalModal} onClose={() => setLegalModal(null)} />}
     </>
   );
 }

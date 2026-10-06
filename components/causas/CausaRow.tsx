@@ -53,7 +53,7 @@ export default function CausaRow({ causa, active, onSelect, wide = false }: Caus
         <div className="min-w-0 flex-1">
           <div className="truncate text-[12.5px] font-semibold text-text">
             {causa.nro_expediente && (
-              <span className="mr-[5px] font-mono text-[11px] font-normal text-muted">
+              <span className="mr-[5px] text-[12px] font-semibold text-sub">
                 {causa.nro_expediente} ·
               </span>
             )}

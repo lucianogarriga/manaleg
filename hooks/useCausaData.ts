@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/services/supabase/client";
-import type { CausaShareConUsuario, Evento, Gasto, HonorarioConPagos, MovimientoConAutor } from "@/types";
+import type { CausaShareConUsuario, Evento, Gasto, HonorarioConPagos, MovimientoConAutor, Todo } from "@/types";
 
 interface Loaded<T> {
   causaId: string;
@@ -110,4 +110,17 @@ export function useHonorario(causaId: string) {
       .returns<HonorarioConPagos[]>(),
   );
   return { ...rest, honorario: data[0] ?? null };
+}
+
+const EMPTY_TODOS: Todo[] = [];
+
+export function useTodos(causaId: string) {
+  return useCausaQuery<Todo[]>(causaId, EMPTY_TODOS, (supabase, id) =>
+    supabase
+      .from("todos")
+      .select("*")
+      .eq("causa_id", id)
+      .order("created_at", { ascending: true })
+      .returns<Todo[]>(),
+  );
 }

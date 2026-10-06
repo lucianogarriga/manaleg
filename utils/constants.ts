@@ -77,7 +77,7 @@ export const TIPOS_JUICIO_POR_FUERO: Record<string, string[]> = {
 };
 
 // Tipo del próximo aviso de una causa
-export const TIPOS_AVISO = ["Vencimiento", "Alerta"] as const;
+export const TIPOS_AVISO = ["Vencimiento", "Recordatorio", "Audiencia", "Alerta"] as const;
 
 export const ESTADOS_CAUSA = [
   "Iniciada",

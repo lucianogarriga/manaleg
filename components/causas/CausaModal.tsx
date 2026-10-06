@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { X, Share2, Pencil } from "lucide-react";
 import { quitarAcceso } from "@/app/(app)/causas/shareActions";
+import { clearVencimiento } from "@/app/(app)/causas/detailActions";
 import ColaboradoresList from "@/components/shares/ColaboradoresList";
 import ShareCausaModal from "@/components/shares/ShareCausaModal";
 import AlertCard from "@/components/ui/AlertCard";
@@ -15,6 +16,8 @@ import GastosCard from "@/components/gastos/GastosCard";
 import HonorariosCard from "@/components/honorarios/HonorariosCard";
 import EventosSection, { type EventosSectionRef } from "@/components/eventos/EventosSection";
 import MovimientosSection, { type MovimientosSectionRef } from "@/components/movimientos/MovimientosSection";
+import VencimientoForm from "@/components/causas/VencimientoForm";
+import TodoList from "@/components/todos/TodoList";
 import { useShares } from "@/hooks/useCausaData";
 import { useCausasStore } from "@/store/causasStore";
 import { useUIStore } from "@/store/uiStore";
@@ -34,6 +37,7 @@ export default function CausaModal({ causa, userId }: Props) {
   const showToast = useUIStore((s) => s.showToast);
   const { data: shares, loading: sharesLoading, reload: reloadShares } = useShares(causa.id);
   const [shareOpen, setShareOpen] = useState(false);
+  const [vencimientoFormOpen, setVencimientoFormOpen] = useState(false);
   const movRef = useRef<MovimientosSectionRef>(null);
   const evRef = useRef<EventosSectionRef>(null);
 
@@ -113,12 +117,7 @@ export default function CausaModal({ causa, userId }: Props) {
             {/* Título + botón cerrar */}
             <div className="mb-[10px] flex items-start gap-3">
               <h2 className="flex-1 text-[16px] font-bold leading-[1.35] text-text">
-                {causa.nro_expediente && (
-                  <span className="font-semibold text-sub">
-                    Expte. N° {causa.nro_expediente} —{" "}
-                  </span>
-                )}
-                {causa.caratula}
+                {causa.nro_expediente && `${causa.nro_expediente} — `}{causa.caratula}
               </h2>
               <button
                 type="button"
@@ -245,8 +244,57 @@ export default function CausaModal({ causa, userId }: Props) {
                 <EventosSection ref={evRef} causaId={causa.id} naked />
               </CollapsibleSection>
 
-              <CollapsibleSection title="Vencimientos y alertas">
-                <FieldGrid fields={vencFields} />
+              <CollapsibleSection
+                title="Vencimientos y alertas"
+                headerAction={
+                  <span className="flex items-center gap-2">
+                    <button type="button" onClick={() => setVencimientoFormOpen(true)}
+                      className="cursor-pointer text-[13px] font-semibold text-blue hover:underline">
+                      Editar
+                    </button>
+                    {causa.proximo_vencimiento && (
+                      <button type="button"
+                        onClick={async () => {
+                          if (!confirm("¿Eliminar el vencimiento/alerta de esta causa?")) return;
+                          const r = await clearVencimiento(causa.id);
+                          showToast({ message: r.error ?? r.message ?? "Listo." });
+                          if (!r.error) router.refresh();
+                        }}
+                        className="cursor-pointer text-[13px] font-semibold text-red hover:underline">
+                        Eliminar
+                      </button>
+                    )}
+                  </span>
+                }
+              >
+                {causa.proximo_vencimiento ? (
+                  <>
+                    <div className="flex flex-wrap items-center gap-[6px] px-[14px] pt-[10px] pb-[6px]">
+                      {causa.tipo_vencimiento && (() => {
+                        const label = causa.tipo_vencimiento === "Alerta" ? "Recordatorio" : causa.tipo_vencimiento;
+                        const cls = label === "Audiencia"
+                          ? "bg-pur-lt text-pur"
+                          : label === "Recordatorio"
+                            ? "bg-blue-lt text-blue"
+                            : "bg-amb-lt text-amb";
+                        return (
+                          <span className={`rounded-[4px] px-[7px] py-[2px] text-[11px] font-semibold uppercase tracking-[.3px] ${cls}`}>
+                            {label}
+                          </span>
+                        );
+                      })()}
+                    </div>
+                    <FieldGrid fields={vencFields} />
+                  </>
+                ) : (
+                  <div className="flex items-center justify-between px-[14px] py-[10px]">
+                    <p className="text-[13.5px] text-muted">Sin vencimiento cargado.</p>
+                    <button type="button" onClick={() => setVencimientoFormOpen(true)}
+                      className="cursor-pointer text-[13px] font-semibold text-blue hover:underline">
+                      + Agregar
+                    </button>
+                  </div>
+                )}
               </CollapsibleSection>
 
               <CollapsibleSection title="Honorarios">
@@ -255,6 +303,10 @@ export default function CausaModal({ causa, userId }: Props) {
 
               <CollapsibleSection title="Gastos">
                 <GastosCard causaId={causa.id} naked />
+              </CollapsibleSection>
+
+              <CollapsibleSection title="Tareas">
+                <TodoList causaId={causa.id} />
               </CollapsibleSection>
 
               <CollapsibleSection
@@ -281,6 +333,17 @@ export default function CausaModal({ causa, userId }: Props) {
         </div>
       </div>
 
+      {vencimientoFormOpen && (
+        <VencimientoForm
+          causa={causa}
+          onClose={() => setVencimientoFormOpen(false)}
+          onSaved={(msg) => {
+            setVencimientoFormOpen(false);
+            showToast({ message: msg });
+            router.refresh();
+          }}
+        />
+      )}
       {shareOpen && (
         <ShareCausaModal
           causaId={causa.id}

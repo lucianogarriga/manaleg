@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:32px 16px;background:#F1F5F9;font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif">
+  <div style="max-width:560px;margin:0 auto">
+
+    <!-- Header -->
+    <div style="background:#0F1F3D;border-radius:12px 12px 0 0;padding:20px 28px">
+      <table role="presentation" cellspacing="0" cellpadding="0"><tr>
+        <td style="vertical-align:middle;padding-right:12px">
+          <div style="width:32px;height:32px;background:#2563EB;border-radius:8px;text-align:center;line-height:32px;font-weight:800;font-size:15px;color:#fff;letter-spacing:-.3px">M</div>
+        </td>
+        <td style="vertical-align:middle">
+          <span style="font-size:15px;font-weight:700;color:#fff;letter-spacing:.4px">MANALEG</span>
+        </td>
+      </tr></table>
+    </div>
+
+    <!-- Body -->
+    <div style="background:#fff;border:1px solid #DDE3ED;border-top:0;border-radius:0 0 12px 12px;padding:28px">
+      <p style="margin:0 0 6px;font-size:16px;font-weight:600;color:#0F172A">Confirmá tu cuenta</p>
+      <p style="margin:0 0 24px;font-size:14px;color:#64748B;line-height:1.55">
+        Gracias por registrarte en MANALEG. Hacé clic en el botón de abajo para confirmar tu dirección de email y activar tu cuenta.
+      </p>
+
+      <!-- CTA -->
+      <p style="margin:0 0 24px">
+        <a href="{{ .ConfirmationURL }}"
+           style="display:inline-block;background:#2563EB;color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 28px;border-radius:8px;letter-spacing:.1px">
+          Confirmar mi cuenta →
+        </a>
+      </p>
+
+      <!-- Fallback link -->
+      <p style="margin:0;font-size:12px;color:#94A3B8;line-height:1.6">
+        Si el botón no funciona, copiá y pegá este enlace en tu navegador:<br>
+        <a href="{{ .ConfirmationURL }}" style="color:#2563EB;word-break:break-all;text-decoration:none">{{ .ConfirmationURL }}</a>
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div style="padding:16px 0 0;text-align:center">
+      <p style="margin:0 0 4px;font-size:12px;color:#94A3B8">Si no creaste esta cuenta, podés ignorar este mensaje.</p>
+      <p style="margin:0;font-size:12px;color:#94A3B8">
+        <a href="mailto:contacto@manaleg.com.ar" style="color:#94A3B8;text-decoration:none">contacto@manaleg.com.ar</a>
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>

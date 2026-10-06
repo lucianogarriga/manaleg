@@ -25,7 +25,7 @@ interface CausasViewProps {
 }
 
 export default function CausasView({ causas, clientes, userId, causasMax }: CausasViewProps) {
-  const { causas: visibles, total } = useCausas(causas, userId);
+  const { causas: visibles, total, counts } = useCausas(causas, userId);
   // Solo causas propias cuentan para el límite (las compartidas no son del usuario)
   const causasPropias = causas.filter((c) => c.user_id === userId).length;
   const atLimit = causasPropias >= causasMax;
@@ -71,13 +71,13 @@ export default function CausasView({ causas, clientes, userId, causasMax }: Caus
           </button>
         </EmptyState>
       ) : (
-        <div className="flex h-full flex-col overflow-hidden">
+        <div className="flex flex-col">
           <StatsRow causas={causas} />
 
           {/* FilterChips + badge de uso + toggle de vista */}
           <div className="flex items-center gap-2 pr-3">
             <div className="flex-1">
-              <FilterChips total={total} />
+              <FilterChips total={total} counts={counts} />
             </div>
             <span
               className="shrink-0 text-[11px] tabular-nums"
@@ -121,7 +121,7 @@ export default function CausasView({ causas, clientes, userId, causasMax }: Caus
 
           {/* Lista o grid */}
           {viewMode === "list" ? (
-            <div className="flex-1 overflow-y-auto py-1 pb-16">
+            <div className="py-1 pb-16">
               {visibles.map((causa) => (
                 <CausaRow
                   key={causa.id}
@@ -138,7 +138,7 @@ export default function CausasView({ causas, clientes, userId, causasMax }: Caus
               )}
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto p-3 pb-16">
+            <div className="p-3 pb-16">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {visibles.map((causa) => (
                   <CausaCard

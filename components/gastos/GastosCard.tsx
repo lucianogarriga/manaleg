@@ -2,8 +2,8 @@
 
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ExternalLink, Trash2 } from "lucide-react";
-import { addGasto, removeGasto } from "@/app/(app)/causas/gastoActions";
+import { ExternalLink, Pencil, Trash2 } from "lucide-react";
+import { addGasto, removeGasto, updateGasto } from "@/app/(app)/causas/gastoActions";
 import { TIPOS_GASTO } from "@/utils/constants";
 import CardSection, { CardAction } from "@/components/ui/CardSection";
 import Modal from "@/components/ui/Modal";
@@ -11,18 +11,21 @@ import FormAlert from "@/components/auth/FormAlert";
 import { useGastos } from "@/hooks/useCausaData";
 import { useUIStore } from "@/store/uiStore";
 import { formatCurrency, formatDate } from "@/utils/formatters";
-import type { FormState } from "@/types";
+import type { FormState, Gasto } from "@/types";
 
 function GastoForm({
   causaId,
+  gasto,
   onClose,
   onSaved,
 }: {
   causaId: string;
+  gasto?: Gasto;
   onClose: () => void;
   onSaved: (msg: string) => void;
 }) {
-  const [state, action, pending] = useActionState<FormState, FormData>(addGasto, {});
+  const action = gasto ? updateGasto : addGasto;
+  const [state, dispatch, pending] = useActionState<FormState, FormData>(action, {});
   const [, startSubmit] = useTransition();
 
   useEffect(() => {
@@ -33,11 +36,14 @@ function GastoForm({
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    startSubmit(() => action(fd));
+    startSubmit(() => dispatch(fd));
   };
 
   return (
-    <Modal open title="Registrar gasto" onClose={onClose}
+    <Modal
+      open
+      title={gasto ? "Editar gasto" : "Registrar gasto"}
+      onClose={onClose}
       footer={
         <div className="flex items-center gap-2">
           <button type="button" onClick={onClose}
@@ -46,25 +52,28 @@ function GastoForm({
           </button>
           <button type="submit" form="gasto-form" disabled={pending}
             className="cursor-pointer rounded-[6px] bg-blue px-4 py-[6px] text-[14px] font-semibold text-white hover:opacity-90 disabled:opacity-60">
-            {pending ? "Guardando…" : "Registrar"}
+            {pending ? "Guardando…" : gasto ? "Guardar cambios" : "Registrar"}
           </button>
         </div>
       }
     >
       <form id="gasto-form" onSubmit={onSubmit} className="flex flex-col gap-3 px-4 py-3">
         <input type="hidden" name="causa_id" value={causaId} />
+        {gasto && <input type="hidden" name="id" value={gasto.id} />}
         {state.error && <FormAlert state={state} />}
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <label className="block text-[12px] font-semibold text-sub mb-1">Descripción <span className="text-red">*</span></label>
-            <input name="descripcion" required maxLength={500} placeholder="Carta documento a demandado"
+            <input name="descripcion" required maxLength={500}
+              defaultValue={gasto?.descripcion ?? ""}
+              placeholder="Carta documento a demandado"
               className="w-full rounded-[6px] border border-border bg-bg px-3 py-[7px] text-[13px] text-text placeholder:text-muted outline-none focus:border-blue focus:ring-1 focus:ring-blue" />
           </div>
 
           <div>
             <label className="block text-[12px] font-semibold text-sub mb-1">Tipo</label>
-            <select name="tipo"
+            <select name="tipo" defaultValue={gasto?.tipo ?? ""}
               className="w-full rounded-[6px] border border-border bg-bg px-3 py-[7px] text-[13px] text-text outline-none focus:border-blue">
               <option value="">Sin clasificar</option>
               {TIPOS_GASTO.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -73,19 +82,23 @@ function GastoForm({
 
           <div>
             <label className="block text-[12px] font-semibold text-sub mb-1">Fecha</label>
-            <input name="fecha" type="date"
+            <input name="fecha" type="date" defaultValue={gasto?.fecha ?? ""}
               className="w-full rounded-[6px] border border-border bg-bg px-3 py-[7px] text-[13px] text-text outline-none focus:border-blue" />
           </div>
 
           <div>
             <label className="block text-[12px] font-semibold text-sub mb-1">Monto ($)</label>
-            <input name="monto" inputMode="decimal" placeholder="2500"
+            <input name="monto" inputMode="decimal"
+              defaultValue={gasto?.monto !== undefined && gasto.monto !== null ? String(gasto.monto) : ""}
+              placeholder="2500"
               className="w-full rounded-[6px] border border-border bg-bg px-3 py-[7px] text-[13px] text-text placeholder:text-muted outline-none focus:border-blue" />
           </div>
 
           <div>
             <label className="block text-[12px] font-semibold text-sub mb-1">Link comprobante</label>
-            <input name="comprobante_url" type="url" placeholder="https://drive.google.com/…"
+            <input name="comprobante_url" type="url"
+              defaultValue={gasto?.comprobante_url ?? ""}
+              placeholder="https://drive.google.com/…"
               className="w-full rounded-[6px] border border-border bg-bg px-3 py-[7px] text-[13px] text-text placeholder:text-muted outline-none focus:border-blue" />
           </div>
         </div>
@@ -98,10 +111,12 @@ export default function GastosCard({ causaId, naked = false }: { causaId: string
   const router = useRouter();
   const { data: gastos, loading, error, reload } = useGastos(causaId);
   const [formOpen, setFormOpen] = useState(false);
+  const [editingGasto, setEditingGasto] = useState<Gasto | null>(null);
   const showToast = useUIStore((s) => s.showToast);
 
-  const afterAdd = (msg: string) => {
+  const afterSaved = (msg: string) => {
     setFormOpen(false);
+    setEditingGasto(null);
     showToast({ message: msg });
     reload();
     router.refresh();
@@ -132,7 +147,7 @@ export default function GastosCard({ causaId, naked = false }: { causaId: string
     <>
       <div className="px-[13px] py-[9px]">
         <span className="text-[13px] font-semibold text-sub">
-          Total gastos: <span className="text-text">{formatCurrency(total)}</span>
+          Total: <span className="text-text">{formatCurrency(total)}</span>
           <span className="ml-2 text-[11px] font-normal text-muted">({gastos.length} {gastos.length === 1 ? "gasto" : "gastos"})</span>
         </span>
       </div>
@@ -151,6 +166,10 @@ export default function GastosCard({ causaId, naked = false }: { causaId: string
             </a>
           )}
           <span className="shrink-0 text-[13.5px] font-semibold text-text">{formatCurrency(g.monto)}</span>
+          <button type="button" onClick={() => setEditingGasto(g)} aria-label="Editar gasto"
+            className="flex cursor-pointer text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-blue focus:opacity-100">
+            <Pencil size={11} />
+          </button>
           <button type="button" onClick={() => onDelete(g.id)} aria-label="Eliminar gasto"
             className="flex cursor-pointer text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-red focus:opacity-100">
             <Trash2 size={11} />
@@ -182,7 +201,14 @@ export default function GastosCard({ causaId, naked = false }: { causaId: string
           {inner}
         </CardSection>
       )}
-      {formOpen && <GastoForm causaId={causaId} onClose={() => setFormOpen(false)} onSaved={afterAdd} />}
+      {(formOpen || editingGasto) && (
+        <GastoForm
+          causaId={causaId}
+          gasto={editingGasto ?? undefined}
+          onClose={() => { setFormOpen(false); setEditingGasto(null); }}
+          onSaved={afterSaved}
+        />
+      )}
     </>
   );
 }

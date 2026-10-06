@@ -139,6 +139,46 @@ export async function addPago(_prev: FormState, formData: FormData): Promise<For
   return { message: "Pago registrado." };
 }
 
+// ─── VENCIMIENTOS ───
+
+export async function updateVencimiento(_prev: FormState, formData: FormData): Promise<FormState> {
+  const causaId = text(formData, "causa_id");
+  const proximoVencimiento = text(formData, "proximo_vencimiento");
+  const motivo = text(formData, "motivo_vencimiento");
+  const tipoRaw = text(formData, "tipo_vencimiento");
+
+  if (!causaId) return { error: "Falta la causa." };
+  if (proximoVencimiento && !isISODate(proximoVencimiento)) return { error: "La fecha no es válida." };
+
+  const tipo = proximoVencimiento
+    ? (["Vencimiento", "Recordatorio", "Audiencia"].includes(tipoRaw ?? "") ? tipoRaw : "Vencimiento")
+    : null;
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("causas").update({
+    proximo_vencimiento: proximoVencimiento || null,
+    motivo_vencimiento: proximoVencimiento ? motivo || null : null,
+    tipo_vencimiento: tipo,
+  }).eq("id", causaId);
+
+  if (error) return { error: `No se pudo actualizar el vencimiento: ${error.message}` };
+  refresh();
+  return { message: "Vencimiento actualizado." };
+}
+
+export async function clearVencimiento(causaId: string): Promise<FormState> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("causas").update({
+    proximo_vencimiento: null,
+    motivo_vencimiento: null,
+    tipo_vencimiento: null,
+  }).eq("id", causaId);
+
+  if (error) return { error: `No se pudo eliminar el vencimiento: ${error.message}` };
+  refresh();
+  return { message: "Vencimiento eliminado." };
+}
+
 export async function removePago(id: string): Promise<FormState> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("pagos").delete().eq("id", id).select("id");
