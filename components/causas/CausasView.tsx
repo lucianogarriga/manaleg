@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Scale, LayoutList, LayoutGrid } from "lucide-react";
+import { Scale } from "lucide-react";
 import { normalizeTipoJuicio } from "@/utils/constants";
 import EmptyState from "@/components/ui/EmptyState";
 import FAB from "@/components/ui/FAB";
@@ -87,60 +87,15 @@ export default function CausasView({ causas, clientes, userId, causasMax }: Caus
         <div className="flex flex-col">
           <StatsRow causas={causas} />
 
-          {/* FilterChips + badge de uso + toggle de vista */}
-          <div className="flex items-center gap-2 pr-3">
-            <div className="flex-1">
-              <FilterChips total={total} counts={counts} tiposJuicio={tiposJuicio} />
-            </div>
-            <div className="shrink-0 flex flex-col items-end gap-[3px]">
-              <span
-                className="text-[11px] tabular-nums whitespace-nowrap"
-                style={{ color: atLimit ? "#dc2626" : "var(--color-muted)" }}
-              >
-                {causasPropias} de {causasMax} causas
-              </span>
-              <div className="w-[72px] h-[3px] rounded-full overflow-hidden" style={{ background: "var(--color-border)" }}>
-                <div
-                  className="h-full rounded-full transition-all duration-300"
-                  style={{
-                    width: `${Math.min(100, (causasPropias / causasMax) * 100)}%`,
-                    background: atLimit ? "#dc2626" : causasPropias / causasMax > 0.8 ? "#f59e0b" : "var(--color-blue)",
-                  }}
-                />
-              </div>
-            </div>
-            <div
-              className="flex shrink-0 items-center gap-[2px] rounded-[7px] p-[3px]"
-              style={{ background: "var(--color-border)" }}
-            >
-              <button
-                type="button"
-                title="Vista lista"
-                onClick={() => toggleView("list")}
-                className="flex cursor-pointer items-center justify-center rounded-[5px] p-[5px] transition-colors"
-                style={{
-                  background: viewMode === "list" ? "var(--color-card)" : "transparent",
-                  color: viewMode === "list" ? "var(--color-blue)" : "var(--color-muted)",
-                  boxShadow: viewMode === "list" ? "0 1px 2px rgba(0,0,0,.1)" : undefined,
-                }}
-              >
-                <LayoutList size={14} />
-              </button>
-              <button
-                type="button"
-                title="Vista tarjetas"
-                onClick={() => toggleView("grid")}
-                className="flex cursor-pointer items-center justify-center rounded-[5px] p-[5px] transition-colors"
-                style={{
-                  background: viewMode === "grid" ? "var(--color-card)" : "transparent",
-                  color: viewMode === "grid" ? "var(--color-blue)" : "var(--color-muted)",
-                  boxShadow: viewMode === "grid" ? "0 1px 2px rgba(0,0,0,.1)" : undefined,
-                }}
-              >
-                <LayoutGrid size={14} />
-              </button>
-            </div>
-          </div>
+          <FilterChips
+            total={total}
+            counts={counts}
+            tiposJuicio={tiposJuicio}
+            causasPropias={causasPropias}
+            causasMax={causasMax}
+            viewMode={viewMode}
+            onViewChange={toggleView}
+          />
 
           {/* Lista o grid */}
           {viewMode === "list" ? (
@@ -161,7 +116,7 @@ export default function CausasView({ causas, clientes, userId, causasMax }: Caus
               )}
             </div>
           ) : (
-            <div className="p-3 pb-16">
+            <div className="px-2 py-3 pb-16 sm:px-3">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {visibles.map((causa) => (
                   <CausaCard
