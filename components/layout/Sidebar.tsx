@@ -103,7 +103,7 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
       <aside
         className={`fixed inset-y-0 left-0 z-40 flex shrink-0 flex-col p-2 md:static md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } ${exp ? "w-[208px]" : "md:w-[56px]"} w-[208px]`}
+        } ${exp ? "w-[228px]" : "md:w-[56px]"} w-[228px]`}
         style={{ transition: `width ${DUR}` }}
       >
         {/* Pill — la superficie flotante */}
@@ -141,14 +141,14 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
               type="button"
               onClick={toggleSidebarPin}
               title={sidebarPinned ? "Colapsar barra lateral" : "Expandir barra lateral"}
-              className="flex w-full cursor-pointer items-center gap-[9px] overflow-hidden py-[8px] pl-[10px] pr-3 transition-colors hover:bg-black/5"
-              style={{ color: "var(--sb-fg)", opacity: 0.55 }}
+              className="mx-[5px] my-px flex w-[calc(100%-10px)] cursor-pointer items-center gap-[9px] overflow-hidden rounded-[7px] py-[7px] pl-[10px] pr-3 transition-colors hover:bg-black/5"
+              style={{ color: "var(--sb-fg)", opacity: 0.6 }}
             >
               {sidebarPinned
-                ? <PanelLeftClose size={14} strokeWidth={2} className="shrink-0" />
-                : <PanelLeftOpen  size={14} strokeWidth={2} className="shrink-0" />
+                ? <PanelLeftClose size={15} strokeWidth={2} className="w-4 shrink-0" />
+                : <PanelLeftOpen  size={15} strokeWidth={2} className="w-4 shrink-0" />
               }
-              <span className="whitespace-nowrap text-[11.5px] font-medium" style={textStyle}>
+              <span className="whitespace-nowrap text-[12px] font-medium" style={textStyle}>
                 {sidebarPinned ? "Colapsar" : "Expandir"}
               </span>
             </button>

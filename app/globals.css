@@ -36,8 +36,8 @@
   /* Sidebar */
   --sb-bg:         #ffffff;
   --sb-fg:         #64748b;
-  --sb-act-bg:     rgba(37,99,235,.10);
-  --sb-act-fg:     #2563eb;
+  --sb-act-bg:     rgba(37,99,235,.13);
+  --sb-act-fg:     #1d4ed8;
   --sb-shadow:     0 2px 8px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.06), 0 0 0 1px rgba(0,0,0,.04);
 
   /* Topbar */
