@@ -9,8 +9,16 @@ import {
   URGENCY_TEXT,
   getRowDeadlineText,
   getUrgency,
+  type Urgency,
 } from "@/utils/urgencyHelpers";
 import type { CausaConRelaciones } from "@/types";
+
+const URGENCY_LEFT: Record<Urgency, string> = {
+  red:   "var(--color-red)",
+  amber: "var(--color-amb)",
+  green: "var(--color-grn)",
+  none:  "var(--color-border)",
+};
 
 const VIA_LABELS: Record<string, string> = {
   "Judicial":               "JUD",
@@ -42,11 +50,13 @@ export default function CausaRow({ causa, active, onSelect, wide = false }: Caus
       <button
         type="button"
         onClick={onSelect}
-        className={`mx-3 my-[5px] flex w-[calc(100%-24px)] cursor-pointer items-center gap-3 rounded-xl border border-l-[3px] px-4 py-[9px] text-left transition-colors duration-100 ${URGENCY_BORDER[urgency]} ${cerrada ? "opacity-55" : ""}`}
+        className={`mx-3 my-[5px] flex w-[calc(100%-24px)] cursor-pointer items-center gap-3 rounded-xl border border-l-[3px] px-4 py-[9px] text-left ${cerrada ? "opacity-55" : ""}`}
         style={{
           background: active ? "var(--color-blue-lt)" : hovered ? "var(--hover-row)" : "var(--color-card)",
           borderColor: "var(--color-border)",
+          borderLeftColor: URGENCY_LEFT[urgency],
           boxShadow: "0 1px 3px rgba(0,0,0,.06)",
+          transition: "background-color 140ms ease",
         }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
@@ -103,10 +113,11 @@ export default function CausaRow({ causa, active, onSelect, wide = false }: Caus
     <button
       type="button"
       onClick={onSelect}
-      className={`block w-full cursor-pointer border-b border-l-[3px] px-[13px] py-[9px] text-left transition-colors duration-100 ${URGENCY_BORDER[urgency]} ${cerrada ? "opacity-55" : ""}`}
+      className={`block w-full cursor-pointer border-b border-l-[3px] px-[13px] py-[9px] text-left ${URGENCY_BORDER[urgency]} ${cerrada ? "opacity-55" : ""}`}
       style={{
         borderBottomColor: "var(--color-border)",
         background: active ? "var(--color-blue-lt)" : hovered ? "var(--hover-row)" : undefined,
+        transition: "background-color 140ms ease",
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}

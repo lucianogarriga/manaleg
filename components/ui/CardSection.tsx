@@ -2,19 +2,21 @@ import { forwardRef } from "react";
 
 interface CardSectionProps {
   title: string;
-  action?: React.ReactNode; // link de acción a la derecha del header ("+ Agregar")
+  titleInfo?: React.ReactNode;
+  action?: React.ReactNode;
   children: React.ReactNode;
 }
 
 const CardSection = forwardRef<HTMLElement, CardSectionProps>(function CardSection(
-  { title, action, children },
+  { title, titleInfo, action, children },
   ref,
 ) {
   return (
     <section ref={ref} className="mx-3 mt-[10px] overflow-hidden rounded-[7px] border border-border bg-card last:mb-5">
-      <div className="flex items-center justify-between border-b border-border px-[13px] py-[9px] text-[12px] font-bold uppercase tracking-[.4px] text-sub">
+      <div className="flex items-center gap-[6px] border-b border-border px-[13px] py-[9px] text-[12px] font-bold uppercase tracking-[.4px] text-sub">
         {title}
-        {action}
+        {titleInfo}
+        {action && <span className="ml-auto">{action}</span>}
       </div>
       {children}
     </section>

@@ -5,6 +5,8 @@ import { formatLongDate, todayISO } from "@/utils/formatters";
 import Toaster from "@/components/ui/Toaster";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
+import TitleUpdater from "./TitleUpdater";
+import NavigationProgress from "./NavigationProgress";
 
 // Estructura base: Sidebar fijo + columna principal (Topbar + contenido).
 // Cada página maneja su propio scroll dentro del área de contenido.
@@ -32,6 +34,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           {children}
         </main>
       </div>
+      <TitleUpdater urgentes={counts.vencimientosProximos} />
+      <NavigationProgress />
       <Toaster />
     </div>
   );

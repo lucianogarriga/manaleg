@@ -184,12 +184,18 @@ export interface Vencimiento {
   id: string;
   causa_id: string;
   creado_por_id: string;
-  fecha_vencimiento: string;
-  descripcion: string;
-  tipo: TipoVencimiento | null;
-  estado_alerta: EstadoAlerta;
-  anticipacion: Anticipacion;
+  tipo: TipoAviso;
+  fecha: string; // DATE → "YYYY-MM-DD"
+  motivo: string | null;
+  anticipacion: string;
+  completado: boolean;
+  // Campos de agenda (opcionales según tipo)
+  hora: string | null;         // Audiencia: "HH:MM:SS"
+  lugar: string | null;        // Audiencia
+  notas: string | null;        // Audiencia
+  acto_procesal: string | null; // Vencimiento
   created_at: string;
+  updated_at: string;
 }
 
 export interface Honorario {

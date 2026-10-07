@@ -1,15 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import Badge from "@/components/ui/Badge";
 import { formatDate, getInitials } from "@/utils/formatters";
 import {
-  URGENCY_BORDER,
   URGENCY_DOT,
   URGENCY_TEXT,
   getRowDeadlineText,
   getUrgency,
 } from "@/utils/urgencyHelpers";
 import type { CausaConRelaciones } from "@/types";
+import type { Urgency } from "@/utils/urgencyHelpers";
+
+const URGENCY_LEFT: Record<Urgency, string> = {
+  red:   "var(--color-red)",
+  amber: "var(--color-amb)",
+  green: "var(--color-grn)",
+  none:  "var(--color-border)",
+};
 
 interface CausaCardProps {
   causa: CausaConRelaciones;
@@ -18,6 +26,7 @@ interface CausaCardProps {
 }
 
 export default function CausaCard({ causa, active, onSelect }: CausaCardProps) {
+  const [hovered, setHovered] = useState(false);
   const cerrada = causa.estado === "Cerrada";
   const urgency = getUrgency(causa.proximo_vencimiento, cerrada);
   const deadline = cerrada
@@ -25,17 +34,21 @@ export default function CausaCard({ causa, active, onSelect }: CausaCardProps) {
     : getRowDeadlineText(causa.proximo_vencimiento, causa.tipo_vencimiento, causa.motivo_vencimiento);
   const initials = getInitials(causa.owner?.nombre_completo, causa.owner?.email[0]?.toUpperCase());
 
+  const bg = active ? "var(--color-blue-lt)" : hovered ? "var(--hover-row)" : "var(--color-card)";
+
   return (
     <button
       type="button"
       onClick={onSelect}
-      className={`flex w-full cursor-pointer flex-col gap-2 rounded-xl border border-l-[3px] p-4 text-left transition-colors duration-100 ${URGENCY_BORDER[urgency]} ${cerrada ? "opacity-55" : ""}`}
+      className={`flex w-full cursor-pointer flex-col gap-2 overflow-hidden rounded-xl border border-l-[3px] p-4 text-left ${cerrada ? "opacity-55" : ""}`}
       style={{
-        background: active ? "var(--color-blue-lt)" : "var(--color-card)",
-        borderColor: `var(--color-border)`,
+        background: bg,
+        borderColor: "var(--color-border)",
+        borderLeftColor: URGENCY_LEFT[urgency],
+        transition: "background-color 140ms ease",
       }}
-      onMouseEnter={(e) => { if (!active) (e.currentTarget as HTMLElement).style.background = "var(--hover-row)"; }}
-      onMouseLeave={(e) => { if (!active) (e.currentTarget as HTMLElement).style.background = active ? "var(--color-blue-lt)" : "var(--color-card)"; }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       {/* Encabezado: carátula + badge estado */}
       <div className="flex items-start justify-between gap-2">
@@ -58,7 +71,7 @@ export default function CausaCard({ causa, active, onSelect }: CausaCardProps) {
       )}
 
       {/* Footer: deadline + owner */}
-      <div className="flex items-center gap-[5px] pt-1 border-t" style={{ borderColor: "var(--color-border)" }}>
+      <div className="mt-auto flex items-center gap-[5px] border-t pt-[7px]" style={{ borderColor: "var(--color-border)" }}>
         <span className={`h-[6px] w-[6px] shrink-0 rounded-full ${URGENCY_DOT[urgency]}`} />
         <span className={`flex-1 truncate text-[11px] ${URGENCY_TEXT[urgency]}`}>{deadline}</span>
         <span

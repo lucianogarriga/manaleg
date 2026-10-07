@@ -55,7 +55,7 @@ export default function VencimientoForm({
         <div>
           <label className="block text-[12px] font-semibold text-sub mb-1">Tipo</label>
           <select name="tipo_vencimiento"
-            defaultValue={causa.tipo_vencimiento === "Alerta" ? "Recordatorio" : (causa.tipo_vencimiento ?? "Vencimiento")}
+            defaultValue={causa.tipo_vencimiento ?? "Vencimiento"}
             className="w-full rounded-[6px] border border-border bg-bg px-3 py-[7px] text-[13px] text-text outline-none focus:border-blue">
             {TIPOS_VENC.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>

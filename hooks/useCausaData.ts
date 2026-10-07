@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/services/supabase/client";
-import type { CausaShareConUsuario, Evento, Gasto, HonorarioConPagos, MovimientoConAutor, Todo, TodoConCausa } from "@/types";
+import type { CausaShareConUsuario, Gasto, HonorarioConPagos, MovimientoConAutor, Todo, TodoConCausa, Vencimiento } from "@/types";
 
 interface Loaded<T> {
   causaId: string;
@@ -70,20 +70,6 @@ export function useShares(causaId: string) {
   );
 }
 
-const EMPTY_EVENTOS: Evento[] = [];
-
-export function useEventos(causaId: string) {
-  return useCausaQuery<Evento[]>(causaId, EMPTY_EVENTOS, (supabase, id) =>
-    supabase
-      .from("eventos")
-      .select("*")
-      .eq("causa_id", id)
-      .order("fecha", { ascending: true })
-      .order("hora", { ascending: true })
-      .returns<Evento[]>(),
-  );
-}
-
 const EMPTY_GASTOS: Gasto[] = [];
 
 export function useGastos(causaId: string) {
@@ -110,6 +96,19 @@ export function useHonorario(causaId: string) {
       .returns<HonorarioConPagos[]>(),
   );
   return { ...rest, honorario: data[0] ?? null };
+}
+
+const EMPTY_VENCIMIENTOS: Vencimiento[] = [];
+
+export function useVencimientos(causaId: string) {
+  return useCausaQuery<Vencimiento[]>(causaId, EMPTY_VENCIMIENTOS, (supabase, id) =>
+    supabase
+      .from("vencimientos")
+      .select("*")
+      .eq("causa_id", id)
+      .order("fecha", { ascending: true })
+      .returns<Vencimiento[]>(),
+  );
 }
 
 const EMPTY_TODOS: Todo[] = [];

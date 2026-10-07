@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Menu, Moon, Search, Sun } from "lucide-react";
 import { useCausasStore } from "@/store/causasStore";
 import { useUIStore } from "@/store/uiStore";
@@ -22,7 +22,6 @@ interface TopbarProps {
 
 export default function Topbar({ fecha, alertas, urgentes, notificaciones, sinLeer, profile }: TopbarProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const openSidebar = useUIStore((s) => s.openSidebar);
   const search = useCausasStore((s) => s.search);
   const setSearch = useCausasStore((s) => s.setSearch);
@@ -63,24 +62,23 @@ export default function Topbar({ fecha, alertas, urgentes, notificaciones, sinLe
         {getPageTitle(pathname)}
       </h1>
 
-      {/* Buscador centrado */}
+      {/* Buscador centrado — solo visible en /causas */}
       <div className="flex flex-1 justify-center">
-        <label
-          className="hidden w-full max-w-[340px] items-center gap-[6px] rounded-[7px] border px-[10px] py-[5px] text-[13px] sm:flex"
-          style={{ borderColor: "var(--color-border)", background: "var(--color-bg)" }}
-        >
-          <Search size={12} className="shrink-0 text-muted" />
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              if (!pathname.startsWith("/causas")) router.push("/causas");
-            }}
-            placeholder="Buscar por carátula o expediente…"
-            className="w-full min-w-0 bg-transparent text-[13px] text-text outline-none placeholder:text-muted"
-          />
-        </label>
+        {pathname.startsWith("/causas") && (
+          <label
+            className="hidden w-full max-w-[340px] items-center gap-[6px] rounded-[7px] border px-[10px] py-[5px] text-[13px] sm:flex"
+            style={{ borderColor: "var(--color-border)", background: "var(--color-bg)" }}
+          >
+            <Search size={12} className="shrink-0 text-muted" />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por carátula o expediente…"
+              className="w-full min-w-0 bg-transparent text-[13px] text-text outline-none placeholder:text-muted"
+            />
+          </label>
+        )}
       </div>
 
       {/* Acciones — lado derecho */}

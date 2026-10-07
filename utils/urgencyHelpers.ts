@@ -45,8 +45,7 @@ export function getDeadlineLabel(
 ): string | null {
   const days = getDaysUntil(proximoVencimiento);
   if (days === null) return null;
-  // "Alerta" es alias legacy de "Recordatorio"
-  const esRecordatorio = tipo === "Recordatorio" || tipo === "Alerta";
+  const esRecordatorio = tipo === "Recordatorio";
   if (days < -1) return `${esRecordatorio ? "Recordatorio de" : "Venció"} hace ${-days} días`;
   if (days === -1) return esRecordatorio ? "Recordatorio de ayer" : "Venció ayer";
   if (days === 0) return esRecordatorio ? "Recordatorio hoy" : "Vence hoy";

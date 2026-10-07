@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "MANALEG",
+  title: "Manaleg",
   description: "Gestión de causas judiciales y extrajudiciales",
 };
 

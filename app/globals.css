@@ -79,7 +79,7 @@
     --sb-shadow:     0 0 0 1px rgba(255,255,255,.06), 0 4px 16px rgba(0,0,0,.4);
     --tb-bg:         transparent;
     --tb-border:     #2a2b30;
-    --hover-row:     rgba(255,255,255,.05);
+    --hover-row:     rgba(255,255,255,.08);
     color-scheme: dark;
   }
 }
@@ -115,7 +115,7 @@
   --sb-shadow:     0 0 0 1px rgba(255,255,255,.06), 0 4px 16px rgba(0,0,0,.4);
   --tb-bg:         transparent;
   --tb-border:     #2a2b30;
-  --hover-row:     rgba(255,255,255,.05);
+  --hover-row:     rgba(255,255,255,.08);
   color-scheme: dark;
 }
 

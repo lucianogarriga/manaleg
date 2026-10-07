@@ -199,6 +199,107 @@ export async function clearVencimiento(causaId: string): Promise<FormState> {
   return { message: "Vencimiento eliminado." };
 }
 
+// ─── VENCIMIENTOS (tabla vencimientos) ───
+
+const TIPOS_VENC = ["Vencimiento", "Audiencia", "Recordatorio"] as const;
+
+function extraCampos(tipo: string, formData: FormData) {
+  if (tipo === "Audiencia") {
+    return {
+      hora: text(formData, "hora") || null,
+      lugar: text(formData, "lugar") || null,
+      notas: text(formData, "notas") || null,
+      acto_procesal: null,
+    };
+  }
+  if (tipo === "Vencimiento") {
+    return {
+      hora: null,
+      lugar: null,
+      notas: null,
+      acto_procesal: text(formData, "acto_procesal") || null,
+    };
+  }
+  return { hora: null, lugar: null, notas: null, acto_procesal: null };
+}
+
+export async function createVencimientoRow(_prev: FormState, formData: FormData): Promise<FormState> {
+  const causaId = text(formData, "causa_id");
+  const fecha = text(formData, "fecha");
+  const motivo = text(formData, "motivo") || null;
+  const tipoRaw = text(formData, "tipo");
+  const anticipacion = text(formData, "anticipacion") || "1 día";
+
+  if (!causaId) return { error: "Falta la causa." };
+  if (!fecha || !isISODate(fecha)) return { error: "La fecha no es válida." };
+  const tipo = TIPOS_VENC.includes(tipoRaw as typeof TIPOS_VENC[number]) ? tipoRaw! : "Vencimiento";
+
+  const userId = await getAuthUserId();
+  if (!userId) return { error: "No autenticado." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("vencimientos").insert({
+    causa_id: causaId,
+    creado_por_id: userId,
+    tipo,
+    fecha,
+    motivo,
+    anticipacion: tipo === "Recordatorio" ? "1 día" : anticipacion,
+    ...extraCampos(tipo, formData),
+  });
+  if (error) return { error: `No se pudo crear el vencimiento: ${error.message}` };
+
+  refresh();
+  return { message: `${tipo} agregado.` };
+}
+
+export async function updateVencimientoRow(_prev: FormState, formData: FormData): Promise<FormState> {
+  const id = text(formData, "id");
+  const fecha = text(formData, "fecha");
+  const motivo = text(formData, "motivo") || null;
+  const tipoRaw = text(formData, "tipo");
+  const anticipacion = text(formData, "anticipacion") || "1 día";
+
+  if (!id) return { error: "Falta el id del vencimiento." };
+  if (!fecha || !isISODate(fecha)) return { error: "La fecha no es válida." };
+  const tipo = TIPOS_VENC.includes(tipoRaw as typeof TIPOS_VENC[number]) ? tipoRaw! : "Vencimiento";
+
+  if (!await getAuthUserId()) return { error: "No autenticado." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("vencimientos").update({
+    tipo, fecha, motivo,
+    anticipacion: tipo === "Recordatorio" ? "1 día" : anticipacion,
+    ...extraCampos(tipo, formData),
+  }).eq("id", id).select("id");
+  if (error) return { error: `No se pudo actualizar el vencimiento: ${error.message}` };
+  if (!data || data.length === 0) return { error: "No se encontró el vencimiento o no tenés acceso." };
+
+  refresh();
+  return { message: `${tipo} actualizado.` };
+}
+
+export async function deleteVencimientoRow(id: string): Promise<FormState> {
+  if (!await getAuthUserId()) return { error: "No autenticado." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("vencimientos").delete().eq("id", id).select("id");
+  if (error) return { error: `No se pudo eliminar el vencimiento: ${error.message}` };
+  if (!data || data.length === 0) return { error: "No se encontró el vencimiento o no tenés acceso." };
+
+  refresh();
+  return { message: "Vencimiento eliminado." };
+}
+
+export async function toggleVencimientoCompletado(id: string, completado: boolean): Promise<FormState> {
+  if (!await getAuthUserId()) return { error: "No autenticado." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("vencimientos").update({ completado }).eq("id", id).select("id");
+  if (error) return { error: `No se pudo actualizar el vencimiento: ${error.message}` };
+  if (!data || data.length === 0) return { error: "No se encontró el vencimiento o no tenés acceso." };
+
+  refresh();
+  return { message: completado ? "Marcado como completado." : "Marcado como pendiente." };
+}
+
 export async function removePago(id: string): Promise<FormState> {
   if (!await getAuthUserId()) return { error: "No autenticado." };
   const supabase = await createClient();

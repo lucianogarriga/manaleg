@@ -47,7 +47,7 @@ export function useCausas(causas: CausaConRelaciones[], userId: string) {
       audiencias: (c) =>
         !isCerrada(c) && c.tipo_vencimiento === "Audiencia" && c.proximo_vencimiento !== null,
       recordatorios: (c) =>
-        !isCerrada(c) && (c.tipo_vencimiento === "Recordatorio" || (c.tipo_vencimiento as string) === "Alerta") && c.proximo_vencimiento !== null,
+        !isCerrada(c) && c.tipo_vencimiento === "Recordatorio" && c.proximo_vencimiento !== null,
       vencimientos: (c) =>
         !isCerrada(c) && c.tipo_vencimiento === "Vencimiento" && c.proximo_vencimiento !== null,
     };

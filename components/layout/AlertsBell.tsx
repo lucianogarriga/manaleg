@@ -166,7 +166,7 @@ function AlertasTab({ alertas, onOpen }: { alertas: AlertaItem[]; onOpen: (causa
             </div>
             {items.map((a) => {
               const urgency = getUrgency(a.fecha);
-              const Icon = a.tipo === "Alerta" ? Bell : CalendarClock;
+              const Icon = a.tipo === "Recordatorio" ? Bell : CalendarClock;
               return (
                 <button
                   key={a.causaId}

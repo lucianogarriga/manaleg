@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { X, Share2, Pencil } from "lucide-react";
 import { quitarAcceso } from "@/app/(app)/causas/shareActions";
-import { clearVencimiento } from "@/app/(app)/causas/detailActions";
 import ColaboradoresList from "@/components/shares/ColaboradoresList";
 import ShareCausaModal from "@/components/shares/ShareCausaModal";
 import AlertCard from "@/components/ui/AlertCard";
@@ -15,9 +14,9 @@ import CollapsibleSection from "@/components/ui/CollapsibleSection";
 import DriveLink from "@/components/ui/DriveLink";
 import FieldGrid, { type Field } from "@/components/ui/FieldGrid";
 import GestionEconomicaSection from "@/components/causas/GestionEconomicaSection";
-import EventosSection, { type EventosSectionRef } from "@/components/eventos/EventosSection";
 import MovimientosSection, { type MovimientosSectionRef } from "@/components/movimientos/MovimientosSection";
-import VencimientoForm from "@/components/causas/VencimientoForm";
+import VencimientosSection from "@/components/causas/VencimientosSection";
+import InfoTooltip from "@/components/ui/InfoTooltip";
 import TodoList from "@/components/todos/TodoList";
 import { useShares } from "@/hooks/useCausaData";
 import { useCausasStore } from "@/store/causasStore";
@@ -39,9 +38,7 @@ export default function CausaModal({ causa, userId }: Props) {
   const { data: shares, loading: sharesLoading, reload: reloadShares } = useShares(causa.id);
   const { request: confirmRequest, dialog: confirmDialog } = useConfirm();
   const [shareOpen, setShareOpen] = useState(false);
-  const [vencimientoFormOpen, setVencimientoFormOpen] = useState(false);
   const movRef = useRef<MovimientosSectionRef>(null);
-  const evRef = useRef<EventosSectionRef>(null);
   const vencimientosRef = useRef<HTMLDivElement>(null);
 
   const cerrada = causa.estado === "Cerrada";
@@ -92,19 +89,6 @@ export default function CausaModal({ causa, userId }: Props) {
     },
   ];
   if (causa.notas) datos.push({ label: "Notas", value: causa.notas, full: true });
-
-  const vencFields: Field[] = [
-    {
-      label: causa.tipo_vencimiento === "Alerta" ? "Próxima alerta" : "Próximo vencimiento",
-      value: causa.proximo_vencimiento
-        ? `${formatDate(causa.proximo_vencimiento)}${causa.motivo_vencimiento ? ` — ${causa.motivo_vencimiento}` : ""}`
-        : "Sin vencimiento cargado",
-      variant: urgency === "red" ? "danger" : "default",
-    },
-    { label: "Anticipación configurada", value: causa.anticipacion_alerta },
-    { label: "Último movimiento", value: formatDate(causa.fecha_ultimo_movimiento) },
-    { label: "Alerta inactividad", value: `${causa.inactividad_dias} días sin movimiento` },
-  ];
 
   return (
     <>
@@ -198,7 +182,7 @@ export default function CausaModal({ causa, userId }: Props) {
             {/* Alertas urgentes siempre visibles */}
             {(urgency === "red" || urgency === "amber") && (
               <AlertCard
-                variant={urgency === "red" ? "red" : "amber"}
+                variant={causa.tipo_vencimiento === "Recordatorio" ? "blue" : urgency === "red" ? "red" : "amber"}
                 title={`${getDeadlineLabel(causa.proximo_vencimiento, causa.tipo_vencimiento)}${causa.motivo_vencimiento ? ` — ${causa.motivo_vencimiento}` : ""}`}
                 description={`${causa.tipo_vencimiento ?? "Vencimiento"} ${formatDate(causa.proximo_vencimiento)} · Aviso con ${causa.anticipacion_alerta} de anticipación`}
                 action={
@@ -247,74 +231,14 @@ export default function CausaModal({ causa, userId }: Props) {
                 <MovimientosSection ref={movRef} causaId={causa.id} userId={userId} naked />
               </CollapsibleSection>
 
-              <CollapsibleSection
-                title="Audiencias"
-                headerAction={
-                  <button
-                    type="button"
-                    onClick={() => evRef.current?.openForm()}
-                    className="cursor-pointer text-[13px] font-semibold text-blue hover:underline"
-                  >
-                    + Agregar
-                  </button>
-                }
-              >
-                <EventosSection ref={evRef} causaId={causa.id} naked />
-              </CollapsibleSection>
-
               <div ref={vencimientosRef} className="mb-[6px]">
               <CollapsibleSection
-                title="Vencimientos y alertas"
-                headerAction={
-                  <span className="flex items-center gap-2">
-                    <button type="button" onClick={() => setVencimientoFormOpen(true)}
-                      className="cursor-pointer text-[13px] font-semibold text-blue hover:underline">
-                      Editar
-                    </button>
-                    {causa.proximo_vencimiento && (
-                      <button type="button"
-                        onClick={async () => {
-                          const ok = await confirmRequest({ title: "Eliminar vencimiento", message: "¿Eliminar el vencimiento/alerta de esta causa?", confirmLabel: "Eliminar", danger: true });
-                          if (!ok) return;
-                          const r = await clearVencimiento(causa.id);
-                          showToast({ message: r.error ?? r.message ?? "Listo." });
-                          if (!r.error) router.refresh();
-                        }}
-                        className="cursor-pointer text-[13px] font-semibold text-red hover:underline">
-                        Eliminar
-                      </button>
-                    )}
-                  </span>
-                }
+                title="Agenda / Vencimientos"
+                titleInfo={<InfoTooltip text="Audiencias y vencimientos generan alertas por email y afectan el semáforo. Los recordatorios son avisos internos sin email." />}
               >
-                {causa.proximo_vencimiento ? (
-                  <>
-                    <div className="flex flex-wrap items-center gap-[6px] px-[14px] pt-[10px] pb-[6px]">
-                      {causa.tipo_vencimiento && (() => {
-                        const label = causa.tipo_vencimiento === "Alerta" ? "Recordatorio" : causa.tipo_vencimiento;
-                        const cls = label === "Audiencia"
-                          ? "bg-pur-lt text-pur"
-                          : label === "Recordatorio"
-                            ? "bg-blue-lt text-blue"
-                            : "bg-amb-lt text-amb";
-                        return (
-                          <span className={`rounded-[4px] px-[7px] py-[2px] text-[11px] font-semibold uppercase tracking-[.3px] ${cls}`}>
-                            {label}
-                          </span>
-                        );
-                      })()}
-                    </div>
-                    <FieldGrid fields={vencFields} />
-                  </>
-                ) : (
-                  <div className="flex items-center justify-between px-[14px] py-[10px]">
-                    <p className="text-[13.5px] text-muted">Sin vencimiento cargado.</p>
-                    <button type="button" onClick={() => setVencimientoFormOpen(true)}
-                      className="cursor-pointer text-[13px] font-semibold text-blue hover:underline">
-                      + Agregar
-                    </button>
-                  </div>
-                )}
+                <div className="px-[14px] pb-4 pt-2">
+                  <VencimientosSection causaId={causa.id} esTitular={esTitular} />
+                </div>
               </CollapsibleSection>
               </div>
 
@@ -348,17 +272,6 @@ export default function CausaModal({ causa, userId }: Props) {
         </div>
       </div>
 
-      {vencimientoFormOpen && (
-        <VencimientoForm
-          causa={causa}
-          onClose={() => setVencimientoFormOpen(false)}
-          onSaved={(msg) => {
-            setVencimientoFormOpen(false);
-            showToast({ message: msg });
-            router.refresh();
-          }}
-        />
-      )}
       {shareOpen && (
         <ShareCausaModal
           causaId={causa.id}

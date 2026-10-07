@@ -65,7 +65,7 @@ export default function CalendarView({ hoy, avisos, inhabiles, userId }: Calenda
   const prefijo = monthKey(year, month);
   const avisosDelMes = avisos.filter((a) => a.fecha.startsWith(prefijo));
   const inhabilesDelMes = inhabiles.filter((d) => d.fecha.startsWith(prefijo) && !isWeekend(d.fecha));
-  const vencimientos = avisosDelMes.filter((a) => a.tipo !== "Alerta").length;
+  const vencimientos = avisosDelMes.filter((a) => a.tipo !== "Recordatorio").length;
   const alertas = avisosDelMes.length - vencimientos;
 
   const cambiarMes = (delta: number) => {
@@ -179,7 +179,7 @@ export default function CalendarView({ hoy, avisos, inhabiles, userId }: Calenda
                       <span
                         key={e.causaId}
                         title={`${e.tipo ?? "Vencimiento"}: ${e.caratula}`}
-                        className={`h-[9px] w-[9px] rounded-full ${e.tipo === "Alerta" ? "bg-amb" : "bg-red"}`}
+                        className={`h-[9px] w-[9px] rounded-full ${e.tipo === "Recordatorio" ? "bg-amb" : "bg-red"}`}
                       />
                     ))}
                     {evs.length > 4 && <span className="text-[11px] leading-[9px] font-bold text-sub">+{evs.length - 4}</span>}
@@ -282,7 +282,7 @@ function Resumen({ n, label, tone }: { n: number; label: string; tone: string })
 }
 
 function AvisoRow({ aviso, conFecha }: { aviso: AlertaItem; conFecha?: boolean }) {
-  const esAlerta = aviso.tipo === "Alerta";
+  const esAlerta = aviso.tipo === "Recordatorio";
   const Icon = esAlerta ? Bell : CalendarClock;
   return (
     <div className="flex items-start gap-2 border-b border-border px-3 py-[9px] last:border-b-0">

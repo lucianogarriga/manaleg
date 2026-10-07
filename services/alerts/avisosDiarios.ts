@@ -174,7 +174,7 @@ function cuando(fecha: string, hoy: string): string {
 function armarAsunto(causas: CausaConAviso[], hoy: string): string {
   if (causas.length === 1) {
     const c = causas[0];
-    const verbo = c.tipo_vencimiento === "Alerta" ? "Alerta" : "Vence";
+    const verbo = c.tipo_vencimiento === "Recordatorio" ? "Recordatorio" : "Vence";
     return `MANALEG · ${verbo} ${cuando(c.proximo_vencimiento, hoy)}: ${c.caratula}`;
   }
   return `MANALEG · ${causas.length} avisos próximos`;
@@ -188,14 +188,14 @@ function armarHtml(perfil: Destinatario, causas: CausaConAviso[], hoy: string): 
 
   const cards = causas
     .map((c) => {
-      const esAlerta = c.tipo_vencimiento === "Alerta";
-      const borderColor  = esAlerta ? "#D97706" : "#DC2626";
-      const bgColor      = esAlerta ? "#FFFDF5"  : "#FFFAFA";
-      const wrapBorder   = esAlerta ? "#FDE68A"  : "#FEE2E2";
-      const labelBg      = esAlerta ? "#FEF3C7"  : "#FEE2E2";
-      const labelColor   = esAlerta ? "#B45309"  : "#B91C1C";
-      const chipText     = esAlerta ? "ALERTA"   : "VENCIMIENTO";
-      const tipoTexto    = esAlerta ? "Alerta"   : "Vence";
+      const esAudiencia = c.tipo_vencimiento === "Audiencia";
+      const borderColor  = esAudiencia ? "#7C3AED" : "#DC2626";
+      const bgColor      = esAudiencia ? "#F5F3FF"  : "#FFFAFA";
+      const wrapBorder   = esAudiencia ? "#DDD6FE"  : "#FEE2E2";
+      const labelBg      = esAudiencia ? "#EDE9FE"  : "#FEE2E2";
+      const labelColor   = esAudiencia ? "#6D28D9"  : "#B91C1C";
+      const chipText     = esAudiencia ? "AUDIENCIA" : "VENCIMIENTO";
+      const tipoTexto    = esAudiencia ? "Audiencia" : "Vence";
       const fechaTexto   = escapeHtml(cuando(c.proximo_vencimiento, hoy));
       const motivo       = c.motivo_vencimiento ? ` · ${escapeHtml(c.motivo_vencimiento)}` : "";
       const expte        = c.nro_expediente

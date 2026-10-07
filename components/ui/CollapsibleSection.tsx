@@ -5,6 +5,7 @@ import { ChevronDown } from "lucide-react";
 
 interface CollapsibleSectionProps {
   title: string;
+  titleInfo?: React.ReactNode;
   headerAction?: React.ReactNode;
   defaultOpen?: boolean;
   children: React.ReactNode;
@@ -12,6 +13,7 @@ interface CollapsibleSectionProps {
 
 export default function CollapsibleSection({
   title,
+  titleInfo,
   headerAction,
   defaultOpen = false,
   children,
@@ -27,19 +29,26 @@ export default function CollapsibleSection({
         onMouseEnter={(e) => { if (!open) (e.currentTarget as HTMLElement).style.background = "var(--hover-row)"; }}
         onMouseLeave={(e) => { if (!open) (e.currentTarget as HTMLElement).style.background = ""; }}
       >
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="flex flex-1 cursor-pointer items-center gap-[10px] py-[11px] text-left"
-        >
-          <ChevronDown
-            size={14}
-            className={`shrink-0 text-blue/70 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-          />
-          <span className="text-[12px] font-bold uppercase tracking-[.5px] text-sub">
-            {title}
-          </span>
-        </button>
+        <div className="flex flex-1 items-center">
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className="flex cursor-pointer items-center gap-[10px] py-[11px] text-left"
+          >
+            <ChevronDown
+              size={14}
+              className={`shrink-0 text-blue/70 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+            />
+            <span className="text-[12px] font-bold uppercase tracking-[.5px] text-sub">
+              {title}
+            </span>
+          </button>
+          {titleInfo && (
+            <span className="ml-[5px] shrink-0 py-[11px]">
+              {titleInfo}
+            </span>
+          )}
+        </div>
         {headerAction && open && (
           <span className="shrink-0 py-[11px]">
             {headerAction}

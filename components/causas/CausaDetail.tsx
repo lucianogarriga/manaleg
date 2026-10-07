@@ -17,6 +17,8 @@ import DriveLink from "@/components/ui/DriveLink";
 import FieldGrid, { type Field } from "@/components/ui/FieldGrid";
 import GestionEconomicaSection from "./GestionEconomicaSection";
 import MovimientosSection from "@/components/movimientos/MovimientosSection";
+import VencimientosSection from "./VencimientosSection";
+import InfoTooltip from "@/components/ui/InfoTooltip";
 import { useCausasStore } from "@/store/causasStore";
 import { formatCurrency, formatDate, getDaysUntil, getInitials } from "@/utils/formatters";
 import { getDeadlineLabel, getUrgency } from "@/utils/urgencyHelpers";
@@ -84,19 +86,6 @@ export default function CausaDetail({ causa, userId, className = "" }: CausaDeta
   ];
   if (causa.notas) datos.push({ label: "Notas", value: causa.notas, full: true });
 
-  const vencimientos: Field[] = [
-    {
-      label: causa.tipo_vencimiento === "Alerta" ? "Próxima alerta" : "Próximo vencimiento",
-      value: causa.proximo_vencimiento
-        ? `${formatDate(causa.proximo_vencimiento)}${causa.motivo_vencimiento ? ` — ${causa.motivo_vencimiento}` : ""}`
-        : "Sin vencimiento cargado",
-      variant: urgency === "red" ? "danger" : "default",
-    },
-    { label: "Anticipación configurada", value: causa.anticipacion_alerta },
-    { label: "Último movimiento", value: formatDate(causa.fecha_ultimo_movimiento) },
-    { label: "Alerta inactividad", value: `${causa.inactividad_dias} días sin movimiento` },
-  ];
-
   return (
     <div className={`min-w-0 overflow-y-auto bg-bg pb-5 ${className}`}>
       <div className="sticky top-0 z-[5] border-b border-border bg-card px-[18px] pt-[14px] pb-3">
@@ -155,7 +144,7 @@ export default function CausaDetail({ causa, userId, className = "" }: CausaDeta
 
       {(urgency === "red" || urgency === "amber") && (
         <AlertCard
-          variant={urgency === "red" ? "red" : "amber"}
+          variant={causa.tipo_vencimiento === "Recordatorio" ? "blue" : urgency === "red" ? "red" : "amber"}
           title={`${getDeadlineLabel(causa.proximo_vencimiento, causa.tipo_vencimiento)}${causa.motivo_vencimiento ? ` — ${causa.motivo_vencimiento}` : ""}`}
           description={`${causa.tipo_vencimiento ?? "Vencimiento"} ${formatDate(causa.proximo_vencimiento)} · Aviso configurado con ${causa.anticipacion_alerta} de anticipación`}
           action={
@@ -185,8 +174,14 @@ export default function CausaDetail({ causa, userId, className = "" }: CausaDeta
         <DriveLink href={causa.link_drive} label={`Carpeta Drive — ${causa.caratula}`} />
       )}
 
-      <CardSection title="Vencimientos y alertas" ref={vencimientosRef}>
-        <FieldGrid fields={vencimientos} />
+      <CardSection
+        title="Agenda / Vencimientos"
+        titleInfo={<InfoTooltip text="Audiencias y vencimientos generan alertas por email y afectan el semáforo. Los recordatorios son avisos internos sin email." />}
+        ref={vencimientosRef}
+      >
+        <div className="px-[14px] pb-4 pt-2">
+          <VencimientosSection causaId={causa.id} esTitular={esTitular} />
+        </div>
       </CardSection>
 
       <ColaboradoresList
