@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useUIStore, loadPin } from "@/store/uiStore";
 import { useCausasStore } from "@/store/causasStore";
 import type { Profile } from "@/types";
@@ -13,12 +12,13 @@ import { NAV_SECTIONS, type NavItem } from "./navigation";
 interface NavLinkProps {
   item: NavItem;
   active: boolean;
+  expanded: boolean;
   textStyle: React.CSSProperties;
   pill: React.ReactNode;
   onClick: () => void;
 }
 
-function NavLink({ item, active, textStyle, pill, onClick }: NavLinkProps) {
+function NavLink({ item, active, expanded, textStyle, pill, onClick }: NavLinkProps) {
   const [hovered, setHovered] = useState(false);
   const lit = hovered || active;
   const Icon = item.icon;
@@ -26,25 +26,49 @@ function NavLink({ item, active, textStyle, pill, onClick }: NavLinkProps) {
     <Link
       href={item.href}
       onClick={onClick}
-      className="mx-[5px] my-px flex items-center gap-[9px] overflow-hidden rounded-[7px] py-[7px] pl-[10px] pr-3 transition-colors duration-100"
+      className="mx-[5px] my-[2px] flex items-center overflow-hidden rounded-[7px] py-[8px]"
       style={{
-        background: lit ? "var(--sb-act-bg)" : undefined,
+        gap: expanded ? 9 : 0,
         color: lit ? "var(--sb-act-fg)" : "var(--sb-fg)",
+        paddingLeft: expanded ? 10 : 9,
+        paddingRight: expanded ? 12 : 9,
+        justifyContent: expanded ? undefined : "center",
+        transition: "color 120ms, padding-left 260ms cubic-bezier(0.4,0,0.2,1), padding-right 260ms cubic-bezier(0.4,0,0.2,1), gap 260ms cubic-bezier(0.4,0,0.2,1)",
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <Icon
-        size={15}
-        strokeWidth={2}
-        className="w-4 shrink-0"
-        style={{ color: lit ? "var(--sb-act-fg)" : item.iconColor }}
-      />
+      {/* Ícono con barra activa debajo (solo colapsado) */}
+      <span className="relative flex shrink-0 items-center justify-center" style={{ width: expanded ? 16 : 28, transition: `width ${DUR}` }}>
+        <Icon
+          size={expanded ? 15 : 18}
+          strokeWidth={1.8}
+          style={{ color: lit ? "var(--sb-act-fg)" : item.iconColor, transition: `font-size ${DUR}` }}
+        />
+        {active && !expanded && (
+          <span
+            className="absolute -bottom-[7px] left-1/2 h-[2px] w-[12px] -translate-x-1/2 rounded-full"
+            style={{ background: "var(--color-blue)" }}
+          />
+        )}
+      </span>
+
+      {/* Texto con subrayado progresivo en hover/activo (solo expandido) */}
       <span
-        className={`whitespace-nowrap text-[12px] ${lit ? "font-semibold" : "font-medium"}`}
+        className={`relative whitespace-nowrap text-[12px] ${lit ? "font-semibold" : "font-medium"}`}
         style={textStyle}
       >
         {item.label}
+        {expanded && (
+          <span
+            className="absolute bottom-[-1px] left-0 h-[1.5px] rounded-full"
+            style={{
+              background: "var(--color-blue)",
+              width: lit ? "100%" : "0%",
+              transition: lit ? "width 180ms cubic-bezier(0.4,0,0.2,1)" : "width 120ms ease",
+            }}
+          />
+        )}
       </span>
       {pill}
     </Link>
@@ -63,17 +87,18 @@ const TEXT_DELAY_OPEN = "80ms";
 
 export default function Sidebar({ profile, counts }: SidebarProps) {
   const pathname = usePathname();
-  const { sidebarOpen, closeSidebar, sidebarPinned, toggleSidebarPin } = useUIStore();
+  const { sidebarOpen, closeSidebar, sidebarPinned } = useUIStore();
   const selectCausa = useCausasStore((s) => s.select);
+  const [hovered, setHovered] = useState(false);
 
   // Hidratar el pin desde localStorage en el cliente
   useEffect(() => {
     if (loadPin()) useUIStore.setState({ sidebarPinned: true });
   }, []);
 
-  // El sidebar se expande solo cuando está fijado o abierto (mobile)
-  // — sin hover, el usuario controla el estado explícitamente
-  const exp = sidebarOpen || sidebarPinned;
+  // Desktop: se expande al hacer hover o si está pinned
+  // Mobile: se expande solo cuando está abierto (hamburger)
+  const exp = sidebarOpen || sidebarPinned || hovered;
 
   const pillFor = (item: NavItem) => {
     if (!exp) return null;
@@ -86,11 +111,13 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
     return null;
   };
 
-  // Estilos de texto (labels, títulos) que se desvanecen sin mover los íconos
+  // Estilos de texto: desaparecen en opacidad Y en ancho para no desplazar los íconos
   const textStyle: React.CSSProperties = {
     opacity: exp ? 1 : 0,
+    maxWidth: exp ? "160px" : "0px",
+    overflow: "hidden",
     pointerEvents: exp ? "auto" : "none",
-    transition: `opacity ${DUR} ${exp ? TEXT_DELAY_OPEN : "0ms"}`,
+    transition: `opacity ${DUR} ${exp ? TEXT_DELAY_OPEN : "0ms"}, max-width ${DUR}`,
   };
 
   return (
@@ -105,6 +132,8 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } ${exp ? "w-[228px]" : "md:w-[56px]"} w-[228px]`}
         style={{ transition: `width ${DUR}` }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
       >
         {/* Pill — la superficie flotante */}
         <div
@@ -131,27 +160,8 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
               className="whitespace-nowrap text-[14px] font-bold"
               style={{ color: "var(--color-blue)", ...textStyle }}
             >
-              MANALEG
+              Manaleg
             </span>
-          </div>
-
-          {/* ── Botón toggle — encima del primer ítem de nav ─────────── */}
-          <div className="hidden shrink-0 md:block">
-            <button
-              type="button"
-              onClick={toggleSidebarPin}
-              title={sidebarPinned ? "Colapsar barra lateral" : "Expandir barra lateral"}
-              className="mx-[5px] my-px flex w-[calc(100%-10px)] cursor-pointer items-center gap-[9px] overflow-hidden rounded-[7px] py-[7px] pl-[10px] pr-3 transition-colors hover:bg-black/5"
-              style={{ color: "var(--sb-fg)", opacity: 0.6 }}
-            >
-              {sidebarPinned
-                ? <PanelLeftClose size={15} strokeWidth={2} className="w-4 shrink-0" />
-                : <PanelLeftOpen  size={15} strokeWidth={2} className="w-4 shrink-0" />
-              }
-              <span className="whitespace-nowrap text-[12px] font-medium" style={textStyle}>
-                {sidebarPinned ? "Colapsar" : "Expandir"}
-              </span>
-            </button>
           </div>
 
           {/* ── Nav ──────────────────────────────────────────────────── */}
@@ -182,6 +192,7 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
                       key={item.href}
                       item={item}
                       active={active}
+                      expanded={exp}
                       textStyle={textStyle}
                       pill={pillFor(item)}
                       onClick={() => {

@@ -1,8 +1,10 @@
 import AuthHydrator from "@/components/auth/AuthHydrator";
 import { getCurrentProfile } from "@/components/auth/AuthGuard";
 import { getLayoutCounts } from "@/services/supabase/layoutCounts";
+import { createClient } from "@/services/supabase/server";
 import { formatLongDate, todayISO } from "@/utils/formatters";
 import Toaster from "@/components/ui/Toaster";
+import WelcomeModal from "@/components/ui/WelcomeModal";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import TitleUpdater from "./TitleUpdater";
@@ -11,7 +13,13 @@ import NavigationProgress from "./NavigationProgress";
 // Estructura base: Sidebar fijo + columna principal (Topbar + contenido).
 // Cada página maneja su propio scroll dentro del área de contenido.
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const [profile, counts] = await Promise.all([getCurrentProfile(), getLayoutCounts()]);
+  const supabase = await createClient();
+  const [profile, counts, { data: userData }] = await Promise.all([
+    getCurrentProfile(),
+    getLayoutCounts(),
+    supabase.auth.getUser(),
+  ]);
+  const hasSeenWelcome = userData?.user?.user_metadata?.has_seen_welcome === true;
 
   return (
     <div className="flex h-dvh w-full overflow-hidden md:gap-2 md:p-3 md:pl-2">
@@ -37,6 +45,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <TitleUpdater urgentes={counts.vencimientosProximos} />
       <NavigationProgress />
       <Toaster />
+      {!hasSeenWelcome && <WelcomeModal />}
     </div>
   );
 }

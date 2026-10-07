@@ -23,30 +23,30 @@ export const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
   {
     title: "Principal",
     items: [
-      { href: "/",           label: "Dashboard",            icon: LayoutDashboard, iconColor: "#2563eb" },
-      { href: "/causas",     label: "Causas",               icon: Scale,           iconColor: "#0891b2", badge: "causas" },
-      { href: "/vencimientos",label: "Vencimientos",        icon: CalendarDays,    iconColor: "#b45309", badge: "vencimientos" },
-      { href: "/clientes",   label: "Clientes",             icon: User,            iconColor: "#7c3aed" },
+      { href: "/",            label: "Dashboard",            icon: LayoutDashboard, iconColor: "#2563eb" },
+      { href: "/causas",      label: "Causas",               icon: Scale,           iconColor: "#0891b2", badge: "causas" },
+      { href: "/vencimientos", label: "Eventos",             icon: CalendarDays,    iconColor: "#b45309", badge: "vencimientos" },
+      { href: "/calendario",  label: "Calendario",           icon: Calendar,        iconColor: "#0d9488" },
+      { href: "/clientes",    label: "Clientes",             icon: User,            iconColor: "#7c3aed" },
     ],
   },
   {
     title: "Finanzas",
     items: [
-      { href: "/honorarios", label: "Honorarios",           icon: Wallet,          iconColor: "#059669" },
+      { href: "/honorarios",  label: "Honorarios",           icon: Wallet,          iconColor: "#059669" },
     ],
   },
   {
     title: "Actividad",
     items: [
-      { href: "/movimientos",label: "Movimientos",          icon: ClipboardList,   iconColor: "#64748b" },
-      { href: "/kanban",     label: "Kanban",               icon: Kanban,          iconColor: "#8b5cf6" },
+      { href: "/movimientos", label: "Movimientos",          icon: ClipboardList,   iconColor: "#64748b" },
     ],
   },
   {
     title: "Herramientas",
     items: [
-      { href: "/calendario", label: "Calendario",           icon: Calendar,        iconColor: "#0d9488" },
-      { href: "/calculadora",label: "Calculadora de plazos",icon: Calculator,      iconColor: "#ea580c" },
+      { href: "/kanban",      label: "Kanban",               icon: Kanban,          iconColor: "#8b5cf6" },
+      { href: "/calculadora", label: "Calculadora de plazos",icon: Calculator,      iconColor: "#ea580c" },
     ],
   },
 ];

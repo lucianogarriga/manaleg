@@ -185,15 +185,6 @@ export default function CausaModal({ causa, userId }: Props) {
                 variant={causa.tipo_vencimiento === "Recordatorio" ? "blue" : urgency === "red" ? "red" : "amber"}
                 title={`${getDeadlineLabel(causa.proximo_vencimiento, causa.tipo_vencimiento)}${causa.motivo_vencimiento ? ` — ${causa.motivo_vencimiento}` : ""}`}
                 description={`${causa.tipo_vencimiento ?? "Vencimiento"} ${formatDate(causa.proximo_vencimiento)} · Aviso con ${causa.anticipacion_alerta} de anticipación`}
-                action={
-                  <button
-                    type="button"
-                    onClick={() => vencimientosRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                    className="cursor-pointer text-[12px] font-semibold text-blue hover:underline"
-                  >
-                    Ver todos los vencimientos →
-                  </button>
-                }
               />
             )}
             {inactiva && (

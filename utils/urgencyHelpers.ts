@@ -1,12 +1,13 @@
 import type { TipoAviso } from "@/types";
 import { formatDate, getDaysUntil } from "./formatters";
 
-// Niveles de urgencia según días al próximo vencimiento (criterio del mockup):
+// Niveles de urgencia según días al próximo vencimiento:
 //   red   → vencido o vence en ≤ 2 días
 //   amber → vence en 3 a 5 días
 //   green → vencimiento más adelante
+//   blue  → Recordatorio (no afecta semáforo, aviso interno)
 //   none  → sin vencimiento cargado (o causa cerrada)
-export type Urgency = "red" | "amber" | "green" | "none";
+export type Urgency = "red" | "amber" | "green" | "blue" | "none";
 
 export function getUrgency(proximoVencimiento: string | null, cerrada = false): Urgency {
   if (cerrada) return "none";
@@ -17,25 +18,47 @@ export function getUrgency(proximoVencimiento: string | null, cerrada = false): 
   return "green";
 }
 
+// Urgencia visual: Recordatorios siempre azul, independientemente del semáforo
+export function getVisualUrgency(
+  proximoVencimiento: string | null,
+  tipo: TipoAviso | null,
+  cerrada = false,
+): Urgency {
+  if (cerrada) return "none";
+  if (tipo === "Recordatorio") return "blue";
+  return getUrgency(proximoVencimiento, cerrada);
+}
+
 export const URGENCY_BORDER: Record<Urgency, string> = {
-  red: "border-l-red",
+  red:  "border-l-red",
   amber: "border-l-amb",
   green: "border-l-grn",
+  blue: "border-l-blue",
   none: "border-l-transparent",
 };
 
 export const URGENCY_DOT: Record<Urgency, string> = {
-  red: "bg-red",
+  red:   "bg-red",
   amber: "bg-amb",
   green: "bg-grn",
-  none: "bg-slate-300 dark:bg-slate-600",
+  blue:  "bg-blue",
+  none:  "bg-slate-300 dark:bg-slate-600",
 };
 
 export const URGENCY_TEXT: Record<Urgency, string> = {
-  red: "text-red font-semibold",
+  red:   "text-red font-semibold",
   amber: "text-amb",
   green: "text-sub",
-  none: "text-sub",
+  blue:  "text-blue",
+  none:  "text-sub",
+};
+
+export const URGENCY_LEFT: Record<Urgency, string> = {
+  red:   "var(--color-red)",
+  amber: "var(--color-amb)",
+  green: "var(--color-grn)",
+  blue:  "var(--color-blue)",
+  none:  "var(--color-border)",
 };
 
 // "Vence mañana", "Recordatorio en 5 días", "Venció hace 2 días"...
@@ -62,11 +85,11 @@ export function getRowDeadlineText(
 ): string {
   const days = getDaysUntil(proximoVencimiento);
   if (days === null) return "Sin vto";
-  let label: string;
-  if (days < 0) label = "Vencido";
-  else if (days === 0) label = "Hoy";
-  else if (days === 1) label = "Mañana";
-  else if (days <= 7) label = `En ${days} días`;
-  else label = formatDate(proximoVencimiento)!;
-  return motivo ? `${label} · ${motivo}` : label;
+  let when: string;
+  if (days < 0) when = "Vencido";
+  else if (days === 0) when = "Hoy";
+  else if (days === 1) when = "Mañana";
+  else if (days <= 7) when = `En ${days} días`;
+  else when = formatDate(proximoVencimiento)!;
+  return motivo ? `${when} · ${motivo}` : when;
 }

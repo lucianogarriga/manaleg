@@ -15,6 +15,7 @@ import CausaForm from "./CausaForm";
 import CausaModal from "./CausaModal";
 import CausaRow from "./CausaRow";
 import CausaCard from "./CausaCard";
+import FabSpotlight from "@/components/ui/FabSpotlight";
 
 type ViewMode = "list" | "grid";
 
@@ -116,8 +117,8 @@ export default function CausasView({ causas, clientes, userId, causasMax }: Caus
               )}
             </div>
           ) : (
-            <div className="px-2 py-3 pb-16 sm:px-3">
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="px-4 py-3 pb-16 sm:px-3">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {visibles.map((causa) => (
                   <CausaCard
                     key={causa.id}
@@ -138,6 +139,7 @@ export default function CausasView({ causas, clientes, userId, causasMax }: Caus
       )}
 
       {selected && <CausaModal causa={selected} userId={userId} />}
+      <FabSpotlight />
 
       {total > 0 && (
         <FAB

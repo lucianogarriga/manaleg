@@ -6,19 +6,12 @@ import { formatDate, getInitials } from "@/utils/formatters";
 import {
   URGENCY_BORDER,
   URGENCY_DOT,
+  URGENCY_LEFT,
   URGENCY_TEXT,
   getRowDeadlineText,
-  getUrgency,
-  type Urgency,
+  getVisualUrgency,
 } from "@/utils/urgencyHelpers";
 import type { CausaConRelaciones } from "@/types";
-
-const URGENCY_LEFT: Record<Urgency, string> = {
-  red:   "var(--color-red)",
-  amber: "var(--color-amb)",
-  green: "var(--color-grn)",
-  none:  "var(--color-border)",
-};
 
 const VIA_LABELS: Record<string, string> = {
   "Judicial":               "JUD",
@@ -38,7 +31,7 @@ interface CausaRowProps {
 export default function CausaRow({ causa, active, onSelect, wide = false }: CausaRowProps) {
   const [hovered, setHovered] = useState(false);
   const cerrada = causa.estado === "Cerrada";
-  const urgency = getUrgency(causa.proximo_vencimiento, cerrada);
+  const urgency = getVisualUrgency(causa.proximo_vencimiento, causa.tipo_vencimiento, cerrada);
   const deadline = cerrada
     ? `Cerrada ${formatDate(causa.updated_at)}`
     : getRowDeadlineText(causa.proximo_vencimiento, causa.tipo_vencimiento, causa.motivo_vencimiento);
@@ -50,7 +43,7 @@ export default function CausaRow({ causa, active, onSelect, wide = false }: Caus
       <button
         type="button"
         onClick={onSelect}
-        className={`mx-3 my-[5px] flex w-[calc(100%-24px)] cursor-pointer items-center gap-3 rounded-xl border border-l-[3px] px-4 py-[9px] text-left ${cerrada ? "opacity-55" : ""}`}
+        className={`mx-3 my-[4px] flex w-[calc(100%-24px)] cursor-pointer items-center gap-3 rounded-xl border border-l-[3px] px-4 py-[7px] text-left ${cerrada ? "opacity-55" : ""}`}
         style={{
           background: active ? "var(--color-blue-lt)" : hovered ? "var(--hover-row)" : "var(--color-card)",
           borderColor: "var(--color-border)",
@@ -63,7 +56,7 @@ export default function CausaRow({ causa, active, onSelect, wide = false }: Caus
       >
         {/* Carátula + badges debajo */}
         <div className="min-w-0 flex-1">
-          <div className="truncate text-[12.5px] font-semibold text-text">
+          <div className="truncate text-[11.5px] font-semibold text-text sm:text-[12.5px]">
             <span className="mr-[5px] text-[12px] font-semibold text-sub">
               {causa.nro_expediente ? `${causa.nro_expediente} ·` : <span className="font-normal italic text-muted">Sin nro. ·</span>}
             </span>
@@ -113,7 +106,7 @@ export default function CausaRow({ causa, active, onSelect, wide = false }: Caus
     <button
       type="button"
       onClick={onSelect}
-      className={`block w-full cursor-pointer border-b border-l-[3px] px-[13px] py-[9px] text-left ${URGENCY_BORDER[urgency]} ${cerrada ? "opacity-55" : ""}`}
+      className={`block w-full cursor-pointer border-b border-l-[3px] px-[11px] py-[6px] text-left sm:px-[13px] sm:py-[7px] ${URGENCY_BORDER[urgency]} ${cerrada ? "opacity-55" : ""}`}
       style={{
         borderBottomColor: "var(--color-border)",
         background: active ? "var(--color-blue-lt)" : hovered ? "var(--hover-row)" : undefined,
@@ -122,7 +115,7 @@ export default function CausaRow({ causa, active, onSelect, wide = false }: Caus
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div className="mb-[3px] truncate text-[13.5px] font-semibold text-text">{causa.caratula}</div>
+      <div className="mb-[3px] truncate text-[12px] font-semibold text-text sm:text-[13.5px]">{causa.caratula}</div>
       <div className="mb-[3px] flex flex-wrap items-center gap-[4px]">
         {causa.nro_expediente && (
           <span className="font-mono text-[11px] text-muted">{causa.nro_expediente}</span>
@@ -134,7 +127,7 @@ export default function CausaRow({ causa, active, onSelect, wide = false }: Caus
       </div>
       <div className="flex items-center gap-[5px]">
         <span className={`h-[6px] w-[6px] shrink-0 rounded-full ${URGENCY_DOT[urgency]}`} />
-        <span className={`truncate text-[11px] ${URGENCY_TEXT[urgency]}`}>{deadline}</span>
+        <span className={`truncate text-[10px] sm:text-[11px] ${URGENCY_TEXT[urgency]}`}>{deadline}</span>
         <span
           className="ml-auto shrink-0 rounded-[4px] px-[5px] py-px text-[10px] font-bold text-sub"
           style={{ background: "var(--color-border)" }}
