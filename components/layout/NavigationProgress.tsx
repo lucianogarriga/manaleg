@@ -7,7 +7,7 @@ export default function NavigationProgress() {
   const pathname = usePathname();
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Navigation complete → fill bar then fade
   useEffect(() => {
