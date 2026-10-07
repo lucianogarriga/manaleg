@@ -6,6 +6,7 @@ import { Settings, Bell, BellOff, FileText, ShieldCheck, LogOut, MessageSquare }
 import { logout } from "@/app/(auth)/actions";
 import { toggleNotificacionesEmail } from "@/app/(app)/ajustes/actions";
 import { getInitials } from "@/utils/formatters";
+import FeedbackModal from "./FeedbackModal";
 import type { Profile } from "@/types";
 
 interface Props {
@@ -14,6 +15,7 @@ interface Props {
 
 export default function UserSettings({ profile }: Props) {
   const [open, setOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [emailEnabled, setEmailEnabled] = useState(profile.notificaciones_email ?? true);
   const [isPending, startTransition] = useTransition();
   const ref = useRef<HTMLDivElement>(null);
@@ -39,6 +41,8 @@ export default function UserSettings({ profile }: Props) {
   };
 
   return (
+    <>
+    {feedbackOpen && <FeedbackModal onClose={() => setFeedbackOpen(false)} />}
     <div ref={ref} className="relative">
       {/* Botón: avatar con iniciales + ícono gear superpuesto */}
       <button
@@ -124,18 +128,16 @@ export default function UserSettings({ profile }: Props) {
           {/* Feedback beta */}
           <div className="px-3 py-2 border-b" style={{ borderColor: "var(--color-border)" }}>
             <div className="text-[10px] font-bold uppercase tracking-[.6px] text-muted px-1 pb-1">Beta</div>
-            <a
-              href="https://forms.gle/REEMPLAZAR_CON_TU_FORM"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-3 rounded-[8px] px-2 py-[8px] text-[13px] text-sub transition-colors"
+            <button
+              type="button"
+              onClick={() => { setOpen(false); setFeedbackOpen(true); }}
+              className="flex w-full items-center gap-3 rounded-[8px] px-2 py-[8px] text-[13px] text-sub transition-colors cursor-pointer"
               onMouseEnter={(e) => (e.currentTarget.style.background = "var(--hover-row)")}
               onMouseLeave={(e) => (e.currentTarget.style.background = "")}
             >
               <MessageSquare size={14} strokeWidth={2} className="shrink-0 text-muted" />
               Enviar feedback
-            </a>
+            </button>
           </div>
 
           {/* Legal */}
@@ -183,5 +185,6 @@ export default function UserSettings({ profile }: Props) {
         </div>
       )}
     </div>
+    </>
   );
 }
