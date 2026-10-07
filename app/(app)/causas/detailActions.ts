@@ -174,6 +174,7 @@ export async function updateVencimiento(_prev: FormState, formData: FormData): P
     proximo_vencimiento: proximoVencimiento || null,
     motivo_vencimiento: proximoVencimiento ? motivo || null : null,
     tipo_vencimiento: tipo,
+    campo_editado: "Actualizó próximo vencimiento",
   }).eq("id", causaId).select("id");
 
   if (error) return { error: `No se pudo actualizar el vencimiento: ${error.message}` };
@@ -189,6 +190,7 @@ export async function clearVencimiento(causaId: string): Promise<FormState> {
     proximo_vencimiento: null,
     motivo_vencimiento: null,
     tipo_vencimiento: null,
+    campo_editado: "Limpió vencimiento",
   }).eq("id", causaId).select("id");
 
   if (error) return { error: `No se pudo eliminar el vencimiento: ${error.message}` };

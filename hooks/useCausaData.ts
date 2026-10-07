@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/services/supabase/client";
-import type { CausaShareConUsuario, Evento, Gasto, HonorarioConPagos, MovimientoConAutor, Todo } from "@/types";
+import type { CausaShareConUsuario, Evento, Gasto, HonorarioConPagos, MovimientoConAutor, Todo, TodoConCausa } from "@/types";
 
 interface Loaded<T> {
   causaId: string;
@@ -123,4 +123,33 @@ export function useTodos(causaId: string) {
       .order("created_at", { ascending: true })
       .returns<Todo[]>(),
   );
+}
+
+const EMPTY_TODOS_GLOBAL: TodoConCausa[] = [];
+
+// Todos los todos del usuario actual, con info de la causa vinculada (para el Kanban global)
+export function useTodosGlobal() {
+  const [data, setData] = useState<TodoConCausa[]>(EMPTY_TODOS_GLOBAL);
+  const [loading, setLoading] = useState(true);
+  const [version, setVersion] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    createClient()
+      .from("todos")
+      .select("*, causa:causas(id, caratula, nro_expediente)")
+      .order("created_at", { ascending: true })
+      .returns<TodoConCausa[]>()
+      .then(({ data: rows }) => {
+        if (!cancelled) {
+          setData(rows ?? EMPTY_TODOS_GLOBAL);
+          setLoading(false);
+        }
+      });
+    return () => { cancelled = true; };
+  }, [version]);
+
+  const reload = useCallback(() => setVersion((v) => v + 1), []);
+  return { data, loading, reload };
 }

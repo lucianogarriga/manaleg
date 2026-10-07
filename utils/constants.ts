@@ -76,8 +76,18 @@ export const TIPOS_JUICIO_POR_FUERO: Record<string, string[]> = {
   ],
 };
 
+// Alias de tipo_juicio → nombre canónico (para deduplicar el filtro)
+export const TIPO_JUICIO_ALIASES: Record<string, string> = {
+  "denuncia defensa del consumidor": "Defensa del Consumidor",
+};
+
+export function normalizeTipoJuicio(raw: string): string {
+  const key = raw.trim().toLowerCase();
+  return TIPO_JUICIO_ALIASES[key] ?? raw.trim();
+}
+
 // Tipo del próximo aviso de una causa
-export const TIPOS_AVISO = ["Vencimiento", "Recordatorio", "Audiencia", "Alerta"] as const;
+export const TIPOS_AVISO = ["Vencimiento", "Recordatorio", "Audiencia"] as const;
 
 export const ESTADOS_CAUSA = [
   "Iniciada",

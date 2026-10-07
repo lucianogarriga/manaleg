@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { removeCausa, saveCausa, type CausaFormState } from "@/app/(app)/causas/actions";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import FormAlert from "@/components/auth/FormAlert";
 import Modal from "@/components/ui/Modal";
 import { Plus, Trash2 } from "lucide-react";
@@ -25,6 +26,7 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
   const closeForm = useCausasStore((s) => s.closeForm);
   const select = useCausasStore((s) => s.select);
   const [state, action, pending] = useActionState<CausaFormState, FormData>(saveCausa, {});
+  const { request: confirmRequest, dialog: confirmDialog } = useConfirm();
   const [deleteError, setDeleteError] = useState<string>();
   const [deleting, startDelete] = useTransition();
   const [, startSubmit] = useTransition();
@@ -50,10 +52,10 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
     });
   }, [state.savedId, state.message, isNew, select, closeForm]);
 
-  const onDelete = () => {
+  const onDelete = async () => {
     if (!causa) return;
-    if (!confirm(`¿Eliminar la causa "${causa.caratula}"? Se borran también sus movimientos, vencimientos y honorarios. No se puede deshacer.`))
-      return;
+    const ok = await confirmRequest({ title: "Eliminar causa", message: `¿Eliminar "${causa.caratula}"? Se borran también sus movimientos, vencimientos y honorarios. No se puede deshacer.`, confirmLabel: "Eliminar", danger: true });
+    if (!ok) return;
     startDelete(async () => {
       const result = await removeCausa(causa.id);
       if (result.error) return setDeleteError(result.error);
@@ -80,6 +82,7 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
     setDemandados((d) => d.map((x, idx) => (idx === i ? val : x)));
 
   return (
+    <>
     <Modal
       open
       title={causa ? "Editar causa" : "Nueva causa"}
@@ -231,5 +234,7 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
         </FormSection>
       </form>
     </Modal>
+    {confirmDialog}
+    </>
   );
 }

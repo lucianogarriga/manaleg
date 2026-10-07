@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useActionState } from "react";
-import { Mail, Lock, Scale, AlertCircle } from "lucide-react";
+import { Mail, Lock, AlertCircle } from "lucide-react";
 import { login } from "../actions";
 import AuthField from "@/components/auth/AuthField";
 import FormAlert from "@/components/auth/FormAlert";
@@ -35,8 +35,8 @@ function LoginTransition() {
         />
       </div>
       <div className="auth-fade-in relative flex flex-col items-center gap-5">
-        <div className="auth-logo flex h-[56px] w-[56px] items-center justify-center rounded-[16px] bg-blue">
-          <Scale size={26} strokeWidth={2} className="text-white" />
+        <div className="auth-logo flex h-[56px] w-[56px] items-center justify-center rounded-[16px] bg-blue text-[26px] font-bold text-white">
+          M
         </div>
         <div className="flex flex-col items-center gap-1">
           <span className="text-[18px] font-bold text-text">Manaleg</span>

@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useCausasStore, type CausasFilter } from "@/store/causasStore";
 import { getDaysUntil } from "@/utils/formatters";
 import { getUrgency } from "@/utils/urgencyHelpers";
+import { normalizeTipoJuicio } from "@/utils/constants";
 import type { CausaConRelaciones } from "@/types";
 
 const normalize = (s: string) =>
@@ -13,6 +14,8 @@ const normalize = (s: string) =>
 export function useCausas(causas: CausaConRelaciones[], userId: string) {
   const filter = useCausasStore((s) => s.filter);
   const search = useCausasStore((s) => s.search);
+  const fueros = useCausasStore((s) => s.fueros);
+  const tipoJuicio = useCausasStore((s) => s.tipoJuicio);
 
   return useMemo(() => {
     const isCerrada = (c: CausaConRelaciones) => c.estado === "Cerrada";
@@ -44,14 +47,21 @@ export function useCausas(causas: CausaConRelaciones[], userId: string) {
       audiencias: (c) =>
         !isCerrada(c) && c.tipo_vencimiento === "Audiencia" && c.proximo_vencimiento !== null,
       recordatorios: (c) =>
-        !isCerrada(c) && (c.tipo_vencimiento === "Recordatorio" || c.tipo_vencimiento === "Alerta") && c.proximo_vencimiento !== null,
+        !isCerrada(c) && (c.tipo_vencimiento === "Recordatorio" || (c.tipo_vencimiento as string) === "Alerta") && c.proximo_vencimiento !== null,
       vencimientos: (c) =>
         !isCerrada(c) && c.tipo_vencimiento === "Vencimiento" && c.proximo_vencimiento !== null,
+    };
+
+    const VIA_MAP: Record<string, string> = {
+      "Judicial": "JUD", "Mediación": "MED", "Administrativo": "ADM",
+      "Extrajudicial": "EXT", "Defensa del Consumidor": "DEF",
     };
 
     const q = normalize(search.trim());
     const filtered = causas
       .filter(matchers[filter])
+      .filter((c) => fueros.size === 0 || fueros.has(VIA_MAP[c.via_proceso ?? ""] ?? ""))
+      .filter((c) => !tipoJuicio || normalizeTipoJuicio(c.tipo_juicio ?? "") === tipoJuicio)
       .filter(
         (c) =>
           !q ||
@@ -67,5 +77,5 @@ export function useCausas(causas: CausaConRelaciones[], userId: string) {
     }
 
     return { causas: filtered, total: causas.length, counts };
-  }, [causas, filter, search, userId]);
+  }, [causas, filter, search, fueros, tipoJuicio, userId]);
 }

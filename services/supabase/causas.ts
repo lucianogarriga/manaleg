@@ -96,7 +96,7 @@ export async function createCausa(input: CausaInput) {
 
 export async function updateCausa(id: string, input: CausaInput) {
   const supabase = await createClient();
-  return supabase.from("causas").update(input).eq("id", id).select("id").single<{ id: string }>();
+  return supabase.from("causas").update({ ...input, campo_editado: "Actualizó datos del expediente" }).eq("id", id).select("id").single<{ id: string }>();
 }
 
 export async function deleteCausa(id: string) {

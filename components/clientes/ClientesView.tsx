@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Pencil, Trash2, User } from "lucide-react";
+import { Pencil, Trash2, User, X } from "lucide-react";
 import { eliminarCliente } from "@/app/(app)/clientes/clienteActions";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import EmptyState from "@/components/ui/EmptyState";
 import FAB from "@/components/ui/FAB";
 import { useUIStore } from "@/store/uiStore";
@@ -14,20 +15,101 @@ interface ClientesViewProps {
   clientes: Cliente[];
 }
 
+function ClienteDetailModal({
+  cliente,
+  onClose,
+  onEdit,
+  onDelete,
+}: {
+  cliente: Cliente;
+  onClose: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <>
+      <div className="fixed inset-0 z-50 bg-black/45 backdrop-blur-[2px]" onClick={onClose} />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="relative w-full max-w-md rounded-xl bg-card shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          {/* Header */}
+          <div className="flex items-start justify-between border-b border-border px-5 py-4">
+            <div>
+              <h2 className="text-[17px] font-bold text-text">{cliente.nombre_completo}</h2>
+              {cliente.dni_cuit && (
+                <p className="mt-[2px] font-mono text-[12px] text-muted">{cliente.dni_cuit}</p>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="ml-3 mt-[2px] cursor-pointer rounded-lg p-[5px] text-sub transition-colors"
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--hover-row)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = ""; }}
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          {/* Datos */}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3 px-5 py-4">
+            {[
+              { label: "Teléfono", value: cliente.telefono },
+              { label: "Email", value: cliente.email },
+              { label: "DNI / CUIT", value: cliente.dni_cuit },
+            ].map(({ label, value }) => value && (
+              <div key={label}>
+                <div className="mb-[2px] text-[10px] font-bold uppercase tracking-[.4px] text-muted">{label}</div>
+                <div className="text-[13.5px] text-text">{value}</div>
+              </div>
+            ))}
+            {cliente.notas && (
+              <div className="col-span-2">
+                <div className="mb-[2px] text-[10px] font-bold uppercase tracking-[.4px] text-muted">Notas</div>
+                <div className="whitespace-pre-line text-[13.5px] text-text">{cliente.notas}</div>
+              </div>
+            )}
+          </div>
+
+          {/* Acciones */}
+          <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-3">
+            <button
+              type="button"
+              onClick={onDelete}
+              className="flex cursor-pointer items-center gap-[6px] rounded-[6px] border border-border px-3 py-[6px] text-[13px] font-medium text-red hover:bg-red-lt"
+            >
+              <Trash2 size={13} /> Eliminar
+            </button>
+            <button
+              type="button"
+              onClick={onEdit}
+              className="flex cursor-pointer items-center gap-[6px] rounded-[6px] bg-blue px-3 py-[6px] text-[13px] font-semibold text-white hover:opacity-90"
+            >
+              <Pencil size={13} /> Editar
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function ClientesView({ clientes }: ClientesViewProps) {
   const router = useRouter();
   const showToast = useUIStore((s) => s.showToast);
+  const { request: confirmRequest, dialog: confirmDialog } = useConfirm();
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Cliente | null>(null);
+  const [detail, setDetail] = useState<Cliente | null>(null);
 
   const openCreate = () => { setEditing(null); setFormOpen(true); };
-  const openEdit = (c: Cliente) => { setEditing(c); setFormOpen(true); };
+  const openEdit = (c: Cliente) => { setDetail(null); setEditing(c); setFormOpen(true); };
 
   const handleDelete = async (c: Cliente) => {
-    if (!confirm(`¿Eliminar a ${c.nombre_completo}? Esta acción no se puede deshacer.`)) return;
+    const ok = await confirmRequest({ title: "Eliminar cliente", message: `¿Eliminar a ${c.nombre_completo}? Esta acción no se puede deshacer.`, confirmLabel: "Eliminar", danger: true });
+    if (!ok) return;
     const result = await eliminarCliente(c.id);
     showToast({ message: result.error ?? result.message ?? "Listo." });
-    if (!result.error) router.refresh();
+    if (!result.error) { setDetail(null); router.refresh(); }
   };
 
   const handleSaved = () => {
@@ -55,6 +137,7 @@ export default function ClientesView({ clientes }: ClientesViewProps) {
         {formOpen && (
           <ClienteForm cliente={null} onClose={() => setFormOpen(false)} onSaved={handleSaved} />
         )}
+        {confirmDialog}
       </>
     );
   }
@@ -73,54 +156,24 @@ export default function ClientesView({ clientes }: ClientesViewProps) {
             <thead>
               <tr className="border-b border-border bg-bg">
                 <th className="px-[14px] py-[9px] text-[11px] font-bold uppercase tracking-[.4px] text-muted">Nombre</th>
-                <th className="hidden px-[14px] py-[9px] text-[11px] font-bold uppercase tracking-[.4px] text-muted sm:table-cell">DNI / CUIT</th>
-                <th className="hidden px-[14px] py-[9px] text-[11px] font-bold uppercase tracking-[.4px] text-muted md:table-cell">Teléfono</th>
-                <th className="hidden px-[14px] py-[9px] text-[11px] font-bold uppercase tracking-[.4px] text-muted lg:table-cell">Email</th>
-                <th className="w-[80px] px-[14px] py-[9px]" />
+                <th className="px-[14px] py-[9px] text-[11px] font-bold uppercase tracking-[.4px] text-muted">Teléfono</th>
               </tr>
             </thead>
             <tbody>
-              {clientes.map((c, i) => (
+              {clientes.map((c) => (
                 <tr
                   key={c.id}
-                  className="border-b border-border last:border-b-0 bg-card transition-colors"
+                  onClick={() => setDetail(c)}
+                  className="cursor-pointer border-b border-border last:border-b-0 transition-colors"
                   onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--hover-row)"; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--color-card)"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = ""; }}
                 >
                   <td className="px-[14px] py-[10px]">
                     <div className="text-[14px] font-semibold text-text">{c.nombre_completo}</div>
-                    {c.notas && (
-                      <div className="truncate text-[12px] text-muted">{c.notas}</div>
-                    )}
+                    {c.email && <div className="text-[11.5px] text-muted">{c.email}</div>}
                   </td>
-                  <td className="hidden px-[14px] py-[10px] text-[13px] text-sub sm:table-cell">
-                    {c.dni_cuit ?? "—"}
-                  </td>
-                  <td className="hidden px-[14px] py-[10px] text-[13px] text-sub md:table-cell">
-                    {c.telefono ?? "—"}
-                  </td>
-                  <td className="hidden px-[14px] py-[10px] text-[13px] text-sub lg:table-cell">
-                    {c.email ?? "—"}
-                  </td>
-                  <td className="px-[14px] py-[10px]">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => openEdit(c)}
-                        title="Editar cliente"
-                        className="flex cursor-pointer rounded p-1 text-muted transition-colors hover:bg-blue-lt hover:text-blue"
-                      >
-                        <Pencil size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(c)}
-                        title="Eliminar cliente"
-                        className="flex cursor-pointer rounded p-1 text-muted transition-colors hover:bg-red-lt hover:text-red"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
+                  <td className="px-[14px] py-[10px] text-[13px] text-sub">
+                    {c.telefono ?? <span className="text-muted">—</span>}
                   </td>
                 </tr>
               ))}
@@ -131,6 +184,15 @@ export default function ClientesView({ clientes }: ClientesViewProps) {
 
       <FAB onClick={openCreate} label="Nuevo cliente" />
 
+      {detail && (
+        <ClienteDetailModal
+          cliente={detail}
+          onClose={() => setDetail(null)}
+          onEdit={() => openEdit(detail)}
+          onDelete={() => handleDelete(detail)}
+        />
+      )}
+
       {formOpen && (
         <ClienteForm
           cliente={editing}
@@ -138,6 +200,7 @@ export default function ClientesView({ clientes }: ClientesViewProps) {
           onSaved={handleSaved}
         />
       )}
+      {confirmDialog}
     </>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
 import { ExternalLink, Trash2 } from "lucide-react";
 import { removePago } from "@/app/(app)/causas/detailActions";
@@ -17,6 +18,7 @@ export default function HonorariosCard({ causaId, naked = false }: { causaId: st
   const { honorario, loading, error, reload } = useHonorario(causaId);
   const [modal, setModal] = useState<"acuerdo" | "pago" | null>(null);
   const showToast = useUIStore((s) => s.showToast);
+  const { request: confirmRequest, dialog: confirmDialog } = useConfirm();
 
   const afterChange = (message: string) => {
     setModal(null);
@@ -26,7 +28,8 @@ export default function HonorariosCard({ causaId, naked = false }: { causaId: st
   };
 
   const onDeletePago = async (id: string) => {
-    if (!confirm("¿Eliminar este pago? El monto cobrado se recalcula.")) return;
+    const ok = await confirmRequest({ title: "Eliminar pago", message: "¿Eliminar este pago? El monto cobrado se recalcula.", confirmLabel: "Eliminar", danger: true });
+    if (!ok) return;
     const result = await removePago(id);
     if (result.error) return showToast({ message: result.error });
     afterChange(result.message ?? "Pago eliminado.");
@@ -156,6 +159,7 @@ export default function HonorariosCard({ causaId, naked = false }: { causaId: st
           onSaved={() => afterChange("Pago registrado.")}
         />
       )}
+      {confirmDialog}
     </>
   );
 }

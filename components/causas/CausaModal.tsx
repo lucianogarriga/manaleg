@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { X, Share2, Pencil } from "lucide-react";
 import { quitarAcceso } from "@/app/(app)/causas/shareActions";
 import { clearVencimiento } from "@/app/(app)/causas/detailActions";
@@ -12,8 +14,7 @@ import Badge from "@/components/ui/Badge";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
 import DriveLink from "@/components/ui/DriveLink";
 import FieldGrid, { type Field } from "@/components/ui/FieldGrid";
-import GastosCard from "@/components/gastos/GastosCard";
-import HonorariosCard from "@/components/honorarios/HonorariosCard";
+import GestionEconomicaSection from "@/components/causas/GestionEconomicaSection";
 import EventosSection, { type EventosSectionRef } from "@/components/eventos/EventosSection";
 import MovimientosSection, { type MovimientosSectionRef } from "@/components/movimientos/MovimientosSection";
 import VencimientoForm from "@/components/causas/VencimientoForm";
@@ -36,10 +37,12 @@ export default function CausaModal({ causa, userId }: Props) {
   const openEdit = useCausasStore((s) => s.openEdit);
   const showToast = useUIStore((s) => s.showToast);
   const { data: shares, loading: sharesLoading, reload: reloadShares } = useShares(causa.id);
+  const { request: confirmRequest, dialog: confirmDialog } = useConfirm();
   const [shareOpen, setShareOpen] = useState(false);
   const [vencimientoFormOpen, setVencimientoFormOpen] = useState(false);
   const movRef = useRef<MovimientosSectionRef>(null);
   const evRef = useRef<EventosSectionRef>(null);
+  const vencimientosRef = useRef<HTMLDivElement>(null);
 
   const cerrada = causa.estado === "Cerrada";
   const urgency = getUrgency(causa.proximo_vencimiento, cerrada);
@@ -60,7 +63,8 @@ export default function CausaModal({ causa, userId }: Props) {
 
   const revocar = async (share: CausaShareConUsuario) => {
     const nombre = share.usuario?.nombre_completo ?? share.usuario?.email ?? "este usuario";
-    if (!confirm(`¿Quitar el acceso de ${nombre} a esta causa?`)) return;
+    const ok = await confirmRequest({ title: "Quitar acceso", message: `¿Quitar el acceso de ${nombre} a esta causa?`, confirmLabel: "Quitar acceso", danger: true });
+    if (!ok) return;
     const result = await quitarAcceso(share.id);
     showToast({ message: result.error ?? result.message ?? "Listo." });
     if (!result.error) { reloadShares(); router.refresh(); }
@@ -80,7 +84,12 @@ export default function CausaModal({ causa, userId }: Props) {
     { label: "Parte demandada", value: causa.parte_demandada ?? "—" },
     { label: "Fecha de inicio", value: formatDate(causa.fecha_inicio) },
     { label: "Monto reclamado", value: formatCurrency(causa.monto_reclamado) },
-    { label: "Cliente", value: causa.cliente?.nombre_completo ?? "—" },
+    {
+      label: "Cliente",
+      value: causa.cliente
+        ? <Link href={`/clientes?id=${causa.cliente.id}`} className="text-blue hover:underline" onClick={() => select(null)}>{causa.cliente.nombre_completo}</Link>
+        : "—",
+    },
   ];
   if (causa.notas) datos.push({ label: "Notas", value: causa.notas, full: true });
 
@@ -107,7 +116,7 @@ export default function CausaModal({ causa, userId }: Props) {
       />
 
       {/* Modal: 97vh en mobile, 95vh en desktop — siempre flotando sobre el backdrop */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => select(null)}>
         <div
           className="relative flex h-[92dvh] w-[calc(100%-16px)] flex-col overflow-hidden rounded-xl bg-bg shadow-2xl md:w-[95%] md:rounded-2xl"
           onClick={(e) => e.stopPropagation()}
@@ -192,6 +201,15 @@ export default function CausaModal({ causa, userId }: Props) {
                 variant={urgency === "red" ? "red" : "amber"}
                 title={`${getDeadlineLabel(causa.proximo_vencimiento, causa.tipo_vencimiento)}${causa.motivo_vencimiento ? ` — ${causa.motivo_vencimiento}` : ""}`}
                 description={`${causa.tipo_vencimiento ?? "Vencimiento"} ${formatDate(causa.proximo_vencimiento)} · Aviso con ${causa.anticipacion_alerta} de anticipación`}
+                action={
+                  <button
+                    type="button"
+                    onClick={() => vencimientosRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                    className="cursor-pointer text-[12px] font-semibold text-blue hover:underline"
+                  >
+                    Ver todos los vencimientos →
+                  </button>
+                }
               />
             )}
             {inactiva && (
@@ -230,7 +248,7 @@ export default function CausaModal({ causa, userId }: Props) {
               </CollapsibleSection>
 
               <CollapsibleSection
-                title="Eventos"
+                title="Audiencias"
                 headerAction={
                   <button
                     type="button"
@@ -244,6 +262,7 @@ export default function CausaModal({ causa, userId }: Props) {
                 <EventosSection ref={evRef} causaId={causa.id} naked />
               </CollapsibleSection>
 
+              <div ref={vencimientosRef} className="mb-[6px]">
               <CollapsibleSection
                 title="Vencimientos y alertas"
                 headerAction={
@@ -255,7 +274,8 @@ export default function CausaModal({ causa, userId }: Props) {
                     {causa.proximo_vencimiento && (
                       <button type="button"
                         onClick={async () => {
-                          if (!confirm("¿Eliminar el vencimiento/alerta de esta causa?")) return;
+                          const ok = await confirmRequest({ title: "Eliminar vencimiento", message: "¿Eliminar el vencimiento/alerta de esta causa?", confirmLabel: "Eliminar", danger: true });
+                          if (!ok) return;
                           const r = await clearVencimiento(causa.id);
                           showToast({ message: r.error ?? r.message ?? "Listo." });
                           if (!r.error) router.refresh();
@@ -296,14 +316,9 @@ export default function CausaModal({ causa, userId }: Props) {
                   </div>
                 )}
               </CollapsibleSection>
+              </div>
 
-              <CollapsibleSection title="Honorarios">
-                <HonorariosCard causaId={causa.id} naked />
-              </CollapsibleSection>
-
-              <CollapsibleSection title="Gastos">
-                <GastosCard causaId={causa.id} naked />
-              </CollapsibleSection>
+              <GestionEconomicaSection causaId={causa.id} collapsible />
 
               <CollapsibleSection title="Tareas">
                 <TodoList causaId={causa.id} />
@@ -325,8 +340,8 @@ export default function CausaModal({ causa, userId }: Props) {
 
             {causa.editor && (
               <p className="px-5 py-3 text-[12px] text-muted">
-                Última edición: {causa.editor.nombre_completo ?? causa.editor.email} ·{" "}
-                {formatDate(causa.updated_at)}
+                Última edición: {causa.editor.nombre_completo ?? causa.editor.email} · {formatDate(causa.updated_at)}
+                {causa.campo_editado && ` · ${causa.campo_editado}`}
               </p>
             )}
           </div>
@@ -357,6 +372,7 @@ export default function CausaModal({ causa, userId }: Props) {
           }}
         />
       )}
+      {confirmDialog}
     </>
   );
 }

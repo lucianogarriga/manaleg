@@ -86,6 +86,7 @@ export interface Causa {
   notas: string | null;
   fecha_ultimo_movimiento: string | null;
   ultimo_editor_id: string | null;
+  campo_editado: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -209,13 +210,21 @@ export interface Honorario {
   updated_at: string;
 }
 
+export type EstadoTarea = "Pendiente" | "En curso" | "Esperando respuesta" | "Completado";
+
 export interface Todo {
   id: string;
   user_id: string;
   causa_id: string | null;
   texto: string;
   completado: boolean;
+  estado: EstadoTarea;
+  fecha_limite: string | null;
   created_at: string;
+}
+
+export interface TodoConCausa extends Todo {
+  causa: { id: string; caratula: string; nro_expediente: string | null } | null;
 }
 
 export interface Gasto {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Badge from "@/components/ui/Badge";
 import { formatDate, getInitials } from "@/utils/formatters";
 import {
@@ -27,6 +28,7 @@ interface CausaRowProps {
 }
 
 export default function CausaRow({ causa, active, onSelect, wide = false }: CausaRowProps) {
+  const [hovered, setHovered] = useState(false);
   const cerrada = causa.estado === "Cerrada";
   const urgency = getUrgency(causa.proximo_vencimiento, cerrada);
   const deadline = cerrada
@@ -42,21 +44,19 @@ export default function CausaRow({ causa, active, onSelect, wide = false }: Caus
         onClick={onSelect}
         className={`mx-3 my-[5px] flex w-[calc(100%-24px)] cursor-pointer items-center gap-3 rounded-xl border border-l-[3px] px-4 py-[9px] text-left transition-colors duration-100 ${URGENCY_BORDER[urgency]} ${cerrada ? "opacity-55" : ""}`}
         style={{
-          background: active ? "var(--color-blue-lt)" : "var(--color-card)",
+          background: active ? "var(--color-blue-lt)" : hovered ? "var(--hover-row)" : "var(--color-card)",
           borderColor: "var(--color-border)",
           boxShadow: "0 1px 3px rgba(0,0,0,.06)",
         }}
-        onMouseEnter={(e) => { if (!active) (e.currentTarget as HTMLElement).style.background = "var(--hover-row)"; }}
-        onMouseLeave={(e) => { if (!active) (e.currentTarget as HTMLElement).style.background = ""; }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
       >
         {/* Carátula + badges debajo */}
         <div className="min-w-0 flex-1">
           <div className="truncate text-[12.5px] font-semibold text-text">
-            {causa.nro_expediente && (
-              <span className="mr-[5px] text-[12px] font-semibold text-sub">
-                {causa.nro_expediente} ·
-              </span>
-            )}
+            <span className="mr-[5px] text-[12px] font-semibold text-sub">
+              {causa.nro_expediente ? `${causa.nro_expediente} ·` : <span className="font-normal italic text-muted">Sin nro. ·</span>}
+            </span>
             {causa.caratula}
           </div>
           <div className="mt-[4px] flex flex-wrap items-center gap-[4px]">
@@ -80,7 +80,10 @@ export default function CausaRow({ causa, active, onSelect, wide = false }: Caus
         {/* Deadline + owner */}
         <div className="flex shrink-0 items-center gap-[6px]">
           <span className={`h-[6px] w-[6px] shrink-0 rounded-full ${URGENCY_DOT[urgency]}`} />
-          <span className={`hidden max-w-[160px] truncate text-[11.5px] sm:block ${URGENCY_TEXT[urgency]}`}>
+          <span
+            className={`hidden max-w-[160px] truncate text-[11.5px] sm:block ${URGENCY_TEXT[urgency]}`}
+            title={deadline}
+          >
             {deadline}
           </span>
           <span
@@ -103,10 +106,10 @@ export default function CausaRow({ causa, active, onSelect, wide = false }: Caus
       className={`block w-full cursor-pointer border-b border-l-[3px] px-[13px] py-[9px] text-left transition-colors duration-100 ${URGENCY_BORDER[urgency]} ${cerrada ? "opacity-55" : ""}`}
       style={{
         borderBottomColor: "var(--color-border)",
-        background: active ? "var(--color-blue-lt)" : undefined,
+        background: active ? "var(--color-blue-lt)" : hovered ? "var(--hover-row)" : undefined,
       }}
-      onMouseEnter={(e) => { if (!active) (e.currentTarget as HTMLElement).style.background = "var(--hover-row)"; }}
-      onMouseLeave={(e) => { if (!active) (e.currentTarget as HTMLElement).style.background = ""; }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       <div className="mb-[3px] truncate text-[13.5px] font-semibold text-text">{causa.caratula}</div>
       <div className="mb-[3px] flex flex-wrap items-center gap-[4px]">

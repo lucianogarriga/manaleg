@@ -38,20 +38,20 @@ export const URGENCY_TEXT: Record<Urgency, string> = {
   none: "text-sub",
 };
 
-// "Vence mañana", "Alerta en 5 días", "Venció hace 2 días"...
-// El verbo depende del tipo de aviso: Vencimiento → "Vence", Alerta → "Alerta".
+// "Vence mañana", "Recordatorio en 5 días", "Venció hace 2 días"...
 export function getDeadlineLabel(
   proximoVencimiento: string | null,
   tipo: TipoAviso | null = "Vencimiento",
 ): string | null {
   const days = getDaysUntil(proximoVencimiento);
   if (days === null) return null;
-  const esAlerta = tipo === "Alerta";
-  if (days < -1) return `${esAlerta ? "Alerta de" : "Venció"} hace ${-days} días`;
-  if (days === -1) return esAlerta ? "Alerta de ayer" : "Venció ayer";
-  if (days === 0) return esAlerta ? "Alerta hoy" : "Vence hoy";
-  if (days === 1) return esAlerta ? "Alerta mañana" : "Vence mañana";
-  if (days <= 5) return esAlerta ? `Alerta en ${days} días` : `Vence en ${days} días`;
+  // "Alerta" es alias legacy de "Recordatorio"
+  const esRecordatorio = tipo === "Recordatorio" || tipo === "Alerta";
+  if (days < -1) return `${esRecordatorio ? "Recordatorio de" : "Venció"} hace ${-days} días`;
+  if (days === -1) return esRecordatorio ? "Recordatorio de ayer" : "Venció ayer";
+  if (days === 0) return esRecordatorio ? "Recordatorio hoy" : "Vence hoy";
+  if (days === 1) return esRecordatorio ? "Recordatorio mañana" : "Vence mañana";
+  if (days <= 7) return esRecordatorio ? `Recordatorio en ${days} días` : `Vence en ${days} días`;
   return formatDate(proximoVencimiento);
 }
 
@@ -67,7 +67,7 @@ export function getRowDeadlineText(
   if (days < 0) label = "Vencido";
   else if (days === 0) label = "Hoy";
   else if (days === 1) label = "Mañana";
-  else if (days <= 5) label = `(${days} días)`;
+  else if (days <= 7) label = `En ${days} días`;
   else label = formatDate(proximoVencimiento)!;
   return motivo ? `${label} · ${motivo}` : label;
 }

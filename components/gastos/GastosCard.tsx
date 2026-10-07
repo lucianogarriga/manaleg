@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState, useTransition } from "react";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
 import { ExternalLink, Pencil, Trash2 } from "lucide-react";
 import { addGasto, removeGasto, updateGasto } from "@/app/(app)/causas/gastoActions";
@@ -113,6 +114,7 @@ export default function GastosCard({ causaId, naked = false }: { causaId: string
   const [formOpen, setFormOpen] = useState(false);
   const [editingGasto, setEditingGasto] = useState<Gasto | null>(null);
   const showToast = useUIStore((s) => s.showToast);
+  const { request: confirmRequest, dialog: confirmDialog } = useConfirm();
 
   const afterSaved = (msg: string) => {
     setFormOpen(false);
@@ -123,7 +125,8 @@ export default function GastosCard({ causaId, naked = false }: { causaId: string
   };
 
   const onDelete = async (id: string) => {
-    if (!confirm("¿Eliminar este gasto?")) return;
+    const ok = await confirmRequest({ title: "Eliminar gasto", message: "¿Eliminar este gasto?", confirmLabel: "Eliminar", danger: true });
+    if (!ok) return;
     const result = await removeGasto(id);
     if (result.error) return showToast({ message: result.error });
     showToast({ message: result.message ?? "Gasto eliminado." });
@@ -209,6 +212,7 @@ export default function GastosCard({ causaId, naked = false }: { causaId: string
           onSaved={afterSaved}
         />
       )}
+      {confirmDialog}
     </>
   );
 }

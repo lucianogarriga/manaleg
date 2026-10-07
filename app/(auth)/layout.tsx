@@ -1,4 +1,4 @@
-import { Scale, BellDot, Users, FileText } from "lucide-react";
+import { BellDot, Users, FileText } from "lucide-react";
 
 const FEATURES = [
   {
@@ -47,8 +47,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="relative">
           {/* Logo — icono + MANALEG justo arriba del título */}
           <div className="mb-4 flex items-center gap-[10px]">
-            <div className="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] bg-white/15">
-              <Scale size={17} strokeWidth={2} className="text-white" />
+            <div className="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] bg-white/15 text-[17px] font-bold text-white">
+              M
             </div>
             <span className="text-[20px] font-bold tracking-[.6px] text-white">MANALEG</span>
           </div>
@@ -84,8 +84,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-8" style={{ background: "#f0f4f8" }}>
         {/* Logo solo en mobile */}
         <div className="mb-6 flex flex-col items-center gap-2 md:hidden">
-          <div className="flex h-10 w-10 items-center justify-center rounded-[10px]" style={{ background: "#2563eb" }}>
-            <Scale size={20} strokeWidth={2} className="text-white" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-[10px] text-[18px] font-bold text-white" style={{ background: "#2563eb" }}>
+            M
           </div>
           <div className="text-[17px] font-bold" style={{ color: "#0f172a" }}>MANALEG</div>
         </div>

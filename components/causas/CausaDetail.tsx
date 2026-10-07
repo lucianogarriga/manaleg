@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ArrowLeft, Share2 } from "lucide-react";
 import { quitarAcceso } from "@/app/(app)/causas/shareActions";
 import ColaboradoresList from "@/components/shares/ColaboradoresList";
@@ -13,8 +15,7 @@ import Badge from "@/components/ui/Badge";
 import CardSection from "@/components/ui/CardSection";
 import DriveLink from "@/components/ui/DriveLink";
 import FieldGrid, { type Field } from "@/components/ui/FieldGrid";
-import GastosCard from "@/components/gastos/GastosCard";
-import HonorariosCard from "@/components/honorarios/HonorariosCard";
+import GestionEconomicaSection from "./GestionEconomicaSection";
 import MovimientosSection from "@/components/movimientos/MovimientosSection";
 import { useCausasStore } from "@/store/causasStore";
 import { formatCurrency, formatDate, getDaysUntil, getInitials } from "@/utils/formatters";
@@ -29,10 +30,12 @@ interface CausaDetailProps {
 
 export default function CausaDetail({ causa, userId, className = "" }: CausaDetailProps) {
   const router = useRouter();
+  const vencimientosRef = useRef<HTMLElement>(null);
   const openEdit = useCausasStore((s) => s.openEdit);
   const select = useCausasStore((s) => s.select);
   const showToast = useUIStore((s) => s.showToast);
   const { data: shares, loading: sharesLoading, reload: reloadShares } = useShares(causa.id);
+  const { request: confirmRequest, dialog: confirmDialog } = useConfirm();
   const [shareOpen, setShareOpen] = useState(false);
 
   const cerrada = causa.estado === "Cerrada";
@@ -42,7 +45,8 @@ export default function CausaDetail({ causa, userId, className = "" }: CausaDeta
 
   const revocar = async (share: CausaShareConUsuario) => {
     const nombre = share.usuario?.nombre_completo ?? share.usuario?.email ?? "este usuario";
-    if (!confirm(`¿Quitar el acceso de ${nombre} a esta causa?`)) return;
+    const ok = await confirmRequest({ title: "Quitar acceso", message: `¿Quitar el acceso de ${nombre} a esta causa?`, confirmLabel: "Quitar acceso", danger: true });
+    if (!ok) return;
     const result = await quitarAcceso(share.id);
     showToast({ message: result.error ?? result.message ?? "Listo." });
     if (!result.error) {
@@ -71,7 +75,12 @@ export default function CausaDetail({ causa, userId, className = "" }: CausaDeta
     },
     { label: "Fecha de inicio", value: formatDate(causa.fecha_inicio) },
     { label: "Monto reclamado", value: formatCurrency(causa.monto_reclamado) },
-    { label: "Cliente", value: causa.cliente?.nombre_completo ?? "—" },
+    {
+      label: "Cliente",
+      value: causa.cliente
+        ? <Link href={`/clientes?id=${causa.cliente.id}`} className="text-blue hover:underline">{causa.cliente.nombre_completo}</Link>
+        : "—",
+    },
   ];
   if (causa.notas) datos.push({ label: "Notas", value: causa.notas, full: true });
 
@@ -149,6 +158,15 @@ export default function CausaDetail({ causa, userId, className = "" }: CausaDeta
           variant={urgency === "red" ? "red" : "amber"}
           title={`${getDeadlineLabel(causa.proximo_vencimiento, causa.tipo_vencimiento)}${causa.motivo_vencimiento ? ` — ${causa.motivo_vencimiento}` : ""}`}
           description={`${causa.tipo_vencimiento ?? "Vencimiento"} ${formatDate(causa.proximo_vencimiento)} · Aviso configurado con ${causa.anticipacion_alerta} de anticipación`}
+          action={
+            <button
+              type="button"
+              onClick={() => vencimientosRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              className="cursor-pointer text-[12px] font-semibold text-blue hover:underline"
+            >
+              Ver todos los vencimientos →
+            </button>
+          }
         />
       )}
       {inactiva && (
@@ -167,10 +185,7 @@ export default function CausaDetail({ causa, userId, className = "" }: CausaDeta
         <DriveLink href={causa.link_drive} label={`Carpeta Drive — ${causa.caratula}`} />
       )}
 
-      <HonorariosCard causaId={causa.id} />
-      <GastosCard causaId={causa.id} />
-
-      <CardSection title="Vencimientos">
+      <CardSection title="Vencimientos y alertas" ref={vencimientosRef}>
         <FieldGrid fields={vencimientos} />
       </CardSection>
 
@@ -183,6 +198,8 @@ export default function CausaDetail({ causa, userId, className = "" }: CausaDeta
       />
 
       <MovimientosSection causaId={causa.id} userId={userId} />
+
+      <GestionEconomicaSection causaId={causa.id} />
 
       {shareOpen && (
         <ShareCausaModal
@@ -201,8 +218,10 @@ export default function CausaDetail({ causa, userId, className = "" }: CausaDeta
       {causa.editor && (
         <p className="mx-3 mt-3 text-[12px] text-muted">
           Última edición: {causa.editor.nombre_completo ?? causa.editor.email} · {formatDate(causa.updated_at)}
+          {causa.campo_editado && ` · ${causa.campo_editado}`}
         </p>
       )}
+      {confirmDialog}
     </div>
   );
 }

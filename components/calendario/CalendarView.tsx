@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
 import { Bell, CalendarClock, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { removeDiaInhabil } from "@/app/(app)/calendario/actions";
@@ -37,6 +38,7 @@ function groupBy<T>(items: T[], key: (item: T) => string): Map<string, T[]> {
 export default function CalendarView({ hoy, avisos, inhabiles, userId }: CalendarViewProps) {
   const router = useRouter();
   const showToast = useUIStore((s) => s.showToast);
+  const { request: confirmRequest, dialog: confirmDialog } = useConfirm();
 
   const [year, setYear] = useState(Number(hoy.slice(0, 4)));
   const [month, setMonth] = useState(Number(hoy.slice(5, 7)) - 1);
@@ -79,7 +81,8 @@ export default function CalendarView({ hoy, avisos, inhabiles, userId }: Calenda
   };
 
   const borrarInhabil = async (id: string) => {
-    if (!confirm("¿Eliminar este día inhábil?")) return;
+    const ok = await confirmRequest({ title: "Eliminar día inhábil", message: "¿Eliminar este día inhábil?", confirmLabel: "Eliminar", danger: true });
+    if (!ok) return;
     const result = await removeDiaInhabil(id);
     showToast({ message: result.error ?? result.message ?? "Listo." });
     if (!result.error) router.refresh();
@@ -250,6 +253,7 @@ export default function CalendarView({ hoy, avisos, inhabiles, userId }: Calenda
           }}
         />
       )}
+      {confirmDialog}
     </div>
   );
 }

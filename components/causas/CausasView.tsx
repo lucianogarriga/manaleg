@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Scale, LayoutList, LayoutGrid } from "lucide-react";
+import { normalizeTipoJuicio } from "@/utils/constants";
 import EmptyState from "@/components/ui/EmptyState";
 import FAB from "@/components/ui/FAB";
 import FilterChips from "./FilterChips";
@@ -28,6 +29,18 @@ export default function CausasView({ causas, clientes, userId, causasMax }: Caus
   const { causas: visibles, total, counts } = useCausas(causas, userId);
   // Solo causas propias cuentan para el límite (las compartidas no son del usuario)
   const causasPropias = causas.filter((c) => c.user_id === userId).length;
+  // Tipos de juicio únicos presentes en la lista (para el dropdown de filtros)
+  const tiposJuicio = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const c of causas) {
+      if (c.tipo_juicio) {
+        const canonical = normalizeTipoJuicio(c.tipo_juicio);
+        const key = canonical.toLowerCase();
+        if (!seen.has(key)) seen.set(key, canonical);
+      }
+    }
+    return [...seen.values()].sort();
+  }, [causas]);
   const atLimit = causasPropias >= causasMax;
   const selectedId = useCausasStore((s) => s.selectedId);
   const formOpen = useCausasStore((s) => s.formOpen);
@@ -77,15 +90,25 @@ export default function CausasView({ causas, clientes, userId, causasMax }: Caus
           {/* FilterChips + badge de uso + toggle de vista */}
           <div className="flex items-center gap-2 pr-3">
             <div className="flex-1">
-              <FilterChips total={total} counts={counts} />
+              <FilterChips total={total} counts={counts} tiposJuicio={tiposJuicio} />
             </div>
-            <span
-              className="shrink-0 text-[11px] tabular-nums"
-              style={{ color: atLimit ? "#dc2626" : "var(--color-muted)" }}
-              title={`${causasPropias} de ${causasMax} causas usadas`}
-            >
-              {causasPropias}/{causasMax}
-            </span>
+            <div className="shrink-0 flex flex-col items-end gap-[3px]">
+              <span
+                className="text-[11px] tabular-nums whitespace-nowrap"
+                style={{ color: atLimit ? "#dc2626" : "var(--color-muted)" }}
+              >
+                {causasPropias} de {causasMax} causas
+              </span>
+              <div className="w-[72px] h-[3px] rounded-full overflow-hidden" style={{ background: "var(--color-border)" }}>
+                <div
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{
+                    width: `${Math.min(100, (causasPropias / causasMax) * 100)}%`,
+                    background: atLimit ? "#dc2626" : causasPropias / causasMax > 0.8 ? "#f59e0b" : "var(--color-blue)",
+                  }}
+                />
+              </div>
+            </div>
             <div
               className="flex shrink-0 items-center gap-[2px] rounded-[7px] p-[3px]"
               style={{ background: "var(--color-border)" }}

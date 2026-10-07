@@ -1,6 +1,7 @@
 "use client";
 
 import { forwardRef, useImperativeHandle, useState } from "react";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
 import { removeMovimiento } from "@/app/(app)/causas/detailActions";
 import CardSection, { CardAction } from "@/components/ui/CardSection";
@@ -24,10 +25,12 @@ const MovimientosSection = forwardRef<
 
   useImperativeHandle(ref, () => ({ openForm: () => setFormOpen(true) }), []);
 
+  const { request: confirmRequest, dialog: confirmDialog } = useConfirm();
   const afterChange = () => { reload(); router.refresh(); };
 
   const onDelete = async (id: string) => {
-    if (!confirm("¿Eliminar este movimiento?")) return;
+    const ok = await confirmRequest({ title: "Eliminar movimiento", message: "¿Eliminar este movimiento?", confirmLabel: "Eliminar", danger: true });
+    if (!ok) return;
     const result = await removeMovimiento(id);
     if (result.error) return showToast({ message: result.error });
     showToast({ message: result.message ?? "Movimiento eliminado." });
@@ -73,6 +76,7 @@ const MovimientosSection = forwardRef<
           }}
         />
       )}
+      {confirmDialog}
     </>
   );
 });

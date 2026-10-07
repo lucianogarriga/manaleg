@@ -1,6 +1,7 @@
 "use client";
 
 import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
 import { useActionState } from "react";
 import { Calendar, Clock, MapPin, Pencil, Trash2, X } from "lucide-react";
@@ -50,7 +51,7 @@ function EventoForm({
           <X size={16} />
         </button>
         <h3 className="mb-4 text-[15px] font-bold text-text">
-          {evento ? "Editar evento" : "Nuevo evento"}
+          {evento ? "Editar audiencia" : "Nueva audiencia"}
         </h3>
         <form action={formAction} className="space-y-3">
           <div>
@@ -220,6 +221,7 @@ function EventosSection({
   const [formEvento, setFormEvento] = useState<Evento | null | "new">(null);
   useImperativeHandle(ref, () => ({ openForm: () => setFormEvento("new") }), []);
   const showToast = useUIStore((s) => s.showToast);
+  const { request: confirmRequest, dialog: confirmDialog } = useConfirm();
 
   const afterChange = (msg: string) => {
     setFormEvento(null);
@@ -229,7 +231,8 @@ function EventosSection({
   };
 
   const onDelete = async (id: string) => {
-    if (!confirm("¿Eliminar este evento?")) return;
+    const ok = await confirmRequest({ title: "Eliminar audiencia", message: "¿Eliminar esta audiencia?", confirmLabel: "Eliminar", danger: true });
+    if (!ok) return;
     const result = await eliminarEvento(id);
     if (result.error) return showToast({ message: result.error });
     afterChange(result.message ?? "Evento eliminado.");
@@ -243,7 +246,7 @@ function EventosSection({
   ) : error ? (
     <p className="py-3 text-[13px] text-red">No se pudieron cargar los eventos: {error}</p>
   ) : data.length === 0 ? (
-    <p className="py-3 text-[13.5px] text-muted">Todavía no hay eventos cargados para esta causa.</p>
+    <p className="py-3 text-[13.5px] text-muted">No hay audiencias programadas para esta causa.</p>
   ) : (
     <div className="divide-y divide-border/60">
       {data.map((e) => (
@@ -262,7 +265,7 @@ function EventosSection({
       {naked ? (
         <div className="px-[13px] pb-3">{inner}</div>
       ) : (
-        <CardSection title="Eventos" action={<CardAction onClick={() => setFormEvento("new")}>+ Agregar</CardAction>}>
+        <CardSection title="Audiencias" action={<CardAction onClick={() => setFormEvento("new")}>+ Agregar</CardAction>}>
           <div className="px-[13px] py-2">{inner}</div>
         </CardSection>
       )}
@@ -275,6 +278,7 @@ function EventosSection({
           onSaved={afterChange}
         />
       )}
+      {confirmDialog}
     </>
   );
 });
