@@ -100,7 +100,7 @@ export default function Topbar({ fecha, alertas, urgentes, notificaciones, sinLe
           <Sun
             size={12}
             style={{
-              color: theme === "light" ? "#f59e0b" : "#475569",
+              color: theme === "light" ? "var(--color-amb)" : "var(--color-muted)",
               transition: "color .2s",
             }}
           />

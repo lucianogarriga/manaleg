@@ -11,15 +11,8 @@ import {
   getRowDeadlineText,
   getVisualUrgency,
 } from "@/utils/urgencyHelpers";
+import { VIA_LABELS } from "@/utils/constants";
 import type { CausaConRelaciones } from "@/types";
-
-const VIA_LABELS: Record<string, string> = {
-  "Judicial":               "JUD",
-  "Mediación":              "MED",
-  "Administrativo":         "ADM",
-  "Extrajudicial":          "EXT",
-  "Defensa del Consumidor": "DEF",
-};
 
 interface CausaRowProps {
   causa: CausaConRelaciones;

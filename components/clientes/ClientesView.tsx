@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, Trash2, User, X } from "lucide-react";
-import { eliminarCliente } from "@/app/(app)/clientes/clienteActions";
+import { deleteCliente } from "@/app/(app)/clientes/clienteActions";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import EmptyState from "@/components/ui/EmptyState";
 import FAB from "@/components/ui/FAB";
@@ -107,7 +107,7 @@ export default function ClientesView({ clientes }: ClientesViewProps) {
   const handleDelete = async (c: Cliente) => {
     const ok = await confirmRequest({ title: "Eliminar cliente", message: `¿Eliminar a ${c.nombre_completo}? Esta acción no se puede deshacer.`, confirmLabel: "Eliminar", danger: true });
     if (!ok) return;
-    const result = await eliminarCliente(c.id);
+    const result = await deleteCliente(c.id);
     showToast({ message: result.error ?? result.message ?? "Listo." });
     if (!result.error) { setDetail(null); router.refresh(); }
   };

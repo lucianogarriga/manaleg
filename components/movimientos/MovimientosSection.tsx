@@ -3,7 +3,7 @@
 import { forwardRef, useImperativeHandle, useState } from "react";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
-import { removeMovimiento } from "@/app/(app)/causas/detailActions";
+import { deleteMovimiento } from "@/app/(app)/causas/detailActions";
 import CardSection, { CardAction } from "@/components/ui/CardSection";
 import { useMovimientos } from "@/hooks/useCausaData";
 import { useUIStore } from "@/store/uiStore";
@@ -31,7 +31,7 @@ const MovimientosSection = forwardRef<
   const onDelete = async (id: string) => {
     const ok = await confirmRequest({ title: "Eliminar movimiento", message: "¿Eliminar este movimiento?", confirmLabel: "Eliminar", danger: true });
     if (!ok) return;
-    const result = await removeMovimiento(id);
+    const result = await deleteMovimiento(id);
     if (result.error) return showToast({ message: result.error });
     showToast({ message: result.message ?? "Movimiento eliminado." });
     afterChange();

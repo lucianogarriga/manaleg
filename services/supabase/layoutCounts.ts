@@ -81,6 +81,12 @@ export const getLayoutCounts: () => Promise<LayoutCounts> = cache(async function
     supabase.from("notificaciones").select("id", { count: "exact", head: true }).eq("leida", false),
   ]);
 
+  // Loguear errores server-side sin crashear el layout
+  if (activas.error) console.error("[layoutCounts] causas activas:", activas.error.message);
+  if (avisos.error)  console.error("[layoutCounts] avisos:", avisos.error.message);
+  if (notifs.error)  console.error("[layoutCounts] notificaciones:", notifs.error.message);
+  if (sinLeer.error) console.error("[layoutCounts] sin leer:", sinLeer.error.message);
+
   const alertas: AlertaItem[] = (avisos.data ?? []).map((c) => ({
     causaId: c.id,
     caratula: c.caratula,

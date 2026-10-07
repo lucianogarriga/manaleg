@@ -20,7 +20,7 @@ const refresh = () => revalidatePath("/", "layout");
 
 // ─── MOVIMIENTOS ───
 
-export async function addMovimiento(_prev: FormState, formData: FormData): Promise<FormState> {
+export async function createMovimiento(_prev: FormState, formData: FormData): Promise<FormState> {
   const causaId = text(formData, "causa_id");
   const descripcion = text(formData, "descripcion");
   const fecha = text(formData, "fecha");
@@ -46,7 +46,7 @@ export async function addMovimiento(_prev: FormState, formData: FormData): Promi
   return { message: "Movimiento agregado." };
 }
 
-export async function removeMovimiento(id: string): Promise<FormState> {
+export async function deleteMovimiento(id: string): Promise<FormState> {
   if (!await getAuthUserId()) return { error: "No autenticado." };
   const supabase = await createClient();
   const { data, error } = await supabase.from("movimientos").delete().eq("id", id).select("id");
@@ -123,7 +123,7 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
 
 // ─── PAGOS ───
 
-export async function addPago(_prev: FormState, formData: FormData): Promise<FormState> {
+export async function createPago(_prev: FormState, formData: FormData): Promise<FormState> {
   const causaId = text(formData, "causa_id");
   const honorarioId = text(formData, "honorario_id");
   const monto = parseMonto(text(formData, "monto"));
@@ -154,34 +154,6 @@ export async function addPago(_prev: FormState, formData: FormData): Promise<For
 }
 
 // ─── VENCIMIENTOS ───
-
-export async function updateVencimiento(_prev: FormState, formData: FormData): Promise<FormState> {
-  const causaId = text(formData, "causa_id");
-  const proximoVencimiento = text(formData, "proximo_vencimiento");
-  const motivo = text(formData, "motivo_vencimiento");
-  const tipoRaw = text(formData, "tipo_vencimiento");
-
-  if (!causaId) return { error: "Falta la causa." };
-  if (proximoVencimiento && !isISODate(proximoVencimiento)) return { error: "La fecha no es válida." };
-
-  const tipo = proximoVencimiento
-    ? (["Vencimiento", "Recordatorio", "Audiencia"].includes(tipoRaw ?? "") ? tipoRaw : "Vencimiento")
-    : null;
-
-  if (!await getAuthUserId()) return { error: "No autenticado." };
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("causas").update({
-    proximo_vencimiento: proximoVencimiento || null,
-    motivo_vencimiento: proximoVencimiento ? motivo || null : null,
-    tipo_vencimiento: tipo,
-    campo_editado: "Actualizó próximo vencimiento",
-  }).eq("id", causaId).select("id");
-
-  if (error) return { error: `No se pudo actualizar el vencimiento: ${error.message}` };
-  if (!data || data.length === 0) return { error: "No se encontró la causa o no tenés acceso." };
-  refresh();
-  return { message: "Vencimiento actualizado." };
-}
 
 export async function clearVencimiento(causaId: string): Promise<FormState> {
   if (!await getAuthUserId()) return { error: "No autenticado." };
@@ -223,7 +195,7 @@ function extraCampos(tipo: string, formData: FormData) {
   return { hora: null, lugar: null, notas: null, acto_procesal: null };
 }
 
-export async function createVencimientoRow(_prev: FormState, formData: FormData): Promise<FormState> {
+export async function createVencimiento(_prev: FormState, formData: FormData): Promise<FormState> {
   const causaId = text(formData, "causa_id");
   const fecha = text(formData, "fecha");
   const motivo = text(formData, "motivo") || null;
@@ -253,7 +225,7 @@ export async function createVencimientoRow(_prev: FormState, formData: FormData)
   return { message: `${tipo} agregado.` };
 }
 
-export async function updateVencimientoRow(_prev: FormState, formData: FormData): Promise<FormState> {
+export async function updateVencimiento(_prev: FormState, formData: FormData): Promise<FormState> {
   const id = text(formData, "id");
   const fecha = text(formData, "fecha");
   const motivo = text(formData, "motivo") || null;
@@ -278,7 +250,7 @@ export async function updateVencimientoRow(_prev: FormState, formData: FormData)
   return { message: `${tipo} actualizado.` };
 }
 
-export async function deleteVencimientoRow(id: string): Promise<FormState> {
+export async function deleteVencimiento(id: string): Promise<FormState> {
   if (!await getAuthUserId()) return { error: "No autenticado." };
   const supabase = await createClient();
   const { data, error } = await supabase.from("vencimientos").delete().eq("id", id).select("id");
@@ -300,7 +272,7 @@ export async function toggleVencimientoCompletado(id: string, completado: boolea
   return { message: completado ? "Marcado como completado." : "Marcado como pendiente." };
 }
 
-export async function removePago(id: string): Promise<FormState> {
+export async function deletePago(id: string): Promise<FormState> {
   if (!await getAuthUserId()) return { error: "No autenticado." };
   const supabase = await createClient();
   const { data, error } = await supabase.from("pagos").delete().eq("id", id).select("id");

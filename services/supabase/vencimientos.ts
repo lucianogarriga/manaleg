@@ -22,12 +22,14 @@ export async function getAllVencimientos(): Promise<VencimientoItem[]> {
 
   if (error) throw new Error(`No se pudieron cargar los vencimientos: ${error.message}`);
 
-  return (data ?? []).map((c) => ({
-    causaId: c.id,
-    caratula: c.caratula,
-    fecha: c.proximo_vencimiento as string,
-    tipo: c.tipo_vencimiento,
-    motivo: c.motivo_vencimiento,
-    estado: c.estado,
-  }));
+  return (data ?? [])
+    .filter((c): c is typeof c & { proximo_vencimiento: string } => c.proximo_vencimiento !== null)
+    .map((c) => ({
+      causaId: c.id,
+      caratula: c.caratula,
+      fecha: c.proximo_vencimiento,
+      tipo: c.tipo_vencimiento,
+      motivo: c.motivo_vencimiento,
+      estado: c.estado,
+    }));
 }

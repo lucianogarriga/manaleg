@@ -8,14 +8,12 @@ import { removeDiaInhabil } from "@/app/(app)/calendario/actions";
 import OpenCausaButton from "@/components/causas/OpenCausaButton";
 import { useUIStore } from "@/store/uiStore";
 import { addDaysISO, dayOfWeekISO, formatDate, formatLongDate } from "@/utils/formatters";
+import { MESES_FULL } from "@/utils/constants";
 import type { AlertaItem } from "@/services/supabase/layoutCounts";
 import type { DiaInhabil } from "@/types";
 import DiaInhabilForm from "./DiaInhabilForm";
 
-const MESES = [
-  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
-];
+const MESES = MESES_FULL;
 const DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
 interface CalendarViewProps {

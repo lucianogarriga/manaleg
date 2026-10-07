@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, Trash2 } from "lucide-react";
 
 interface ConfirmRequest {
@@ -48,10 +48,29 @@ export default function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onCancel();
-      if (e.key === "Enter") onConfirm();
+      if (e.key === "Escape") { e.preventDefault(); onCancel(); return; }
+      if (e.key === "Enter")  { e.preventDefault(); onConfirm(); return; }
+
+      // Focus trap: mantener el foco dentro del diálogo con Tab
+      if (e.key === "Tab" && panelRef.current) {
+        const focusable = Array.from(
+          panelRef.current.querySelectorAll<HTMLElement>(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+          ),
+        ).filter((el) => !el.hasAttribute("disabled"));
+        if (focusable.length === 0) { e.preventDefault(); return; }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
@@ -60,8 +79,14 @@ export default function ConfirmDialog({
   return (
     <>
       <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-[2px]" onClick={onCancel} />
-      <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+      <div
+        className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-title"
+      >
         <div
+          ref={panelRef}
           className="w-full max-w-[360px] rounded-xl bg-card shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
@@ -78,7 +103,7 @@ export default function ConfirmDialog({
               )}
             </div>
             <div>
-              <h3 className="text-[15px] font-bold text-text">{title}</h3>
+              <h3 id="confirm-title" className="text-[15px] font-bold text-text">{title}</h3>
               <p className="mt-1 text-[13px] leading-[1.5] text-sub">{message}</p>
             </div>
           </div>
@@ -92,6 +117,8 @@ export default function ConfirmDialog({
               Cancelar
             </button>
             <button
+              // eslint-disable-next-line jsx-a11y/no-autofocus
+              autoFocus
               type="button"
               onClick={onConfirm}
               className={`cursor-pointer rounded-[7px] px-3 py-[6px] text-[13px] font-semibold text-white transition-opacity hover:opacity-90 ${

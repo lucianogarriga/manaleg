@@ -1,6 +1,6 @@
 "use client";
 
-import { addMovimiento } from "@/app/(app)/causas/detailActions";
+import { createMovimiento } from "@/app/(app)/causas/detailActions";
 import FormAlert from "@/components/auth/FormAlert";
 import { FormSection, SelectField, TextAreaField, TextField } from "@/components/ui/FormControls";
 import Modal from "@/components/ui/Modal";
@@ -17,7 +17,7 @@ interface MovimientoFormProps {
 
 // Se monta solo mientras el modal está abierto (estado limpio en cada apertura)
 export default function MovimientoForm({ causaId, onClose, onSaved }: MovimientoFormProps) {
-  const { state, pending, onSubmit } = useFormAction(addMovimiento, onSaved);
+  const { state, pending, onSubmit } = useFormAction(createMovimiento, onSaved);
 
   return (
     <Modal

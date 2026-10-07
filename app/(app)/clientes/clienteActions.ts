@@ -35,7 +35,7 @@ function formValues(formData: FormData): Record<string, string> {
   return out;
 }
 
-export async function guardarCliente(_prev: FormState, formData: FormData): Promise<FormState> {
+export async function saveCliente(_prev: FormState, formData: FormData): Promise<FormState> {
   const id = formData.get("id") as string | null;
   const raw = extractInput(formData);
   const parsed = ClienteSchema.safeParse(raw);
@@ -59,7 +59,7 @@ export async function guardarCliente(_prev: FormState, formData: FormData): Prom
   return { message: id ? "Cliente actualizado." : "Cliente creado." };
 }
 
-export async function eliminarCliente(id: string): Promise<FormState> {
+export async function deleteCliente(id: string): Promise<FormState> {
   const { error } = await deleteCliente(id);
   if (error) return { error: error.message };
   revalidatePath("/clientes");

@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useRef, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
-import { addTodo, removeTodo, toggleTodo } from "@/app/(app)/causas/todoActions";
+import { createTodo, deleteTodo, toggleTodo } from "@/app/(app)/causas/todoActions";
 import { useTodos } from "@/hooks/useCausaData";
 import { useUIStore } from "@/store/uiStore";
 import type { FormState } from "@/types";
@@ -14,7 +14,7 @@ export default function TodoList({ causaId }: { causaId: string }) {
   const showToast = useUIStore((s) => s.showToast);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [state, dispatch, pending] = useActionState<FormState, FormData>(addTodo, {});
+  const [state, dispatch, pending] = useActionState<FormState, FormData>(createTodo, {});
   const [, startAdd] = useTransition();
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export default function TodoList({ causaId }: { causaId: string }) {
   };
 
   const onDelete = async (id: string) => {
-    const result = await removeTodo(id);
+    const result = await deleteTodo(id);
     if (result.error) showToast({ message: result.error });
     else { reload(); router.refresh(); }
   };

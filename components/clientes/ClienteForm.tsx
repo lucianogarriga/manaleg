@@ -1,6 +1,6 @@
 "use client";
 
-import { guardarCliente } from "@/app/(app)/clientes/clienteActions";
+import { saveCliente } from "@/app/(app)/clientes/clienteActions";
 import FormAlert from "@/components/auth/FormAlert";
 import { FormSection, TextAreaField, TextField } from "@/components/ui/FormControls";
 import Modal from "@/components/ui/Modal";
@@ -15,7 +15,7 @@ interface ClienteFormProps {
 }
 
 export default function ClienteForm({ cliente, onClose, onSaved }: ClienteFormProps) {
-  const { state, pending, onSubmit } = useFormAction(guardarCliente, onSaved);
+  const { state, pending, onSubmit } = useFormAction(saveCliente, onSaved);
   const v = state.values ?? {};
 
   return (

@@ -4,20 +4,21 @@ import { useActionState, useEffect, useState, useTransition } from "react";
 import { Calendar, CheckCircle2, Circle, Clock, MapPin, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
-  createVencimientoRow,
-  deleteVencimientoRow,
+  createVencimiento,
+  deleteVencimiento,
   toggleVencimientoCompletado,
-  updateVencimientoRow,
+  updateVencimiento,
 } from "@/app/(app)/causas/detailActions";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { useUIStore } from "@/store/uiStore";
 import { useVencimientos } from "@/hooks/useCausaData";
 import FormAlert from "@/components/auth/FormAlert";
 import { formatDate } from "@/utils/formatters";
+import { ANTICIPACION_ALERTA, TIPOS_AVISO } from "@/utils/constants";
 import type { FormState, Vencimiento } from "@/types";
 
-const TIPOS = ["Vencimiento", "Audiencia", "Recordatorio"] as const;
-const ANTICIPACIONES = ["1 día", "3 días", "1 semana"] as const;
+const TIPOS = TIPOS_AVISO;
+const ANTICIPACIONES = ANTICIPACION_ALERTA;
 
 const TIPO_STYLE: Record<string, string> = {
   Audiencia:    "bg-pur-lt text-pur",
@@ -38,7 +39,7 @@ interface FormRowProps {
 }
 
 function VencimientoFormRow({ causaId, editTarget, onClose, onDone }: FormRowProps) {
-  const action = editTarget ? updateVencimientoRow : createVencimientoRow;
+  const action = editTarget ? updateVencimiento : createVencimiento;
   const [state, dispatch, pending] = useActionState<FormState, FormData>(action, {});
   const [, startT] = useTransition();
   const [tipo, setTipo] = useState<string>(editTarget?.tipo ?? "Vencimiento");
@@ -215,7 +216,7 @@ export default function VencimientosSection({ causaId, esTitular }: Props) {
       danger: true,
     });
     if (!ok) return;
-    const r = await deleteVencimientoRow(v.id);
+    const r = await deleteVencimiento(v.id);
     showToast({ message: r.error ?? r.message ?? "Listo." });
     if (!r.error) { reload(); router.refresh(); }
   };

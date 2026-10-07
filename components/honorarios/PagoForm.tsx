@@ -1,6 +1,6 @@
 "use client";
 
-import { addPago } from "@/app/(app)/causas/detailActions";
+import { createPago } from "@/app/(app)/causas/detailActions";
 import FormAlert from "@/components/auth/FormAlert";
 import { FormSection, TextField } from "@/components/ui/FormControls";
 import Modal from "@/components/ui/Modal";
@@ -17,7 +17,7 @@ interface PagoFormProps {
 }
 
 export default function PagoForm({ causaId, honorarioId, saldo, onClose, onSaved }: PagoFormProps) {
-  const { state, pending, onSubmit } = useFormAction(addPago, onSaved);
+  const { state, pending, onSubmit } = useFormAction(createPago, onSaved);
 
   return (
     <Modal

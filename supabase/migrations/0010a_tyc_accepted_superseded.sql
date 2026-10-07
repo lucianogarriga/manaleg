@@ -1,5 +1,7 @@
 -- ═══════════════════════════════════════════════════════════════
--- Columnas de consentimiento de T&C en profiles
+-- SUPERSEDED: contenido absorbido por 0010_tyc_y_notificaciones_email.sql
+-- Mantenido solo para compatibilidad con entornos que lo tienen en el historial.
+-- Todas las columnas usan IF NOT EXISTS, por lo que es seguro de re-aplicar.
 -- ═══════════════════════════════════════════════════════════════
 
 ALTER TABLE public.profiles

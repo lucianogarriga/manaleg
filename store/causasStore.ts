@@ -9,7 +9,7 @@ interface CausasState {
   selectedId: string | null;
   filter: CausasFilter;
   search: string; // lo escribe el buscador del Topbar
-  fueros: Set<string>; // multi-select: JUD, EXT, ADM, MED, DEF
+  fueros: string[]; // multi-select: JUD, EXT, ADM, MED, DEF
   tipoJuicio: string | null; // filtro por tipo de juicio
   formOpen: boolean;
   editingId: string | null; // null = crear nueva
@@ -28,7 +28,7 @@ export const useCausasStore = create<CausasState>((set, get) => ({
   selectedId: null,
   filter: "todas",
   search: "",
-  fueros: new Set(),
+  fueros: [],
   tipoJuicio: null,
   formOpen: false,
   editingId: null,
@@ -36,12 +36,11 @@ export const useCausasStore = create<CausasState>((set, get) => ({
   setFilter: (filter) => set({ filter }),
   setSearch: (search) => set({ search }),
   toggleFuero: (fuero) => {
-    const next = new Set(get().fueros);
-    if (next.has(fuero)) next.delete(fuero); else next.add(fuero);
-    set({ fueros: next });
+    const current = get().fueros;
+    set({ fueros: current.includes(fuero) ? current.filter((f) => f !== fuero) : [...current, fuero] });
   },
   setTipoJuicio: (tipoJuicio) => set({ tipoJuicio }),
-  clearAdvancedFilters: () => set({ fueros: new Set(), tipoJuicio: null }),
+  clearAdvancedFilters: () => set({ fueros: [], tipoJuicio: null }),
   openCreate: () => set({ formOpen: true, editingId: null }),
   openEdit: (id) => set({ formOpen: true, editingId: id }),
   closeForm: () => set({ formOpen: false, editingId: null }),

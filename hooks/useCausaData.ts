@@ -140,7 +140,8 @@ export function useTodosGlobal() {
       .select("*, causa:causas(id, caratula, nro_expediente)")
       .order("created_at", { ascending: true })
       .returns<TodoConCausa[]>()
-      .then(({ data: rows }) => {
+      .then(({ data: rows, error }) => {
+        if (error) console.error("[useTodosGlobal]", error.message);
         if (!cancelled) {
           setData(rows ?? EMPTY_TODOS_GLOBAL);
           setLoading(false);

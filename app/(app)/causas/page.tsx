@@ -4,7 +4,7 @@ import { getCausas } from "@/services/supabase/causas";
 import { getClienteOptions } from "@/services/supabase/clientes";
 
 export default async function CausasPage() {
-  const [profile, causas, clientes] = await Promise.all([
+  const [profile, { causas, totalEnBD }, clientes] = await Promise.all([
     getCurrentProfile(),
     getCausas(),
     getClienteOptions(),
@@ -13,6 +13,7 @@ export default async function CausasPage() {
   return (
     <CausasView
       causas={causas}
+      totalEnBD={totalEnBD}
       clientes={clientes}
       userId={profile.id}
       causasMax={profile.causas_max}

@@ -86,6 +86,21 @@ export function normalizeTipoJuicio(raw: string): string {
   return TIPO_JUICIO_ALIASES[key] ?? raw.trim();
 }
 
+// Meses en español (nombre completo, para calendarios y dashboards)
+export const MESES_FULL = [
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+] as const;
+
+// Abreviaturas para labels de gráficos de la vía de proceso
+export const VIA_LABELS: Record<string, string> = {
+  "Judicial":               "JUD",
+  "Mediación":              "MED",
+  "Administrativo":         "ADM",
+  "Extrajudicial":          "EXT",
+  "Defensa del Consumidor": "DEF",
+};
+
 // Tipo del próximo aviso de una causa
 export const TIPOS_AVISO = ["Vencimiento", "Recordatorio", "Audiencia"] as const;
 
@@ -117,14 +132,6 @@ export const TIPOS_EVENTO = [
   "Mediación",
   "Pericial",
   "Reunión",
-  "Otro",
-] as const;
-
-export const TIPOS_VENCIMIENTO = [
-  "Plazo procesal",
-  "Audiencia",
-  "Prescripción",
-  "Pacto honorarios",
   "Otro",
 ] as const;
 

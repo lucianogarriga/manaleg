@@ -26,6 +26,7 @@ function NavLink({ item, active, expanded, textStyle, pill, onClick }: NavLinkPr
     <Link
       href={item.href}
       onClick={onClick}
+      aria-label={item.label}
       className="mx-[5px] my-[2px] flex items-center overflow-hidden rounded-[7px] py-[8px]"
       style={{
         gap: expanded ? 9 : 0,

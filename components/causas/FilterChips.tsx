@@ -64,7 +64,7 @@ export default function FilterChips({
   }, [open]);
 
   const estadoActive  = (["urgentes", "recordatorios", "cerradas"] as CausasFilter[]).includes(filter);
-  const activeCount   = fueros.size + (tipoJuicio ? 1 : 0) + (estadoActive ? 1 : 0);
+  const activeCount   = fueros.length + (tipoJuicio ? 1 : 0) + (estadoActive ? 1 : 0);
   const hasAny        = activeCount > 0;
   const atLimit       = causasPropias >= causasMax;
 
@@ -166,7 +166,7 @@ export default function FilterChips({
               <p className="mb-[6px] text-[10px] font-bold uppercase tracking-[.5px] text-muted">Instancia</p>
               <div className="flex flex-wrap gap-[5px]">
                 {INSTANCIAS.map((inst) => {
-                  const on = fueros.has(inst.key);
+                  const on = fueros.includes(inst.key);
                   return (
                     <button
                       key={inst.key}
@@ -243,6 +243,7 @@ export default function FilterChips({
           type="button"
           onClick={clearAll}
           title="Limpiar filtros"
+          aria-label="Limpiar filtros"
           className="inline-flex shrink-0 cursor-pointer items-center rounded-full border border-border p-[3px] text-muted transition-colors hover:border-red-bd hover:text-red"
         >
           <X size={10} />
@@ -255,7 +256,7 @@ export default function FilterChips({
         <div className="hidden flex-col items-end gap-[2px] sm:flex">
           <span
             className="text-[11px] tabular-nums whitespace-nowrap leading-none"
-            style={{ color: atLimit ? "#dc2626" : "var(--color-muted)" }}
+            style={{ color: atLimit ? "var(--color-red)" : "var(--color-muted)" }}
           >
             {causasPropias}/{causasMax}
           </span>
@@ -267,7 +268,7 @@ export default function FilterChips({
               className="h-full rounded-full transition-all duration-300"
               style={{
                 width: `${Math.min(100, (causasPropias / causasMax) * 100)}%`,
-                background: atLimit ? "#dc2626" : causasPropias / causasMax > 0.8 ? "#f59e0b" : "var(--color-blue)",
+                background: atLimit ? "var(--color-red)" : causasPropias / causasMax > 0.8 ? "var(--color-amb)" : "var(--color-blue)",
               }}
             />
           </div>

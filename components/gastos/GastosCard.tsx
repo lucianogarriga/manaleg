@@ -4,7 +4,7 @@ import { useActionState, useEffect, useState, useTransition } from "react";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
 import { ExternalLink, Pencil, Trash2 } from "lucide-react";
-import { addGasto, removeGasto, updateGasto } from "@/app/(app)/causas/gastoActions";
+import { createGasto, deleteGasto, updateGasto } from "@/app/(app)/causas/gastoActions";
 import { TIPOS_GASTO } from "@/utils/constants";
 import CardSection, { CardAction } from "@/components/ui/CardSection";
 import Modal from "@/components/ui/Modal";
@@ -25,7 +25,7 @@ function GastoForm({
   onClose: () => void;
   onSaved: (msg: string) => void;
 }) {
-  const action = gasto ? updateGasto : addGasto;
+  const action = gasto ? updateGasto : createGasto;
   const [state, dispatch, pending] = useActionState<FormState, FormData>(action, {});
   const [, startSubmit] = useTransition();
 
@@ -127,7 +127,7 @@ export default function GastosCard({ causaId, naked = false }: { causaId: string
   const onDelete = async (id: string) => {
     const ok = await confirmRequest({ title: "Eliminar gasto", message: "¿Eliminar este gasto?", confirmLabel: "Eliminar", danger: true });
     if (!ok) return;
-    const result = await removeGasto(id);
+    const result = await deleteGasto(id);
     if (result.error) return showToast({ message: result.error });
     showToast({ message: result.message ?? "Gasto eliminado." });
     reload();

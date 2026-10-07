@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useCausasStore, type CausasFilter } from "@/store/causasStore";
 import { getDaysUntil } from "@/utils/formatters";
 import { getUrgency } from "@/utils/urgencyHelpers";
-import { normalizeTipoJuicio } from "@/utils/constants";
+import { normalizeTipoJuicio, VIA_LABELS } from "@/utils/constants";
 import type { CausaConRelaciones } from "@/types";
 
 const normalize = (s: string) =>
@@ -52,15 +52,10 @@ export function useCausas(causas: CausaConRelaciones[], userId: string) {
         !isCerrada(c) && c.tipo_vencimiento === "Vencimiento" && c.proximo_vencimiento !== null,
     };
 
-    const VIA_MAP: Record<string, string> = {
-      "Judicial": "JUD", "Mediación": "MED", "Administrativo": "ADM",
-      "Extrajudicial": "EXT", "Defensa del Consumidor": "DEF",
-    };
-
     const q = normalize(search.trim());
     const filtered = causas
       .filter(matchers[filter])
-      .filter((c) => fueros.size === 0 || fueros.has(VIA_MAP[c.via_proceso ?? ""] ?? ""))
+      .filter((c) => fueros.length === 0 || fueros.includes(VIA_LABELS[c.via_proceso ?? ""] ?? ""))
       .filter((c) => !tipoJuicio || normalizeTipoJuicio(c.tipo_juicio ?? "") === tipoJuicio)
       .filter(
         (c) =>

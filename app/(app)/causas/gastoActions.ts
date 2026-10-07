@@ -9,7 +9,7 @@ import { TIPOS_GASTO } from "@/utils/constants";
 
 const refresh = () => revalidatePath("/", "layout");
 
-export async function addGasto(_prev: FormState, formData: FormData): Promise<FormState> {
+export async function createGasto(_prev: FormState, formData: FormData): Promise<FormState> {
   const causaId = text(formData, "causa_id");
   const descripcion = text(formData, "descripcion");
   const fecha = text(formData, "fecha");
@@ -71,7 +71,7 @@ export async function updateGasto(_prev: FormState, formData: FormData): Promise
   return { message: "Gasto actualizado." };
 }
 
-export async function removeGasto(id: string): Promise<FormState> {
+export async function deleteGasto(id: string): Promise<FormState> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("gastos").delete().eq("id", id).select("id");
   if (error) return { error: `No se pudo eliminar el gasto: ${error.message}` };

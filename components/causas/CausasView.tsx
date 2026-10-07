@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Scale } from "lucide-react";
+import { AlertTriangle, Scale } from "lucide-react";
+import { CAUSAS_LIMIT } from "@/services/supabase/causas";
 import { normalizeTipoJuicio } from "@/utils/constants";
 import EmptyState from "@/components/ui/EmptyState";
 import FAB from "@/components/ui/FAB";
@@ -21,12 +22,13 @@ type ViewMode = "list" | "grid";
 
 interface CausasViewProps {
   causas: CausaConRelaciones[];
+  totalEnBD: number;
   clientes: ClienteOption[];
   userId: string;
   causasMax: number;
 }
 
-export default function CausasView({ causas, clientes, userId, causasMax }: CausasViewProps) {
+export default function CausasView({ causas, totalEnBD, clientes, userId, causasMax }: CausasViewProps) {
   const { causas: visibles, total, counts } = useCausas(causas, userId);
   // Solo causas propias cuentan para el límite (las compartidas no son del usuario)
   const causasPropias = causas.filter((c) => c.user_id === userId).length;
@@ -87,6 +89,16 @@ export default function CausasView({ causas, clientes, userId, causasMax }: Caus
       ) : (
         <div className="flex flex-col">
           <StatsRow causas={causas} />
+
+          {totalEnBD > CAUSAS_LIMIT && (
+            <div className="mx-3 mb-1 mt-2 flex items-center gap-2 rounded-lg border border-amb/30 bg-amb/10 px-3 py-2 text-[12px] text-amb">
+              <AlertTriangle size={13} className="shrink-0" />
+              <span>
+                Tenés <strong>{totalEnBD}</strong> causas pero solo se muestran las primeras <strong>{CAUSAS_LIMIT}</strong>.
+                Los filtros y conteos pueden ser incompletos. Contactá al equipo para habilitar más.
+              </span>
+            </div>
+          )}
 
           <FilterChips
             total={total}

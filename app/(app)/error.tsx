@@ -25,9 +25,9 @@ export default function AppError({ error, reset }: ErrorProps) {
       {/* Ícono */}
       <div
         className="mb-6 flex h-16 w-16 items-center justify-center rounded-[18px]"
-        style={{ background: "rgba(220,38,38,.1)", border: "1px solid rgba(220,38,38,.2)" }}
+        style={{ background: "color-mix(in srgb, var(--color-red) 10%, transparent)", border: "1px solid color-mix(in srgb, var(--color-red) 20%, transparent)" }}
       >
-        <AlertTriangle size={28} style={{ color: "#dc2626" }} strokeWidth={1.5} />
+        <AlertTriangle size={28} style={{ color: "var(--color-red)" }} strokeWidth={1.5} />
       </div>
 
       {/* Texto */}

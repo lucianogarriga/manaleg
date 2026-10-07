@@ -12,20 +12,22 @@ const CAUSA_SELECT = `
 `;
 
 // Límite de carga para fase beta. Incrementar cuando se implemente paginación.
-const CAUSAS_LIMIT = 60;
+export const CAUSAS_LIMIT = 60;
 
-export async function getCausas(): Promise<CausaConRelaciones[]> {
+export type GetCausasResult = { causas: CausaConRelaciones[]; totalEnBD: number };
+
+export async function getCausas(): Promise<GetCausasResult> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error, count } = await supabase
     .from("causas")
-    .select(CAUSA_SELECT)
+    .select(CAUSA_SELECT, { count: "exact" })
     .order("proximo_vencimiento", { ascending: true, nullsFirst: false })
     .order("updated_at", { ascending: false })
     .limit(CAUSAS_LIMIT)
     .returns<CausaConRelaciones[]>();
 
   if (error) throw new Error(`No se pudieron cargar las causas: ${error.message}`);
-  return data;
+  return { causas: data, totalEnBD: count ?? data.length };
 }
 
 type AvisoRow = {

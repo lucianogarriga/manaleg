@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, X } from "lucide-react";
-import { addTodo, removeTodo, updateTodoEstado } from "@/app/(app)/causas/todoActions";
+import { createTodo, deleteTodo, updateTodoEstado } from "@/app/(app)/causas/todoActions";
 import { useTodosGlobal } from "@/hooks/useCausaData";
 import { useUIStore } from "@/store/uiStore";
 import { formatDate, getDaysUntil } from "@/utils/formatters";
@@ -111,7 +111,7 @@ function NuevaTareaForm({
     fd.set("estado", estado);
     setPending(true);
     setError(null);
-    const result = await addTodo({}, fd);
+    const result = await createTodo({}, fd);
     setPending(false);
     if (result.error) { setError(result.error); return; }
     onSaved();
@@ -196,7 +196,7 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
   };
 
   const handleDelete = async (id: string) => {
-    const result = await removeTodo(id);
+    const result = await deleteTodo(id);
     if (result.error) { showToast({ message: result.error }); return; }
     reload();
     router.refresh();

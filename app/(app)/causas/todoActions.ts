@@ -7,7 +7,7 @@ import type { FormState } from "@/types";
 
 const refresh = () => revalidatePath("/", "layout");
 
-export async function addTodo(_prev: FormState, formData: FormData): Promise<FormState> {
+export async function createTodo(_prev: FormState, formData: FormData): Promise<FormState> {
   const causaId = text(formData, "causa_id");
   const texto = text(formData, "texto")?.trim();
   const fechaLimite = text(formData, "fecha_limite") || null;
@@ -63,7 +63,7 @@ export async function updateTodoEstado(id: string, estado: string): Promise<Form
   return { message: "Tarea movida." };
 }
 
-export async function removeTodo(id: string): Promise<FormState> {
+export async function deleteTodo(id: string): Promise<FormState> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("todos").delete().eq("id", id).select("id");
   if (error) return { error: `No se pudo eliminar la tarea: ${error.message}` };

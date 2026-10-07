@@ -4,8 +4,8 @@ import type {
   FUEROS,
   TIPOS_AVISO,
   TIPOS_EVENTO,
+  TIPOS_GASTO,
   TIPOS_MOVIMIENTO,
-  TIPOS_VENCIMIENTO,
   VIAS_PROCESO,
 } from "@/utils/constants";
 
@@ -15,8 +15,8 @@ export type TipoAviso = (typeof TIPOS_AVISO)[number];
 export type EstadoCausa = (typeof ESTADOS_CAUSA)[number];
 export type Anticipacion = (typeof ANTICIPACION_ALERTA)[number];
 export type TipoMovimiento = (typeof TIPOS_MOVIMIENTO)[number];
-export type TipoVencimiento = (typeof TIPOS_VENCIMIENTO)[number];
 export type TipoEvento = (typeof TIPOS_EVENTO)[number];
+export type TipoGasto = (typeof TIPOS_GASTO)[number];
 export type EstadoAlerta = "Pendiente" | "Notificado" | "Vencido";
 
 export interface Evento {
@@ -240,7 +240,7 @@ export interface Gasto {
   descripcion: string;
   monto: number;
   fecha: string;
-  tipo: string | null;
+  tipo: TipoGasto | null;
   comprobante_url: string | null;
   created_at: string;
 }

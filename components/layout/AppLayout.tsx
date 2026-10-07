@@ -14,9 +14,10 @@ import NavigationProgress from "./NavigationProgress";
 // Cada página maneja su propio scroll dentro del área de contenido.
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
+  const defaultCounts = { causasActivas: 0, vencimientosProximos: 0, alertas: [], notificaciones: [], notificacionesSinLeer: 0 };
   const [profile, counts, { data: userData }] = await Promise.all([
     getCurrentProfile(),
-    getLayoutCounts(),
+    getLayoutCounts().catch((e) => { console.error("[AppLayout] getLayoutCounts falló:", e); return defaultCounts; }),
     supabase.auth.getUser(),
   ]);
   const hasSeenWelcome = userData?.user?.user_metadata?.has_seen_welcome === true;
