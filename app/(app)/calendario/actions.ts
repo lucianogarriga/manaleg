@@ -11,7 +11,7 @@ const MAX_DIAS = 62; // un rango de feria judicial largo entra sobrado
 
 // Carga un día inhábil propio (o un rango, ej. feria judicial de invierno).
 // Cada día del rango queda como un registro; los ya cargados se ignoran.
-export async function addDiaInhabil(_prev: FormState, formData: FormData): Promise<FormState> {
+export async function createDiaInhabil(_prev: FormState, formData: FormData): Promise<FormState> {
   const desde = text(formData, "desde");
   const hasta = text(formData, "hasta") ?? desde;
   const descripcion = text(formData, "descripcion");
@@ -41,7 +41,7 @@ export async function addDiaInhabil(_prev: FormState, formData: FormData): Promi
   return { message: fechas.length === 1 ? "Día inhábil cargado." : `${fechas.length} días inhábiles cargados.` };
 }
 
-export async function removeDiaInhabil(id: string): Promise<FormState> {
+export async function deleteDiaInhabil(id: string): Promise<FormState> {
   const supabase = await createClient();
   // RLS: solo se pueden borrar los propios (los feriados del sistema no)
   const { data, error } = await supabase.from("dias_inhabiles").delete().eq("id", id).select("id");

@@ -17,7 +17,7 @@ function TabBar({ tab, setTab }: { tab: Tab; setTab: (t: Tab) => void }) {
       className="cursor-pointer rounded-[5px] px-[10px] py-[3px] text-[12px] font-semibold transition-colors"
       style={{
         background: tab === t ? "var(--color-blue)" : "transparent",
-        color: tab === t ? "#fff" : "var(--color-muted)",
+        color: tab === t ? "white" : "var(--color-muted)",
       }}
     >
       {label}

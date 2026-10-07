@@ -5,7 +5,7 @@ import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { X, Share2, Pencil } from "lucide-react";
-import { quitarAcceso } from "@/app/(app)/causas/shareActions";
+import { revokeAccess } from "@/app/(app)/causas/shareActions";
 import ColaboradoresList from "@/components/shares/ColaboradoresList";
 import ShareCausaModal from "@/components/shares/ShareCausaModal";
 import AlertCard from "@/components/ui/AlertCard";
@@ -62,7 +62,7 @@ export default function CausaModal({ causa, userId }: Props) {
     const nombre = share.usuario?.nombre_completo ?? share.usuario?.email ?? "este usuario";
     const ok = await confirmRequest({ title: "Quitar acceso", message: `¿Quitar el acceso de ${nombre} a esta causa?`, confirmLabel: "Quitar acceso", danger: true });
     if (!ok) return;
-    const result = await quitarAcceso(share.id);
+    const result = await revokeAccess(share.id);
     showToast({ message: result.error ?? result.message ?? "Listo." });
     if (!result.error) { reloadShares(); router.refresh(); }
   };

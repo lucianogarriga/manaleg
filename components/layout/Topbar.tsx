@@ -92,8 +92,8 @@ export default function Topbar({ fecha, alertas, urgentes, notificaciones, sinLe
           title={theme === "light" ? "Activar modo oscuro" : "Activar modo claro"}
           className="flex cursor-pointer items-center gap-[5px] rounded-full border px-[6px] py-[4px] transition-colors duration-200"
           style={{
-            background: theme === "dark" ? "#1e293b" : "var(--color-bg)",
-            borderColor: theme === "dark" ? "#334155" : "var(--color-border)",
+            background: "var(--color-bg)",
+            borderColor: "var(--color-border)",
           }}
         >
           {/* Ícono sol */}

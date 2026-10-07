@@ -1,6 +1,6 @@
 "use client";
 
-import { addDiaInhabil } from "@/app/(app)/calendario/actions";
+import { createDiaInhabil } from "@/app/(app)/calendario/actions";
 import FormAlert from "@/components/auth/FormAlert";
 import { FormSection, SelectField, TextField } from "@/components/ui/FormControls";
 import Modal from "@/components/ui/Modal";
@@ -14,7 +14,7 @@ interface DiaInhabilFormProps {
 }
 
 export default function DiaInhabilForm({ defaultDate, onClose, onSaved }: DiaInhabilFormProps) {
-  const { state, pending, onSubmit } = useFormAction(addDiaInhabil, (s) => onSaved(s.message ?? "Guardado."));
+  const { state, pending, onSubmit } = useFormAction(createDiaInhabil, (s) => onSaved(s.message ?? "Guardado."));
 
   return (
     <Modal

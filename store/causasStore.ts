@@ -2,9 +2,6 @@ import { create } from "zustand";
 
 export type CausasFilter = "todas" | "mias" | "compartidas" | "urgentes" | "cerradas" | "vencen_hoy" | "vencen_3dias" | "sin_movimiento" | "audiencias" | "recordatorios" | "vencimientos";
 
-// Filtros visibles en los chips de la UI (subset de CausasFilter)
-export const VISIBLE_FILTERS = new Set<CausasFilter>(["todas", "mias", "compartidas", "urgentes", "recordatorios", "cerradas"]);
-
 interface CausasState {
   selectedId: string | null;
   filter: CausasFilter;

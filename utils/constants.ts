@@ -1,3 +1,6 @@
+// Límite de causas cargadas en memoria (fase beta). Cambiar cuando se implemente paginación.
+export const CAUSAS_LIMIT = 60;
+
 export const TIPOS_GASTO = [
   "Carta documento",
   "Notificación",

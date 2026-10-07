@@ -9,7 +9,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Comparte una causa con otro usuario ya registrado (se lo busca por email).
 // RLS: solo el titular de la causa puede crear el acceso.
-export async function compartirCausa(_prev: FormState, formData: FormData): Promise<FormState> {
+export async function shareCausa(_prev: FormState, formData: FormData): Promise<FormState> {
   const causaId = text(formData, "causa_id");
   const email = text(formData, "email")?.toLowerCase();
 
@@ -48,7 +48,7 @@ export async function compartirCausa(_prev: FormState, formData: FormData): Prom
   return { message: `Causa compartida con ${colega.nombre_completo ?? colega.email}.` };
 }
 
-export async function quitarAcceso(shareId: string): Promise<FormState> {
+export async function revokeAccess(shareId: string): Promise<FormState> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("causa_shares").delete().eq("id", shareId).select("id");
 

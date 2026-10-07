@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState, useTransition } from "react";
-import { removeCausa, saveCausa, type CausaFormState } from "@/app/(app)/causas/actions";
+import { deleteCausa, saveCausa, type CausaFormState } from "@/app/(app)/causas/actions";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import FormAlert from "@/components/auth/FormAlert";
 import Modal from "@/components/ui/Modal";
@@ -57,7 +57,7 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
     const ok = await confirmRequest({ title: "Eliminar causa", message: `¿Eliminar "${causa.caratula}"? Se borran también sus movimientos, vencimientos y honorarios. No se puede deshacer.`, confirmLabel: "Eliminar", danger: true });
     if (!ok) return;
     startDelete(async () => {
-      const result = await removeCausa(causa.id);
+      const result = await deleteCausa(causa.id);
       if (result.error) return setDeleteError(result.error);
       select(null);
       closeForm();

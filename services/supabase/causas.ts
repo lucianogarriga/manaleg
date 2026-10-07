@@ -1,6 +1,7 @@
 import { createClient } from "./server";
 import type { AlertaItem } from "./layoutCounts";
 import type { CausaConRelaciones, CausaInput } from "@/types";
+import { CAUSAS_LIMIT } from "@/utils/constants";
 
 // RLS devuelve solo causas propias + compartidas: no filtrar por user_id acá.
 const CAUSA_SELECT = `
@@ -10,9 +11,6 @@ const CAUSA_SELECT = `
   cliente:clientes(id, nombre_completo),
   causa_shares(id)
 `;
-
-// Límite de carga para fase beta. Incrementar cuando se implemente paginación.
-export const CAUSAS_LIMIT = 60;
 
 export type GetCausasResult = { causas: CausaConRelaciones[]; totalEnBD: number };
 

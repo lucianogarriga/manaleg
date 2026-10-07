@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { createClient } from "./server";
-import { todayISO } from "@/utils/formatters";
+import { addDaysISO, todayISO } from "@/utils/formatters";
 
 export interface DashboardStats {
   causasActivas: number;
@@ -17,20 +17,14 @@ export interface DashboardStats {
   honorariosCobradosPrev30: number;
 }
 
-function addDays(date: string, days: number): string {
-  const d = new Date(`${date}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
 // Ejecuta las 6 queries reales. Se llama solo en cache miss.
 async function fetchStats(): Promise<DashboardStats> {
   const supabase = await createClient();
   const hoy = todayISO();
-  const hace30 = addDays(hoy, -30);
-  const hace60 = addDays(hoy, -60);
-  const en7    = addDays(hoy, 7);
-  const en30   = addDays(hoy, 30);
+  const hace30 = addDaysISO(hoy, -30);
+  const hace60 = addDaysISO(hoy, -60);
+  const en7    = addDaysISO(hoy, 7);
+  const en30   = addDaysISO(hoy, 30);
 
   const [
     activas,          // Q1: causas activas (count)
@@ -103,12 +97,13 @@ async function fetchStats(): Promise<DashboardStats> {
   }
 
   // ── Q3: vencimientos ────────────────────────────────────────────
-  const vencData = vencimientos.data ?? [];
+  const vencData = (vencimientos.data ?? []).filter(
+    (c): c is typeof c & { proximo_vencimiento: string } => c.proximo_vencimiento !== null,
+  );
   let vencimientosProx7 = 0;
   let vencidosTotal = 0;
   for (const row of vencData) {
-    const v = row.proximo_vencimiento as string;
-    if (v < hoy) vencidosTotal++;
+    if (row.proximo_vencimiento < hoy) vencidosTotal++;
     else vencimientosProx7++;
   }
 

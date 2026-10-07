@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createCausa, deleteCausa, updateCausa } from "@/services/supabase/causas";
+import { createCausa, deleteCausa as deleteCausaService, updateCausa } from "@/services/supabase/causas";
 import { createClient } from "@/services/supabase/server";
 import { ANTICIPACION_ALERTA, ESTADOS_CAUSA, FUEROS, TIPOS_AVISO, VIAS_PROCESO } from "@/utils/constants";
 import { oneOf, parseMonto, text } from "@/utils/formData";
@@ -99,10 +99,10 @@ export async function saveCausa(_prev: CausaFormState, formData: FormData): Prom
   return { savedId: result.data.id, message: id ? "Causa actualizada." : "Causa creada." };
 }
 
-export async function removeCausa(id: string): Promise<FormState> {
+export async function deleteCausa(id: string): Promise<FormState> {
   if (!await requireUser()) return { error: "No autenticado." };
 
-  const { data, error } = await deleteCausa(id);
+  const { data, error } = await deleteCausaService(id);
 
   if (error) return { error: `No se pudo eliminar la causa: ${error.message}` };
   if (!data || data.length === 0) return { error: "Solo el titular puede eliminar la causa." };

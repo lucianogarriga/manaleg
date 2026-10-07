@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
 import { Bell, CalendarClock, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
-import { removeDiaInhabil } from "@/app/(app)/calendario/actions";
+import { deleteDiaInhabil } from "@/app/(app)/calendario/actions";
 import OpenCausaButton from "@/components/causas/OpenCausaButton";
 import { useUIStore } from "@/store/uiStore";
 import { addDaysISO, dayOfWeekISO, formatDate, formatLongDate } from "@/utils/formatters";
@@ -81,7 +81,7 @@ export default function CalendarView({ hoy, avisos, inhabiles, userId }: Calenda
   const borrarInhabil = async (id: string) => {
     const ok = await confirmRequest({ title: "Eliminar día inhábil", message: "¿Eliminar este día inhábil?", confirmLabel: "Eliminar", danger: true });
     if (!ok) return;
-    const result = await removeDiaInhabil(id);
+    const result = await deleteDiaInhabil(id);
     showToast({ message: result.error ?? result.message ?? "Listo." });
     if (!result.error) router.refresh();
   };

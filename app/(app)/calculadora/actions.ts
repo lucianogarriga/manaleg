@@ -7,7 +7,7 @@ import { isISODate, oneOf, text } from "@/utils/formData";
 import type { FormState } from "@/types";
 
 // Carga el resultado de la calculadora como próxima alerta o vencimiento de una causa
-export async function guardarVencimientoEnCausa(_prev: FormState, formData: FormData): Promise<FormState> {
+export async function saveVencimientoCausa(_prev: FormState, formData: FormData): Promise<FormState> {
   const causaId = text(formData, "causa_id");
   const fecha = text(formData, "fecha");
   const tipo = oneOf(text(formData, "tipo"), TIPOS_AVISO) ?? "Vencimiento";

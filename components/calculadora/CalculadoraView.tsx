@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Info } from "lucide-react";
-import { guardarVencimientoEnCausa } from "@/app/(app)/calculadora/actions";
+import { saveVencimientoCausa } from "@/app/(app)/calculadora/actions";
 import FormAlert from "@/components/auth/FormAlert";
 import { SelectField, TextField } from "@/components/ui/FormControls";
 import { useFormAction } from "@/hooks/useFormAction";
@@ -34,7 +34,7 @@ export default function CalculadoraView({ hoy, inhabiles, causas }: CalculadoraV
     [valido, desde, cantidad, tipo, setInhabiles],
   );
 
-  const { state, pending, onSubmit } = useFormAction(guardarVencimientoEnCausa, (s) =>
+  const { state, pending, onSubmit } = useFormAction(saveVencimientoCausa, (s) =>
     showToast({ message: s.message ?? "Guardado." }),
   );
 

@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { createCliente, updateCliente, deleteCliente } from "@/services/supabase/clientes";
+import { createCliente, updateCliente, deleteCliente as deleteClienteService } from "@/services/supabase/clientes";
 import { revalidatePath } from "next/cache";
 import type { FormState } from "@/types";
 
@@ -60,7 +60,7 @@ export async function saveCliente(_prev: FormState, formData: FormData): Promise
 }
 
 export async function deleteCliente(id: string): Promise<FormState> {
-  const { error } = await deleteCliente(id);
+  const { error } = await deleteClienteService(id);
   if (error) return { error: error.message };
   revalidatePath("/clientes");
   return { message: "Cliente eliminado." };

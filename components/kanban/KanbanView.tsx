@@ -12,10 +12,10 @@ import type { EstadoTarea, TodoConCausa } from "@/types";
 // ── Columnas del Kanban ──────────────────────────────────────────────────────
 
 const COLUMNS: { estado: EstadoTarea; label: string; color: string; light: string }[] = [
-  { estado: "Pendiente",            label: "Pendiente",             color: "#7c3aed", light: "rgba(124,58,237,.08)" },
-  { estado: "En curso",             label: "En curso",              color: "#2563eb", light: "rgba(37,99,235,.08)"  },
-  { estado: "Esperando respuesta",  label: "Esperando respuesta",   color: "#b45309", light: "rgba(180,83,9,.08)"   },
-  { estado: "Completado",           label: "Completado",            color: "#047857", light: "rgba(4,120,87,.08)"   },
+  { estado: "Pendiente",            label: "Pendiente",             color: "var(--color-pur)", light: "var(--color-pur-lt)" },
+  { estado: "En curso",             label: "En curso",              color: "var(--color-blue)", light: "var(--color-blue-lt)" },
+  { estado: "Esperando respuesta",  label: "Esperando respuesta",   color: "var(--color-amb)", light: "var(--color-amb-lt)"  },
+  { estado: "Completado",           label: "Completado",            color: "var(--color-grn)", light: "var(--color-grn-lt)"  },
 ];
 
 // ── Filtros ──────────────────────────────────────────────────────────────────

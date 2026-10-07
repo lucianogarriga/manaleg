@@ -1,4 +1,5 @@
 import { createClient } from "./server";
+import { addDaysISO, todayISO } from "@/utils/formatters";
 import type { Evento, TipoEvento } from "@/types";
 
 export interface EventoInput {
@@ -26,8 +27,8 @@ export async function getEventosByCausa(causaId: string): Promise<Evento[]> {
 // Próximos eventos de todas las causas accesibles (para dashboard y layoutCounts)
 export async function getProximosEventos(dias = 30): Promise<(Evento & { caratula: string })[]> {
   const supabase = await createClient();
-  const hoy = new Date().toISOString().slice(0, 10);
-  const hasta = new Date(Date.now() + dias * 86400000).toISOString().slice(0, 10);
+  const hoy = todayISO();
+  const hasta = addDaysISO(hoy, dias);
 
   const { data, error } = await supabase
     .from("eventos")

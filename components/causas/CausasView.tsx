@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { AlertTriangle, Scale } from "lucide-react";
-import { CAUSAS_LIMIT } from "@/services/supabase/causas";
-import { normalizeTipoJuicio } from "@/utils/constants";
+import { CAUSAS_LIMIT, normalizeTipoJuicio } from "@/utils/constants";
 import EmptyState from "@/components/ui/EmptyState";
 import FAB from "@/components/ui/FAB";
 import FilterChips from "./FilterChips";

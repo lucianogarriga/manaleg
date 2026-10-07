@@ -1,6 +1,6 @@
 "use client";
 
-import { compartirCausa } from "@/app/(app)/causas/shareActions";
+import { shareCausa } from "@/app/(app)/causas/shareActions";
 import FormAlert from "@/components/auth/FormAlert";
 import { FormSection, TextField } from "@/components/ui/FormControls";
 import Modal from "@/components/ui/Modal";
@@ -15,7 +15,7 @@ interface ShareCausaModalProps {
 }
 
 export default function ShareCausaModal({ causaId, caratula, onClose, onShared }: ShareCausaModalProps) {
-  const { state, pending, onSubmit } = useFormAction(compartirCausa, (s) => onShared(s.message ?? "Compartida."));
+  const { state, pending, onSubmit } = useFormAction(shareCausa, (s) => onShared(s.message ?? "Compartida."));
 
   return (
     <Modal
