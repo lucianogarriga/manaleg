@@ -23,17 +23,17 @@ export const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
   {
     title: "Principal",
     items: [
-      { href: "/",            label: "Dashboard",            icon: LayoutDashboard, iconColor: "#2563eb" },
+      { href: "/",            label: "Dashboard",            icon: LayoutDashboard, iconColor: "var(--color-blue)" },
       { href: "/causas",      label: "Causas",               icon: Scale,           iconColor: "#0891b2", badge: "causas" },
-      { href: "/vencimientos", label: "Eventos",             icon: CalendarDays,    iconColor: "#b45309", badge: "vencimientos" },
+      { href: "/vencimientos", label: "Eventos",             icon: CalendarDays,    iconColor: "var(--color-amb)", badge: "vencimientos" },
       { href: "/calendario",  label: "Calendario",           icon: Calendar,        iconColor: "#0d9488" },
-      { href: "/clientes",    label: "Clientes",             icon: User,            iconColor: "#7c3aed" },
+      { href: "/clientes",    label: "Clientes",             icon: User,            iconColor: "var(--color-pur)" },
     ],
   },
   {
     title: "Finanzas",
     items: [
-      { href: "/honorarios",  label: "Honorarios",           icon: Wallet,          iconColor: "#059669" },
+      { href: "/honorarios",  label: "Honorarios",           icon: Wallet,          iconColor: "var(--color-grn)" },
     ],
   },
   {

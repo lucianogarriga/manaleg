@@ -119,7 +119,7 @@ export default function Topbar({ fecha, alertas, urgentes, notificaciones, sinLe
           <Moon
             size={12}
             style={{
-              color: theme === "dark" ? "#818cf8" : "#94a3b8",
+              color: theme === "dark" ? "#818cf8" : "var(--color-muted)",
               transition: "color .2s",
             }}
           />

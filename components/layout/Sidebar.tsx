@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useUIStore, loadPin } from "@/store/uiStore";
 import { useCausasStore } from "@/store/causasStore";
@@ -88,7 +89,7 @@ const TEXT_DELAY_OPEN = "80ms";
 
 export default function Sidebar({ profile, counts }: SidebarProps) {
   const pathname = usePathname();
-  const { sidebarOpen, closeSidebar, sidebarPinned } = useUIStore();
+  const { sidebarOpen, closeSidebar, sidebarPinned, toggleSidebarPin } = useUIStore();
   const selectCausa = useCausasStore((s) => s.select);
   const [hovered, setHovered] = useState(false);
 
@@ -206,6 +207,31 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
               </div>
             ))}
           </nav>
+
+          {/* ── Pin toggle — solo desktop, al pie del sidebar ────────── */}
+          <div
+            className="hidden md:flex shrink-0 items-center border-t px-2 py-[6px]"
+            style={{
+              borderColor: "var(--color-border)",
+              justifyContent: exp ? "flex-end" : "center",
+            }}
+          >
+            <button
+              type="button"
+              onClick={toggleSidebarPin}
+              title={sidebarPinned ? "Colapsar menú" : "Fijar menú expandido"}
+              className="flex cursor-pointer items-center justify-center rounded-[6px] p-[5px] transition-colors"
+              style={{
+                color: sidebarPinned ? "var(--sb-act-fg)" : "var(--sb-fg)",
+                transition: `color 120ms`,
+              }}
+            >
+              {sidebarPinned
+                ? <PanelLeftClose size={14} strokeWidth={1.8} />
+                : <PanelLeftOpen  size={14} strokeWidth={1.8} />
+              }
+            </button>
+          </div>
         </div>
       </aside>
     </>
