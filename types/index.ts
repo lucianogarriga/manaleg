@@ -20,9 +20,12 @@ export type TipoGasto = (typeof TIPOS_GASTO)[number];
 export type EstadoAlerta = "Pendiente" | "Notificado" | "Vencido";
 
 export type RolParte =
-  | "actora" | "demandada" | "solicitante" | "requirente"
-  | "solicitado" | "requerido" | "tercero" | "tercerista"
-  | "adquirente" | "otro";
+  | "actora" | "demandada"
+  | "requirente" | "requerido"
+  | "solicitante" | "solicitado"
+  | "denunciante" | "denunciado"
+  | "tercero" | "tercerista"
+  | "adquirente" | "citada_en_garantia" | "otro";
 
 export type TipoPersona = "fisica" | "juridica";
 export type CaracterAbogado = "apoderado" | "patrocinante";

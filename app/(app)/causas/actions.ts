@@ -17,7 +17,7 @@ export interface CausaFormState extends FormState {
   savedId?: string; // id de la causa creada/editada, para seleccionarla
 }
 
-const VALID_ROLES: RolParte[] = ["actora","demandada","solicitante","requirente","solicitado","requerido","tercero","tercerista","adquirente","otro"];
+const VALID_ROLES: RolParte[] = ["actora","demandada","requirente","requerido","solicitante","solicitado","denunciante","denunciado","tercero","tercerista","adquirente","citada_en_garantia","otro"];
 const VALID_TIPOS: TipoPersona[] = ["fisica","juridica"];
 const VALID_CARACTER: CaracterAbogado[] = ["apoderado","patrocinante"];
 

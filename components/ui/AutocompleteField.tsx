@@ -93,7 +93,7 @@ export default function AutocompleteField({
         >
           {filtered.map((opt, i) => (
             <li
-              key={opt}
+              key={`${i}-${opt}`}
               className="cursor-pointer px-3 py-[7px] text-[13px] text-text"
               style={{
                 background: i === highlighted ? "var(--color-blue-lt)" : undefined,

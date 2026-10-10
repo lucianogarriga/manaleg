@@ -31,9 +31,12 @@ const ROL_LABELS: Record<RolParte, string> = {
   requirente: "Requirente",
   solicitado: "Solicitado",
   requerido: "Requerido",
+  denunciante: "Denunciante",
+  denunciado: "Denunciado",
   tercero: "Tercero",
   tercerista: "Tercerista",
   adquirente: "Adquirente",
+  citada_en_garantia: "Citada en garantía",
   otro: "Otro",
 };
 
@@ -44,9 +47,12 @@ const ROL_COLORS: Record<RolParte, string> = {
   requirente: "bg-blue-lt text-blue",
   solicitado: "bg-red-lt text-red",
   requerido: "bg-red-lt text-red",
+  denunciante: "bg-blue-lt text-blue",
+  denunciado: "bg-red-lt text-red",
   tercero: "bg-bg text-muted border border-border",
   tercerista: "bg-bg text-muted border border-border",
   adquirente: "bg-bg text-muted border border-border",
+  citada_en_garantia: "bg-bg text-muted border border-border",
   otro: "bg-bg text-muted border border-border",
 };
 

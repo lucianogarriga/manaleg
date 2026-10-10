@@ -31,13 +31,16 @@ interface ParteRow {
 const ROL_OPTIONS: { value: RolParte; label: string }[] = [
   { value: "actora", label: "Actora" },
   { value: "demandada", label: "Demandada" },
-  { value: "solicitante", label: "Solicitante" },
   { value: "requirente", label: "Requirente" },
-  { value: "solicitado", label: "Solicitado" },
   { value: "requerido", label: "Requerido" },
+  { value: "solicitante", label: "Solicitante" },
+  { value: "solicitado", label: "Solicitado" },
+  { value: "denunciante", label: "Denunciante" },
+  { value: "denunciado", label: "Denunciado" },
   { value: "tercero", label: "Tercero" },
   { value: "tercerista", label: "Tercerista" },
   { value: "adquirente", label: "Adquirente" },
+  { value: "citada_en_garantia", label: "Citada en garantía" },
   { value: "otro", label: "Otro" },
 ];
 
@@ -63,22 +66,36 @@ function initPartes(causa: CausaConRelaciones | null): ParteRow[] {
 }
 
 function computeAutoCaratula(partes: ParteRow[], tipoJuicio: string): string | null {
-  const actoras = partes.filter((p) => p.rol === "actora" && p.nombre.trim());
-  const demandadas = partes.filter((p) => p.rol === "demandada" && p.nombre.trim());
+  const named = partes.filter((p) => p.nombre.trim());
+  const actoras = named.filter((p) => p.rol === "actora");
+  const demandadas = named.filter((p) => p.rol === "demandada");
+  const requirentes = named.filter((p) => p.rol === "requirente");
+  const requeridos = named.filter((p) => p.rol === "requerido");
+  const denunciantes = named.filter((p) => p.rol === "denunciante");
+  const denunciados = named.filter((p) => p.rol === "denunciado");
+  const solicitantes = named.filter((p) => p.rol === "solicitante");
 
-  if (actoras.length > 0 && demandadas.length > 0) {
-    const a = actoras.length === 1 ? actoras[0].nombre.trim() : `${actoras[0].nombre.trim()} y otros`;
-    const d = demandadas.length === 1 ? demandadas[0].nombre.trim() : `${demandadas[0].nombre.trim()} y otros`;
-    const base = `${a} c/ ${d}`;
-    return tipoJuicio.trim() ? `${base} s/ ${tipoJuicio.trim()}` : base;
-  }
+  const hasAD = actoras.length > 0 || demandadas.length > 0;
+  const hasRR = requirentes.length > 0 || requeridos.length > 0;
+  const hasDenDen = denunciantes.length > 0 || denunciados.length > 0;
+  const hasSol = solicitantes.length > 0;
 
-  const tieneActoraODemandada = partes.some((p) => p.rol === "actora" || p.rol === "demandada");
-  if (!tieneActoraODemandada) {
-    const main = partes.find((p) => (p.rol === "solicitante" || p.rol === "requirente") && p.nombre.trim());
-    if (main) return tipoJuicio.trim() ? `${main.nombre.trim()} - ${tipoJuicio.trim()}` : main.nombre.trim();
-  }
+  const activeGroups = [hasAD, hasRR, hasDenDen, hasSol].filter(Boolean).length;
+  if (activeGroups !== 1) return null;
 
+  const tj = tipoJuicio.trim();
+  const display = (arr: ParteRow[]) =>
+    arr.length === 1 ? arr[0].nombre.trim() : `${arr[0].nombre.trim()} y otros`;
+  const pair = (a: ParteRow[], b: ParteRow[]): string | null => {
+    if (a.length === 0 || b.length === 0) return null;
+    const base = `${display(a)} c/ ${display(b)}`;
+    return tj ? `${base} s/ ${tj}` : base;
+  };
+
+  if (hasAD) return pair(actoras, demandadas);
+  if (hasRR) return pair(requirentes, requeridos);
+  if (hasDenDen) return pair(denunciantes, denunciados);
+  if (hasSol) return tj ? `${display(solicitantes)} - ${tj}` : display(solicitantes);
   return null;
 }
 
@@ -164,6 +181,7 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
   }, [partes, tipoJuicio]);
 
   const [selectedFuero, setSelectedFuero] = useState<string>(v?.fuero ?? "");
+  const [tieneVencimiento, setTieneVencimiento] = useState(!!v?.proximo_vencimiento);
 
   return (
     <>
@@ -210,55 +228,9 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
           </div>
         )}
 
-        <FormSection title="Expediente">
-          <div className="sm:col-span-2">
-            <TextField
-              label="Carátula"
-              name="caratula"
-              required
-              value={caratula}
-              onChange={(e) => {
-                setCaratula(e.target.value);
-                lastAutoRef.current = null; // usuario editó manualmente
-              }}
-              placeholder="Rodríguez M. c/ Transporte El Rápido SA s/ despido"
-              autoFocus={!isNew}
-            />
-          </div>
-          <TextField label="Nro expediente" name="nro_expediente" defaultValue={v?.nro_expediente ?? ""} placeholder="2024-0042581" />
-          <SelectField label="Estado" name="estado" options={ESTADOS_CAUSA} defaultValue={v?.estado ?? "Iniciada"} />
-          <SelectField label="Vía de proceso" name="via_proceso" options={VIAS_PROCESO} placeholder="Seleccionar…" defaultValue={v?.via_proceso ?? ""} />
-          <SelectField
-            label="Fuero"
-            name="fuero"
-            options={FUEROS}
-            placeholder="Seleccionar…"
-            defaultValue={v?.fuero ?? ""}
-            onChange={(e) => setSelectedFuero(e.target.value)}
-          />
-          <AutocompleteField
-            label="Tipo de juicio"
-            name="tipo_juicio"
-            defaultValue={v?.tipo_juicio ?? ""}
-            placeholder="Despido, daños y perjuicios…"
-            onChangeValue={setTipoJuicio}
-            options={
-              selectedFuero && TIPOS_JUICIO_POR_FUERO[selectedFuero]
-                ? TIPOS_JUICIO_POR_FUERO[selectedFuero]
-                : Object.values(TIPOS_JUICIO_POR_FUERO).flat()
-            }
-          />
-          <TextField label="Juzgado / Cámara" name="juzgado_camara" defaultValue={v?.juzgado_camara ?? ""} placeholder="Cámara 6°" />
-          <TextField label="Fecha de inicio" name="fecha_inicio" type="date" defaultValue={v?.fecha_inicio ?? ""} />
-        </FormSection>
-
+        {/* ── 1. Partes ── */}
         <FormSection title="Partes">
-          {/* Hidden input con el array de partes serializado */}
-          <input
-            type="hidden"
-            name="partes"
-            value={JSON.stringify(partes.map((p, i) => ({ ...p, orden: i })))}
-          />
+          <input type="hidden" name="partes" value={JSON.stringify(partes.map((p, i) => ({ ...p, orden: i })))} />
 
           <div className="sm:col-span-2 flex flex-col gap-2">
             {partes.map((parte, i) => (
@@ -282,7 +254,6 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
                     </button>
                   )}
                 </div>
-
                 <div className="flex flex-wrap gap-2">
                   <select
                     value={parte.tipo_persona}
@@ -302,7 +273,6 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
                     ))}
                   </select>
                 </div>
-
                 <label className="flex flex-wrap items-center gap-2 cursor-pointer text-[12.5px] text-text">
                   <input
                     type="checkbox"
@@ -329,7 +299,6 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
                 </label>
               </div>
             ))}
-
             <button
               type="button"
               onClick={addParte}
@@ -339,7 +308,54 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
               Agregar parte
             </button>
           </div>
+        </FormSection>
 
+        {/* ── 2. Nro expte + Tipo de juicio → Carátula ── */}
+        <FormSection title="Carátula">
+          <TextField label="Nro expediente" name="nro_expediente" defaultValue={v?.nro_expediente ?? ""} placeholder="2024-0042581" />
+          <AutocompleteField
+            label="Tipo de juicio"
+            name="tipo_juicio"
+            defaultValue={v?.tipo_juicio ?? ""}
+            placeholder="Despido, daños y perjuicios…"
+            onChangeValue={setTipoJuicio}
+            options={
+              selectedFuero && TIPOS_JUICIO_POR_FUERO[selectedFuero]
+                ? TIPOS_JUICIO_POR_FUERO[selectedFuero]
+                : [...new Set(Object.values(TIPOS_JUICIO_POR_FUERO).flat())]
+            }
+          />
+          <div className="sm:col-span-2">
+            <TextField
+              label="Carátula"
+              name="caratula"
+              required
+              value={caratula}
+              onChange={(e) => { setCaratula(e.target.value); lastAutoRef.current = null; }}
+              placeholder="Rodríguez M. c/ Transporte El Rápido SA s/ despido"
+              autoFocus={!isNew}
+            />
+          </div>
+        </FormSection>
+
+        {/* ── 3. Resto del expediente ── */}
+        <FormSection title="Expediente">
+          <SelectField label="Estado" name="estado" options={ESTADOS_CAUSA} defaultValue={v?.estado ?? "Iniciada"} />
+          <SelectField label="Vía de proceso" name="via_proceso" options={VIAS_PROCESO} placeholder="Seleccionar…" defaultValue={v?.via_proceso ?? ""} />
+          <SelectField
+            label="Fuero"
+            name="fuero"
+            options={FUEROS}
+            placeholder="Seleccionar…"
+            defaultValue={v?.fuero ?? ""}
+            onChange={(e) => setSelectedFuero(e.target.value)}
+          />
+          <TextField label="Juzgado / Cámara" name="juzgado_camara" defaultValue={v?.juzgado_camara ?? ""} placeholder="Cámara 6°" />
+          <TextField label="Fecha de inicio" name="fecha_inicio" type="date" defaultValue={v?.fecha_inicio ?? ""} />
+        </FormSection>
+
+        {/* ── 4. Cliente y monto ── */}
+        <FormSection title="Cliente y monto">
           <SelectField
             label="Cliente"
             name="cliente_id"
@@ -357,12 +373,40 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
         </FormSection>
 
         <FormSection title="Próxima alerta o vencimiento">
-          <TextField label="Fecha" name="proximo_vencimiento" type="date" defaultValue={v?.proximo_vencimiento ?? ""} />
-          <SelectField label="Tipo" name="tipo_vencimiento" options={TIPOS_AVISO} defaultValue={v?.tipo_vencimiento ?? "Vencimiento"} />
-          <div className="sm:col-span-2">
-            <TextField label="Motivo" name="motivo_vencimiento" defaultValue={v?.motivo_vencimiento ?? ""} placeholder="Contestación de demanda" />
+          {/* Cuando no hay vencimiento enviamos cadena vacía para que la acción limpie el campo */}
+          {!tieneVencimiento && <input type="hidden" name="proximo_vencimiento" value="" />}
+
+          <div className="sm:col-span-2 flex items-center gap-3">
+            <span className="text-[13px] text-sub">¿Cargar alerta o vencimiento?</span>
+            <div className="flex overflow-hidden rounded-[6px] border border-border text-[12.5px] font-semibold">
+              <button
+                type="button"
+                onClick={() => setTieneVencimiento(true)}
+                className={`px-4 py-[5px] transition-colors ${tieneVencimiento ? "bg-blue text-white" : "bg-card text-sub hover:bg-bg"}`}
+              >
+                Sí
+              </button>
+              <button
+                type="button"
+                onClick={() => setTieneVencimiento(false)}
+                className={`border-l border-border px-4 py-[5px] transition-colors ${!tieneVencimiento ? "bg-blue text-white" : "bg-card text-sub hover:bg-bg"}`}
+              >
+                No
+              </button>
+            </div>
           </div>
-          <SelectField label="Avisarme con anticipación de" name="anticipacion_alerta" options={ANTICIPACION_ALERTA} defaultValue={v?.anticipacion_alerta ?? "1 día"} />
+
+          {tieneVencimiento && (
+            <>
+              <TextField label="Fecha" name="proximo_vencimiento" type="date" defaultValue={v?.proximo_vencimiento ?? ""} />
+              <SelectField label="Tipo" name="tipo_vencimiento" options={TIPOS_AVISO} defaultValue={v?.tipo_vencimiento ?? "Vencimiento"} />
+              <div className="sm:col-span-2">
+                <TextField label="Motivo" name="motivo_vencimiento" defaultValue={v?.motivo_vencimiento ?? ""} placeholder="Contestación de demanda" />
+              </div>
+              <SelectField label="Avisarme con anticipación de" name="anticipacion_alerta" options={ANTICIPACION_ALERTA} defaultValue={v?.anticipacion_alerta ?? "1 día"} />
+            </>
+          )}
+
           <TextField label="Alerta de inactividad (días)" name="inactividad_dias" type="number" min={1} defaultValue={v?.inactividad_dias ?? 7} />
         </FormSection>
 
