@@ -1,22 +1,25 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { X, MessageSquare, Send } from "lucide-react";
+import { X, MessageSquare, Bug, Send } from "lucide-react";
 import { enviarFeedback } from "@/app/(app)/ajustes/actions";
 
 interface Props {
   onClose: () => void;
+  type?: "feedback" | "error";
 }
 
-export default function FeedbackModal({ onClose }: Props) {
+export default function FeedbackModal({ onClose, type = "feedback" }: Props) {
+  const isError = type === "error";
   const [texto, setTexto] = useState("");
   const [resultado, setResultado] = useState<{ ok?: boolean; msg?: string } | null>(null);
   const [isPending, startTransition] = useTransition();
   const ref = useRef<HTMLDivElement>(null);
 
   const handleSubmit = () => {
+    const payload = isError ? `[ERROR] ${texto}` : texto;
     startTransition(async () => {
-      const r = await enviarFeedback(texto);
+      const r = await enviarFeedback(payload);
       if (r.error) {
         setResultado({ ok: false, msg: r.error });
       } else {
@@ -39,8 +42,8 @@ export default function FeedbackModal({ onClose }: Props) {
           {/* Header */}
           <div className="flex items-center justify-between border-b px-4 py-3" style={{ borderColor: "var(--color-border)" }}>
             <div className="flex items-center gap-2">
-              <MessageSquare size={15} className="text-blue" />
-              <span className="text-[14px] font-semibold text-text">Enviar feedback</span>
+              {isError ? <Bug size={15} className="text-red" /> : <MessageSquare size={15} className="text-blue" />}
+              <span className="text-[14px] font-semibold text-text">{isError ? "Reportar un error" : "Enviar feedback"}</span>
             </div>
             <button
               type="button"
@@ -70,12 +73,14 @@ export default function FeedbackModal({ onClose }: Props) {
             ) : (
               <>
                 <p className="mb-3 text-[13px] text-muted">
-                  Contanos qué mejorarías, qué funciona bien o qué te gustaría tener en MANALEG.
+                  {isError
+                    ? "Describí el error con el mayor detalle posible: qué estabas haciendo, qué pasó y qué esperabas que pasara."
+                    : "Contanos qué mejorarías, qué funciona bien o qué te gustaría tener en MANALEG."}
                 </p>
                 <textarea
                   value={texto}
                   onChange={(e) => setTexto(e.target.value)}
-                  placeholder="Tu mensaje..."
+                  placeholder={isError ? "Ej: Al guardar una causa con 3 partes, aparece un error..." : "Tu mensaje..."}
                   maxLength={1000}
                   rows={5}
                   className="w-full resize-none rounded-[8px] border px-3 py-2 text-[13px] text-text placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-blue/30"

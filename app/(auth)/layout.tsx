@@ -26,7 +26,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         className="relative hidden flex-col justify-between overflow-hidden px-10 py-10 md:flex"
         style={{
           width: "44%",
-          background: "linear-gradient(160deg, #0a1628 0%, #0f2460 28%, #1e3a8a 62%, #2563eb 100%)",
+          background: "linear-gradient(160deg, #0a1628 0%, #0f2460 28%, #1e3a8a 62%, #0284c7 100%)",
         }}
       >
         {/* Orbe decorativo inferior-derecha */}
@@ -84,7 +84,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-8" style={{ background: "#f0f4f8" }}>
         {/* Logo solo en mobile */}
         <div className="mb-6 flex flex-col items-center gap-2 md:hidden">
-          <div className="flex h-10 w-10 items-center justify-center rounded-[10px] text-[18px] font-bold text-white" style={{ background: "#2563eb" }}>
+          <div className="flex h-10 w-10 items-center justify-center rounded-[10px] text-[18px] font-bold text-white" style={{ background: "#0284c7" }}>
             M
           </div>
           <div className="text-[17px] font-bold" style={{ color: "#0f172a" }}>MANALEG</div>

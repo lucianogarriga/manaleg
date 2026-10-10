@@ -52,7 +52,7 @@ export default function DashboardView({ nombre, causasActivas, alertas, eventos,
   const CARDS: StatCardProps[] = [
     {
       icon: Scale,
-      iconBg: "rgba(37,99,235,.15)",
+      iconBg: "rgba(2,132,199,.15)",
       iconColor: "var(--color-blue)",
       label: "Causas activas",
       value: stats ? stats.causasActivas : "—",

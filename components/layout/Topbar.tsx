@@ -6,9 +6,7 @@ import { Menu, Moon, Search, Sun } from "lucide-react";
 import { useCausasStore } from "@/store/causasStore";
 import { useUIStore } from "@/store/uiStore";
 import type { AlertaItem, NotificacionItem } from "@/services/supabase/layoutCounts";
-import type { Profile } from "@/types";
 import AlertsBell from "./AlertsBell";
-import UserSettings from "./UserSettings";
 import { getPageTitle } from "./navigation";
 
 interface TopbarProps {
@@ -17,10 +15,9 @@ interface TopbarProps {
   urgentes: number;
   notificaciones: NotificacionItem[];
   sinLeer: number;
-  profile: Profile;
 }
 
-export default function Topbar({ fecha, alertas, urgentes, notificaciones, sinLeer, profile }: TopbarProps) {
+export default function Topbar({ fecha, alertas, urgentes, notificaciones, sinLeer }: TopbarProps) {
   const pathname = usePathname();
   const openSidebar = useUIStore((s) => s.openSidebar);
   const search = useCausasStore((s) => s.search);
@@ -131,7 +128,6 @@ export default function Topbar({ fecha, alertas, urgentes, notificaciones, sinLe
           notificaciones={notificaciones}
           sinLeer={sinLeer}
         />
-        <UserSettings profile={profile} />
       </div>
     </header>
   );

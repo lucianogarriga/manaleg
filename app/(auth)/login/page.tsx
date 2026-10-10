@@ -23,15 +23,15 @@ function LoginTransition() {
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
         <div
           className="auth-glow-1 absolute h-[640px] w-[640px] rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(37,99,235,.16) 0%, transparent 68%)" }}
+          style={{ background: "radial-gradient(circle, rgba(2,132,199,.16) 0%, transparent 68%)" }}
         />
         <div
           className="auth-glow-2 absolute h-[420px] w-[420px] rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(96,165,250,.12) 0%, transparent 68%)" }}
+          style={{ background: "radial-gradient(circle, rgba(56,189,248,.12) 0%, transparent 68%)" }}
         />
         <div
           className="auth-glow-1 absolute h-[240px] w-[240px] rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(37,99,235,.22) 0%, transparent 68%)", animationDelay: "0.8s" }}
+          style={{ background: "radial-gradient(circle, rgba(2,132,199,.22) 0%, transparent 68%)", animationDelay: "0.8s" }}
         />
       </div>
       <div className="auth-fade-in relative flex flex-col items-center gap-5">
@@ -141,7 +141,7 @@ export default function LoginPage() {
 
         <p className="pt-1 text-center text-[13px]" style={{ color: "#64748b" }}>
           ¿No tenés cuenta?{" "}
-          <Link href="/register" className="font-semibold hover:underline" style={{ color: "#2563eb" }}>
+          <Link href="/register" className="font-semibold hover:underline" style={{ color: "#0284c7" }}>
             Registrate gratis
           </Link>
         </p>

@@ -28,7 +28,7 @@ export default function AuthField({ label, name, icon: Icon, error, ...props }: 
               borderColor: error ? "#ef4444" : "#e2e8f0",
               color: "#0f172a",
             }}
-            className={`w-full rounded-[9px] border text-[14px] outline-none transition-colors placeholder:text-[#cbd5e1] focus:border-[#2563eb] focus:bg-white ${
+            className={`w-full rounded-[9px] border text-[14px] outline-none transition-colors placeholder:text-[#cbd5e1] focus:border-[#0284c7] focus:bg-white ${
               Icon ? "pl-[36px] pr-[12px] py-[11px]" : "px-[12px] py-[11px]"
             }`}
             {...props}

@@ -24,7 +24,7 @@ export default function RegisterPage() {
           <p className="mt-1 text-[13.5px]" style={{ color: "#94a3b8" }}>Te enviamos un link de confirmación.</p>
         </div>
         <FormAlert state={state} />
-        <Link href="/login" className="block text-center text-[13px] font-semibold hover:underline" style={{ color: "#2563eb" }}>
+        <Link href="/login" className="block text-center text-[13px] font-semibold hover:underline" style={{ color: "#0284c7" }}>
           Volver a ingresar
         </Link>
       </div>
@@ -119,7 +119,7 @@ export default function RegisterPage() {
               type="checkbox"
               name="tyc"
               value="on"
-              style={{ colorScheme: "light", accentColor: "#2563eb" }}
+              style={{ colorScheme: "light", accentColor: "#0284c7" }}
               className="mt-[3px] h-[15px] w-[15px] shrink-0 cursor-pointer"
               onChange={() => {
                 if (fieldErrors.tyc) setFieldErrors((p) => ({ ...p, tyc: "" }));
@@ -131,7 +131,7 @@ export default function RegisterPage() {
                 type="button"
                 onClick={() => setLegalModal("terminos")}
                 className="cursor-pointer font-semibold hover:underline"
-                style={{ color: "#2563eb" }}
+                style={{ color: "#0284c7" }}
               >
                 Términos y Condiciones
               </button>{" "}
@@ -140,11 +140,11 @@ export default function RegisterPage() {
                 type="button"
                 onClick={() => setLegalModal("privacidad")}
                 className="cursor-pointer font-semibold hover:underline"
-                style={{ color: "#2563eb" }}
+                style={{ color: "#0284c7" }}
               >
                 Política de Privacidad
               </button>
-              .
+              , incluyendo el almacenamiento de mis datos en servidores ubicados en Brasil (art. 12 Ley 25.326).
             </span>
           </label>
           {fieldErrors.tyc && (
@@ -158,7 +158,7 @@ export default function RegisterPage() {
 
         <p className="pt-1 text-center text-[13px]" style={{ color: "#64748b" }}>
           ¿Ya tenés cuenta?{" "}
-          <Link href="/login" className="font-semibold hover:underline" style={{ color: "#2563eb" }}>
+          <Link href="/login" className="font-semibold hover:underline" style={{ color: "#0284c7" }}>
             Ingresá
           </Link>
         </p>

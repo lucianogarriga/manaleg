@@ -56,8 +56,6 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
     options: {
       data: {
         nombre_completo: nombre,
-        tyc_accepted_at: new Date().toISOString(),
-        tyc_version: "1.0",
       },
       emailRedirectTo: `${origin}/api/auth/callback`,
     },

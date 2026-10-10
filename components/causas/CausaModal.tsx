@@ -19,6 +19,8 @@ import VencimientosSection from "@/components/causas/VencimientosSection";
 import InfoTooltip from "@/components/ui/InfoTooltip";
 import TodoList from "@/components/todos/TodoList";
 import { useShares } from "@/hooks/useCausaData";
+import { usePresence } from "@/hooks/usePresence";
+import { useAuthStore } from "@/store/authStore";
 import { useCausasStore } from "@/store/causasStore";
 import { useUIStore } from "@/store/uiStore";
 import { formatCurrency, formatDate, getDaysUntil, getInitials } from "@/utils/formatters";
@@ -40,6 +42,9 @@ export default function CausaModal({ causa, userId }: Props) {
   const [shareOpen, setShareOpen] = useState(false);
   const movRef = useRef<MovimientosSectionRef>(null);
   const vencimientosRef = useRef<HTMLDivElement>(null);
+
+  const profile = useAuthStore((s) => s.profile);
+  const onlineUsers = usePresence(causa.id, userId, profile?.nombre_completo ?? null);
 
   const cerrada = causa.estado === "Cerrada";
   const urgency = getUrgency(causa.proximo_vencimiento, cerrada);
@@ -152,6 +157,29 @@ export default function CausaModal({ causa, userId }: Props) {
               {esTitular && shares.length > 0 && (
                 <span className="rounded-[4px] bg-pur-lt px-2 py-[2px] text-[12px] font-medium text-pur">
                   Compartida con {shares.length}
+                </span>
+              )}
+
+              {/* Avatares de presencia — otros usuarios viendo esta causa */}
+              {onlineUsers.length > 0 && (
+                <span className="flex items-center gap-[3px]" title={`En línea: ${onlineUsers.map((u) => u.nombre).join(", ")}`}>
+                  {onlineUsers.slice(0, 4).map((u) => (
+                    <span
+                      key={u.user_id}
+                      className="relative flex h-[22px] w-[22px] items-center justify-center rounded-full text-[9px] font-bold text-white"
+                      style={{ background: "var(--color-grn)", boxShadow: "0 0 0 2px var(--color-card)" }}
+                      title={u.nombre}
+                    >
+                      {u.initials}
+                      <span
+                        className="absolute -right-[1px] -bottom-[1px] h-[7px] w-[7px] rounded-full border-[1.5px]"
+                        style={{ background: "var(--color-grn)", borderColor: "var(--color-card)" }}
+                      />
+                    </span>
+                  ))}
+                  {onlineUsers.length > 4 && (
+                    <span className="text-[11px] font-medium text-muted">+{onlineUsers.length - 4}</span>
+                  )}
                 </span>
               )}
 

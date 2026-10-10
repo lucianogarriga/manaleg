@@ -3,6 +3,7 @@ import {
   Calendar,
   CalendarDays,
   ClipboardList,
+  CreditCard,
   Kanban,
   LayoutDashboard,
   Scale,
@@ -47,6 +48,12 @@ export const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
     items: [
       { href: "/kanban",      label: "Kanban",               icon: Kanban,          iconColor: "#8b5cf6" },
       { href: "/calculadora", label: "Calculadora de plazos",icon: Calculator,      iconColor: "#ea580c" },
+    ],
+  },
+  {
+    title: "Cuenta",
+    items: [
+      { href: "/planes",      label: "Planes y Uso",         icon: CreditCard,      iconColor: "var(--color-grn)" },
     ],
   },
 ];

@@ -9,6 +9,7 @@ import { useCausasStore } from "@/store/causasStore";
 import type { Profile } from "@/types";
 import type { LayoutCounts } from "@/services/supabase/layoutCounts";
 import { NAV_SECTIONS, type NavItem } from "./navigation";
+import UserSettings from "./UserSettings";
 
 interface NavLinkProps {
   item: NavItem;
@@ -28,12 +29,12 @@ function NavLink({ item, active, expanded, textStyle, pill, onClick }: NavLinkPr
       href={item.href}
       onClick={onClick}
       aria-label={item.label}
-      className="mx-[5px] my-[2px] flex items-center overflow-hidden rounded-[7px] py-[8px]"
+      className="mx-[5px] flex items-center overflow-hidden rounded-[7px] py-[4px]"
       style={{
-        gap: expanded ? 9 : 0,
+        gap: expanded ? 7 : 0,
         color: lit ? "var(--sb-act-fg)" : "var(--sb-fg)",
         paddingLeft: expanded ? 10 : 9,
-        paddingRight: expanded ? 12 : 9,
+        paddingRight: expanded ? 10 : 9,
         justifyContent: expanded ? undefined : "center",
         transition: "color 120ms, padding-left 260ms cubic-bezier(0.4,0,0.2,1), padding-right 260ms cubic-bezier(0.4,0,0.2,1), gap 260ms cubic-bezier(0.4,0,0.2,1)",
       }}
@@ -45,19 +46,19 @@ function NavLink({ item, active, expanded, textStyle, pill, onClick }: NavLinkPr
         <Icon
           size={expanded ? 15 : 18}
           strokeWidth={1.8}
-          style={{ color: lit ? "var(--sb-act-fg)" : item.iconColor, transition: `font-size ${DUR}` }}
+          style={{ color: lit ? item.iconColor : "var(--sb-fg)", transition: `color 120ms, font-size ${DUR}` }}
         />
         {active && !expanded && (
           <span
             className="absolute -bottom-[7px] left-1/2 h-[2px] w-[12px] -translate-x-1/2 rounded-full"
-            style={{ background: "var(--color-blue)" }}
+            style={{ background: "var(--sb-accent)" }}
           />
         )}
       </span>
 
       {/* Texto con subrayado progresivo en hover/activo (solo expandido) */}
       <span
-        className={`relative whitespace-nowrap text-[12px] ${lit ? "font-semibold" : "font-medium"}`}
+        className={`relative whitespace-nowrap text-[11.5px] ${lit ? "font-semibold" : "font-medium"}`}
         style={textStyle}
       >
         {item.label}
@@ -65,7 +66,7 @@ function NavLink({ item, active, expanded, textStyle, pill, onClick }: NavLinkPr
           <span
             className="absolute bottom-[-1px] left-0 h-[1.5px] rounded-full"
             style={{
-              background: "var(--color-blue)",
+              background: "var(--sb-accent)",
               width: lit ? "100%" : "0%",
               transition: lit ? "width 180ms cubic-bezier(0.4,0,0.2,1)" : "width 120ms ease",
             }}
@@ -154,13 +155,13 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
           >
             <div
               className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] text-[13px] font-bold text-white"
-              style={{ background: "var(--color-blue)" }}
+              style={{ background: "var(--sb-accent)" }}
             >
               M
             </div>
             <span
               className="whitespace-nowrap text-[14px] font-bold"
-              style={{ color: "var(--color-blue)", ...textStyle }}
+              style={{ color: "var(--sb-accent)", ...textStyle }}
             >
               Manaleg
             </span>
@@ -180,7 +181,7 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
                   }}
                 >
                   <div
-                    className="px-[13px] pt-[10px] pb-[3px] text-[9px] font-bold uppercase tracking-[.9px]"
+                    className="px-[13px] pt-[6px] pb-[1px] text-[9px] font-bold uppercase tracking-[.9px]"
                     style={{ color: "var(--sb-fg)", opacity: 0.5 }}
                   >
                     {section.title}
@@ -208,29 +209,39 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
             ))}
           </nav>
 
-          {/* ── Pin toggle — solo desktop, al pie del sidebar ────────── */}
-          <div
-            className="hidden md:flex shrink-0 items-center border-t px-2 py-[6px]"
-            style={{
-              borderColor: "var(--color-border)",
-              justifyContent: exp ? "flex-end" : "center",
-            }}
-          >
-            <button
-              type="button"
-              onClick={toggleSidebarPin}
-              title={sidebarPinned ? "Colapsar menú" : "Fijar menú expandido"}
-              className="flex cursor-pointer items-center justify-center rounded-[6px] p-[5px] transition-colors"
-              style={{
-                color: sidebarPinned ? "var(--sb-act-fg)" : "var(--sb-fg)",
-                transition: `color 120ms`,
-              }}
+          {/* ── Footer: pin + avatar ─────────────────────────────────── */}
+          <div className="shrink-0 mx-[8px]" style={{ height: 1, background: "var(--color-border)" }} />
+          <div className="shrink-0">
+            {/* Pin toggle — solo desktop, solo cuando expandido */}
+            {exp && (
+              <div className="px-[5px] pt-[5px] pb-[2px]">
+                <button
+                  type="button"
+                  onClick={toggleSidebarPin}
+                  title={sidebarPinned ? "Colapsar menú" : "Fijar menú expandido"}
+                  className="hidden md:flex w-full items-center overflow-hidden rounded-[7px] py-[4px] text-left transition-colors cursor-pointer"
+                  style={{ gap: 9, paddingLeft: 10, paddingRight: 12, color: "var(--sb-fg)" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--sb-act-fg)"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--sb-fg)"; }}
+                >
+                  {sidebarPinned
+                    ? <PanelLeftClose size={14} strokeWidth={1.8} className="shrink-0" />
+                    : <PanelLeftOpen  size={14} strokeWidth={1.8} className="shrink-0" />
+                  }
+                  <span className="whitespace-nowrap text-[11px] font-medium" style={textStyle}>
+                    {sidebarPinned ? "Colapsar menú" : "Fijar menú"}
+                  </span>
+                </button>
+              </div>
+            )}
+
+            {/* Avatar — centrado cuando colapsado, alineado izq cuando expandido */}
+            <div
+              className={`flex items-center pb-[10px] ${exp ? "mx-[5px] pt-[3px]" : "justify-center pt-[8px]"}`}
+              style={{ paddingLeft: exp ? 10 : 0 }}
             >
-              {sidebarPinned
-                ? <PanelLeftClose size={14} strokeWidth={1.8} />
-                : <PanelLeftOpen  size={14} strokeWidth={1.8} />
-              }
-            </button>
+              <UserSettings profile={profile} variant="sidebar" expanded={exp} />
+            </div>
           </div>
         </div>
       </aside>

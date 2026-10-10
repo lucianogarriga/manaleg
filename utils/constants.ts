@@ -1,6 +1,11 @@
 // Límite de causas cargadas en memoria (fase beta). Cambiar cuando se implemente paginación.
 export const CAUSAS_LIMIT = 60;
 
+// Versión vigente de T&C. Incrementar (ej: "1.1") cuando se publiquen cambios
+// que requieran nueva aceptación. AuthGuard redirige a /tyc-update si el perfil
+// tiene una versión anterior.
+export const CURRENT_TYC_VERSION = "1.0";
+
 export const TIPOS_GASTO = [
   "Carta documento",
   "Notificación",
