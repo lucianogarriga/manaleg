@@ -13,6 +13,7 @@ import type { ClienteOption } from "@/services/supabase/clientes";
 import type { CausaConRelaciones } from "@/types";
 import CausaForm from "./CausaForm";
 import CausaModal from "./CausaModal";
+import MaintenanceBanner from "@/components/ui/MaintenanceBanner";
 import CausaRow from "./CausaRow";
 import CausaCard from "./CausaCard";
 import FabSpotlight from "@/components/ui/FabSpotlight";
@@ -87,6 +88,7 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
         </EmptyState>
       ) : (
         <div className="flex flex-col">
+          <MaintenanceBanner compact />
           <StatsRow causas={causas} />
 
           {totalEnBD > CAUSAS_LIMIT && (

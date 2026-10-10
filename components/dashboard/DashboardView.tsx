@@ -9,6 +9,7 @@ import type { DashboardStats } from "@/services/supabase/dashboardStats";
 import type { Evento } from "@/types";
 import { pct, StatCard, type StatCardProps } from "./StatCard";
 import { MiniCalendar } from "./MiniCalendar";
+import MaintenanceBanner from "@/components/ui/MaintenanceBanner";
 
 function StatsBanner() {
   return (
@@ -120,6 +121,8 @@ export default function DashboardView({ nombre, causasActivas, alertas, eventos,
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 pb-20 md:px-6 md:pb-6">
+      <MaintenanceBanner compact />
+
       {/* Encabezado */}
       <div className="mb-6">
         <h1 className="text-[20px] font-bold text-text">{saludo}, {primerNombre}</h1>
