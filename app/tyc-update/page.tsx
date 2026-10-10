@@ -7,7 +7,8 @@ import { CURRENT_TYC_VERSION } from "@/utils/constants";
 
 export const metadata = { title: "Actualización de Términos — MANALEG" };
 
-export default async function TycUpdatePage() {
+export default async function TycUpdatePage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  const { error } = await searchParams;
   // Verificar que hay sesión activa; si no, al login
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
@@ -40,6 +41,12 @@ export default async function TycUpdatePage() {
         <p className="mb-5 text-[12px] text-muted leading-[1.5]">
           Al aceptar, otorgás consentimiento expreso al almacenamiento de tus datos en servidores ubicados en Brasil (art. 12 Ley 25.326) y a los términos del encargo de tratamiento descritos en la sección 4 de los T&C.
         </p>
+
+        {error && (
+          <p className="mb-4 rounded-[8px] px-3 py-2 text-[13px]" style={{ background: "var(--color-red-lt)", color: "var(--color-red)" }}>
+            No se pudo registrar la aceptación. Intentá de nuevo.
+          </p>
+        )}
 
         <form action={acceptUpdatedTyc}>
           <button

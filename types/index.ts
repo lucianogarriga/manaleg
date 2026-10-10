@@ -64,11 +64,12 @@ export interface Profile {
   email: string;
   nombre_completo: string | null;
   empresa: string | null;
-  plan: "free" | "pro";
+  plan: "free" | "intermedio" | "pro";
   estado_pago: "activo" | "vencido" | "prueba";
   causas_max: number;
   notificaciones_email: boolean;
   tyc_accepted_at: string | null;
+  tyc_version: string | null;
   created_at: string;
   updated_at: string;
 }
