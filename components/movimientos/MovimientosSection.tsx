@@ -9,6 +9,7 @@ import { useMovimientos } from "@/hooks/useCausaData";
 import { useUIStore } from "@/store/uiStore";
 import MovimientoForm from "./MovimientoForm";
 import MovimientoTimeline from "./MovimientoTimeline";
+import type { MovimientoConAutor } from "@/types";
 
 export interface MovimientosSectionRef {
   openForm: () => void;
@@ -21,6 +22,7 @@ const MovimientosSection = forwardRef<
   const router = useRouter();
   const { data, loading, error, reload } = useMovimientos(causaId);
   const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<MovimientoConAutor | undefined>(undefined);
   const showToast = useUIStore((s) => s.showToast);
 
   useImperativeHandle(ref, () => ({ openForm: () => setFormOpen(true) }), []);
@@ -37,6 +39,22 @@ const MovimientosSection = forwardRef<
     afterChange();
   };
 
+  const onEdit = (m: MovimientoConAutor) => {
+    setEditing(m);
+    setFormOpen(true);
+  };
+
+  const handleClose = () => {
+    setFormOpen(false);
+    setEditing(undefined);
+  };
+
+  const handleSaved = (msg: string) => {
+    handleClose();
+    showToast({ message: msg });
+    afterChange();
+  };
+
   const inner = loading ? (
     <div className="space-y-3 px-[13px] py-4" aria-busy="true">
       {[0, 1, 2].map((i) => (
@@ -48,13 +66,12 @@ const MovimientosSection = forwardRef<
   ) : data.length === 0 ? (
     <p className="px-[13px] py-4 text-[13.5px] text-muted">Todavía no hay movimientos en esta causa.</p>
   ) : (
-    <MovimientoTimeline items={data} userId={userId} onDelete={onDelete} />
+    <MovimientoTimeline items={data} userId={userId} onDelete={onDelete} onEdit={onEdit} />
   );
 
   return (
     <>
       {naked ? (
-        // En modo naked el botón + Agregar lo maneja el padre vía ref.openForm()
         <div>{inner}</div>
       ) : (
         <CardSection
@@ -68,12 +85,9 @@ const MovimientosSection = forwardRef<
       {formOpen && (
         <MovimientoForm
           causaId={causaId}
-          onClose={() => setFormOpen(false)}
-          onSaved={() => {
-            setFormOpen(false);
-            showToast({ message: "Movimiento agregado." });
-            afterChange();
-          }}
+          editing={editing}
+          onClose={handleClose}
+          onSaved={() => handleSaved(editing ? "Movimiento actualizado." : "Movimiento agregado.")}
         />
       )}
       {confirmDialog}

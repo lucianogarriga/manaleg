@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { Settings, Bell, BellOff, FileText, ShieldCheck, LogOut, MessageSquare } from "lucide-react";
+import { Bell, BellOff, FileText, ShieldCheck, LogOut, MessageSquare } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { toggleNotificacionesEmail } from "@/app/(app)/ajustes/actions";
 import { getInitials } from "@/utils/formatters";
@@ -44,13 +44,11 @@ export default function UserSettings({ profile }: Props) {
     <>
     {feedbackOpen && <FeedbackModal onClose={() => setFeedbackOpen(false)} />}
     <div ref={ref} className="relative">
-      {/* Botón: avatar con iniciales + ícono gear superpuesto */}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         title="Ajustes"
-        className="relative flex cursor-pointer items-center justify-center rounded-[7px] p-[5px] transition-colors"
-        style={{ color: "var(--color-sub)" }}
+        className="flex cursor-pointer items-center justify-center rounded-[7px] p-[5px] transition-colors"
         onMouseEnter={(e) => (e.currentTarget.style.background = "var(--hover-row)")}
         onMouseLeave={(e) => (e.currentTarget.style.background = "")}
       >
@@ -59,13 +57,6 @@ export default function UserSettings({ profile }: Props) {
           style={{ background: "linear-gradient(135deg, #2563eb, #7c3aed)" }}
         >
           {getInitials(profile.nombre_completo, profile.email[0]?.toUpperCase())}
-        </div>
-        {/* Mini gear badge */}
-        <div
-          className="absolute -bottom-[2px] -right-[2px] flex h-[14px] w-[14px] items-center justify-center rounded-full border"
-          style={{ background: "var(--color-bg)", borderColor: "var(--color-border)" }}
-        >
-          <Settings size={8} strokeWidth={2.5} style={{ color: "var(--color-sub)" }} />
         </div>
       </button>
 

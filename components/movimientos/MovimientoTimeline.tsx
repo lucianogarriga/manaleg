@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { formatDateTime, getInitials } from "@/utils/formatters";
 import type { MovimientoConAutor } from "@/types";
 
@@ -8,14 +8,16 @@ interface MovimientoTimelineProps {
   items: MovimientoConAutor[];
   userId: string;
   onDelete: (id: string) => void;
+  onEdit: (m: MovimientoConAutor) => void;
 }
 
-export default function MovimientoTimeline({ items, userId, onDelete }: MovimientoTimelineProps) {
+export default function MovimientoTimeline({ items, userId, onDelete, onEdit }: MovimientoTimelineProps) {
   return (
     <div className="px-[13px] pt-2 pb-[13px]">
       {items.map((m, i) => {
         const nombre = m.autor?.nombre_completo ?? null;
         const email = m.autor?.email ?? "?";
+        const isOwner = m.autor_id === userId;
         return (
           <div key={m.id} className="group relative flex gap-[10px]">
             {i < items.length - 1 && (
@@ -36,15 +38,25 @@ export default function MovimientoTimeline({ items, userId, onDelete }: Movimien
                   {formatDateTime(m.fecha)} · {nombre ?? email}
                   {m.tipo && ` · ${m.tipo}`}
                 </span>
-                {m.autor_id === userId && (
-                  <button
-                    type="button"
-                    onClick={() => onDelete(m.id)}
-                    aria-label="Eliminar movimiento"
-                    className="ml-1 flex cursor-pointer text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-red focus:opacity-100"
-                  >
-                    <Trash2 size={11} />
-                  </button>
+                {isOwner && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => onEdit(m)}
+                      aria-label="Editar movimiento"
+                      className="ml-1 flex cursor-pointer text-muted hover:text-blue"
+                    >
+                      <Pencil size={11} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDelete(m.id)}
+                      aria-label="Eliminar movimiento"
+                      className="flex cursor-pointer text-muted hover:text-red"
+                    >
+                      <Trash2 size={11} />
+                    </button>
+                  </>
                 )}
               </div>
             </div>

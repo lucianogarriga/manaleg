@@ -175,9 +175,9 @@ function armarAsunto(causas: CausaConAviso[], hoy: string): string {
   if (causas.length === 1) {
     const c = causas[0];
     const verbo = c.tipo_vencimiento === "Recordatorio" ? "Recordatorio" : "Vence";
-    return `MANALEG · ${verbo} ${cuando(c.proximo_vencimiento, hoy)}: ${c.caratula}`;
+    return `Manaleg · ${verbo} ${cuando(c.proximo_vencimiento, hoy)}: ${c.caratula}`;
   }
-  return `MANALEG · ${causas.length} avisos próximos`;
+  return `Manaleg · ${causas.length} avisos próximos`;
 }
 
 function armarHtml(perfil: Destinatario, causas: CausaConAviso[], hoy: string): string {
@@ -218,7 +218,7 @@ function armarHtml(perfil: Destinatario, causas: CausaConAviso[], hoy: string): 
     .join("");
 
   const ctaBtn = appUrl
-    ? `<p style="margin:22px 0 0"><a href="${escapeHtml(appUrl)}/causas" style="display:inline-block;background:#2563EB;color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:11px 22px;border-radius:8px;letter-spacing:.1px">Abrir MANALEG →</a></p>`
+    ? `<p style="margin:22px 0 0"><a href="${escapeHtml(appUrl)}/causas" style="display:inline-block;background:#2563EB;color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:11px 22px;border-radius:8px;letter-spacing:.1px">Abrir Manaleg →</a></p>`
     : "";
 
   const settingsUrl = appUrl ? `${escapeHtml(appUrl)}` : "#";
@@ -236,7 +236,7 @@ function armarHtml(perfil: Destinatario, causas: CausaConAviso[], hoy: string): 
           <div style="width:32px;height:32px;background:#2563EB;border-radius:8px;text-align:center;line-height:32px;font-weight:800;font-size:15px;color:#fff;letter-spacing:-.3px">M</div>
         </td>
         <td style="vertical-align:middle">
-          <span style="font-size:15px;font-weight:700;color:#fff;letter-spacing:.4px">MANALEG</span>
+          <span style="font-size:15px;font-weight:700;color:#fff;letter-spacing:.4px">Manaleg</span>
         </td>
       </tr></table>
     </div>
@@ -251,7 +251,7 @@ function armarHtml(perfil: Destinatario, causas: CausaConAviso[], hoy: string): 
 
     <!-- Footer -->
     <div style="padding:16px 0 0;text-align:center">
-      <p style="margin:0 0 4px;font-size:12px;color:#94A3B8">Este email fue generado automáticamente por MANALEG.</p>
+      <p style="margin:0 0 4px;font-size:12px;color:#94A3B8">Este email fue generado automáticamente por Manaleg.</p>
       <p style="margin:0;font-size:12px;color:#94A3B8">
         Podés desactivar estas alertas desde <a href="${settingsUrl}" style="color:#2563EB;text-decoration:none">tu configuración</a>
         &nbsp;·&nbsp;

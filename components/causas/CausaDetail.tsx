@@ -22,7 +22,33 @@ import InfoTooltip from "@/components/ui/InfoTooltip";
 import { useCausasStore } from "@/store/causasStore";
 import { formatCurrency, formatDate, getDaysUntil, getInitials } from "@/utils/formatters";
 import { getDeadlineLabel, getUrgency } from "@/utils/urgencyHelpers";
-import type { CausaConRelaciones, CausaShareConUsuario } from "@/types";
+import type { CausaConRelaciones, CausaShareConUsuario, RolParte } from "@/types";
+
+const ROL_LABELS: Record<RolParte, string> = {
+  actora: "Actora",
+  demandada: "Demandada",
+  solicitante: "Solicitante",
+  requirente: "Requirente",
+  solicitado: "Solicitado",
+  requerido: "Requerido",
+  tercero: "Tercero",
+  tercerista: "Tercerista",
+  adquirente: "Adquirente",
+  otro: "Otro",
+};
+
+const ROL_COLORS: Record<RolParte, string> = {
+  actora: "bg-blue-lt text-blue",
+  demandada: "bg-red-lt text-red",
+  solicitante: "bg-blue-lt text-blue",
+  requirente: "bg-blue-lt text-blue",
+  solicitado: "bg-red-lt text-red",
+  requerido: "bg-red-lt text-red",
+  tercero: "bg-bg text-muted border border-border",
+  tercerista: "bg-bg text-muted border border-border",
+  adquirente: "bg-bg text-muted border border-border",
+  otro: "bg-bg text-muted border border-border",
+};
 
 interface CausaDetailProps {
   causa: CausaConRelaciones;
@@ -68,11 +94,32 @@ export default function CausaDetail({ causa, userId, className = "" }: CausaDeta
     { label: "Fuero", value: causa.fuero ?? "—" },
     { label: "Tipo de juicio", value: causa.tipo_juicio ?? "—" },
     { label: "Juzgado / Cámara", value: causa.juzgado_camara ?? "—" },
-    { label: "Parte actora", value: causa.parte_actora ?? "—" },
     {
-      label: "Parte/s demandada/s",
-      value: causa.parte_demandada
-        ? causa.parte_demandada.split("\n").filter(Boolean).join(" · ")
+      label: "Partes",
+      full: true,
+      value: causa.causa_partes && causa.causa_partes.length > 0
+        ? (
+          <div className="flex flex-col gap-[6px]">
+            {[...causa.causa_partes]
+              .sort((a, b) => a.orden - b.orden)
+              .map((p) => (
+                <div key={p.id} className="flex flex-wrap items-center gap-[6px]">
+                  <span className="text-[14px] font-medium text-text">{p.nombre}</span>
+                  <span className={`rounded px-[6px] py-[1px] text-[10px] font-bold uppercase tracking-wide ${ROL_COLORS[p.rol] ?? "bg-bg text-muted border border-border"}`}>
+                    {ROL_LABELS[p.rol]}
+                  </span>
+                  {p.tipo_persona === "juridica" && (
+                    <span className="text-[11px] text-muted">· Jurídica</span>
+                  )}
+                  {p.es_nuestra_parte && (
+                    <span className="text-[11px] text-muted">
+                      · Nuestro {p.caracter_abogado ?? ""}
+                    </span>
+                  )}
+                </div>
+              ))}
+          </div>
+        )
         : "—",
     },
     { label: "Fecha de inicio", value: formatDate(causa.fecha_inicio) },

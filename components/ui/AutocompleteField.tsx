@@ -11,6 +11,7 @@ interface AutocompleteFieldProps {
   options: string[];
   defaultValue?: string;
   placeholder?: string;
+  onChangeValue?: (value: string) => void;
 }
 
 export default function AutocompleteField({
@@ -19,6 +20,7 @@ export default function AutocompleteField({
   options,
   defaultValue = "",
   placeholder,
+  onChangeValue,
 }: AutocompleteFieldProps) {
   const [value, setValue] = useState(defaultValue);
   const [open, setOpen] = useState(false);
@@ -32,6 +34,7 @@ export default function AutocompleteField({
 
   const select = (opt: string) => {
     setValue(opt);
+    onChangeValue?.(opt);
     setOpen(false);
   };
 
@@ -79,7 +82,7 @@ export default function AutocompleteField({
         placeholder={placeholder}
         autoComplete="off"
         className={CONTROL}
-        onChange={(e) => { setValue(e.target.value); setOpen(true); setHighlighted(0); }}
+        onChange={(e) => { setValue(e.target.value); onChangeValue?.(e.target.value); setOpen(true); setHighlighted(0); }}
         onFocus={() => { setOpen(true); setHighlighted(0); }}
         onKeyDown={onKeyDown}
       />

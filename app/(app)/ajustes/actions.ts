@@ -39,7 +39,7 @@ export async function enviarFeedback(mensaje: string): Promise<{ error?: string 
 
   return sendEmail({
     to: process.env.FEEDBACK_EMAIL ?? "contacto@manaleg.com.ar",
-    subject: `Feedback MANALEG · ${escapeHtml(nombre)}`,
+    subject: `Feedback Manaleg · ${escapeHtml(nombre)}`,
     html: `<!doctype html><html lang="es"><head><meta charset="utf-8"></head>
 <body style="font-family:-apple-system,'Segoe UI',Arial,sans-serif;padding:32px 16px;background:#F1F5F9">
   <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #DDE3ED;border-radius:12px;padding:28px">

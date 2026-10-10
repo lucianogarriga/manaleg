@@ -46,6 +46,36 @@ export async function createMovimiento(_prev: FormState, formData: FormData): Pr
   return { message: "Movimiento agregado." };
 }
 
+export async function updateMovimiento(_prev: FormState, formData: FormData): Promise<FormState> {
+  const id = text(formData, "id");
+  const descripcion = text(formData, "descripcion");
+  const fecha = text(formData, "fecha");
+
+  if (!id) return { error: "Falta el id del movimiento." };
+  if (!descripcion) return { error: "Escribí la descripción del movimiento." };
+  if (descripcion.length > 2000) return { error: "La descripción es demasiado larga (máx. 2000 caracteres)." };
+  if (fecha && !isISODate(fecha)) return { error: "La fecha no es válida." };
+
+  const updates: { tipo: string | null; descripcion: string; fecha?: string } = {
+    tipo: oneOf(text(formData, "tipo"), TIPOS_MOVIMIENTO),
+    descripcion,
+  };
+  if (fecha && fecha !== todayISO()) updates.fecha = `${fecha}T12:00:00-03:00`;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("movimientos")
+    .update(updates)
+    .eq("id", id)
+    .select("id");
+
+  if (error) return { error: `No se pudo actualizar el movimiento: ${error.message}` };
+  if (!data || data.length === 0) return { error: "Solo quien cargó el movimiento puede editarlo." };
+
+  refresh();
+  return { message: "Movimiento actualizado." };
+}
+
 export async function deleteMovimiento(id: string): Promise<FormState> {
   if (!await getAuthUserId()) return { error: "No autenticado." };
   const supabase = await createClient();

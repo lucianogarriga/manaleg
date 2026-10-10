@@ -19,6 +19,26 @@ export type TipoEvento = (typeof TIPOS_EVENTO)[number];
 export type TipoGasto = (typeof TIPOS_GASTO)[number];
 export type EstadoAlerta = "Pendiente" | "Notificado" | "Vencido";
 
+export type RolParte =
+  | "actora" | "demandada" | "solicitante" | "requirente"
+  | "solicitado" | "requerido" | "tercero" | "tercerista"
+  | "adquirente" | "otro";
+
+export type TipoPersona = "fisica" | "juridica";
+export type CaracterAbogado = "apoderado" | "patrocinante";
+
+export interface CausaParte {
+  id: string;
+  causa_id: string;
+  nombre: string;
+  tipo_persona: TipoPersona;
+  rol: RolParte;
+  es_nuestra_parte: boolean;
+  caracter_abogado: CaracterAbogado | null;
+  orden: number;
+  created_at: string;
+}
+
 export interface Evento {
   id: string;
   causa_id: string;
@@ -99,6 +119,7 @@ export interface CausaConRelaciones extends Causa {
   editor: ProfileRef | null;
   cliente: Pick<Cliente, "id" | "nombre_completo"> | null; // null si es de otro owner (RLS)
   causa_shares: Array<{ id: string }> | null; // colaboradores; length > 0 = causa compartida
+  causa_partes: CausaParte[] | null;
 }
 
 // Campos editables desde el formulario
@@ -109,8 +130,6 @@ export type CausaInput = Pick<
   | "fuero"
   | "tipo_juicio"
   | "juzgado_camara"
-  | "parte_actora"
-  | "parte_demandada"
   | "cliente_id"
   | "estado"
   | "via_proceso"

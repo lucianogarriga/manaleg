@@ -196,6 +196,20 @@ export default function CalendarView({ hoy, avisos, inhabiles, userId }: Calenda
             Feriados nacionales cargados: {aniosConFeriados.join(", ") || "ninguno"}
           </span>
         </div>
+        <div className="border-t border-border px-3 py-2 text-[12px] text-muted">
+          Se incluyen feriados nacionales y feria judicial de Córdoba (enero). Para días inhábiles específicos de tu
+          tribunal o provincia, consultá el calendario del sitio oficial del PJ de tu localidad. Ejemplo, para el caso
+          de Justicia Córdoba, accedé al{" "}
+          <a
+            href="https://www.justiciacordoba.gob.ar/justiciacordoba/servicios/DiasInhabilesNet.aspx"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-blue hover:underline"
+          >
+            siguiente link
+          </a>{" "}
+          y luego cargalos con <strong>+ Día inhábil</strong>.
+        </div>
       </section>
 
       {/* ── Resumen a un costado ── */}

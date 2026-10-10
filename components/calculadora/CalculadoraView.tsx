@@ -22,6 +22,8 @@ export default function CalculadoraView({ hoy, inhabiles, causas }: CalculadoraV
   const [desde, setDesde] = useState(hoy);
   const [dias, setDias] = useState("10");
   const [tipo, setTipo] = useState<"habiles" | "corridos">("habiles");
+  // E-cédula: 3 días hábiles de gracia adicionales (art. 153 CPC Cba y normas procesales similares)
+  const [notifTipo, setNotifTipo] = useState<"electronica" | "papel">("papel");
   const showToast = useUIStore((s) => s.showToast);
 
   const setInhabiles = useMemo(() => new Set(inhabiles.map((d) => d.fecha)), [inhabiles]);
@@ -29,9 +31,16 @@ export default function CalculadoraView({ hoy, inhabiles, causas }: CalculadoraV
 
   const cantidad = Number(dias);
   const valido = /^\d{4}-\d{2}-\d{2}$/.test(desde) && Number.isInteger(cantidad) && cantidad >= 1 && cantidad <= 365;
+
+  // Para e-cédula: la fecha de notificación efectiva es 3 días hábiles después de la fecha de envío
+  const desdeEfectivo = useMemo(() => {
+    if (!valido || notifTipo !== "electronica") return desde;
+    return calcularPlazo(desde, 3, "habiles", setInhabiles).vencimiento;
+  }, [valido, desde, notifTipo, setInhabiles]);
+
   const resultado = useMemo(
-    () => (valido ? calcularPlazo(desde, cantidad, tipo, setInhabiles) : null),
-    [valido, desde, cantidad, tipo, setInhabiles],
+    () => (valido ? calcularPlazo(desdeEfectivo, cantidad, tipo, setInhabiles) : null),
+    [valido, desdeEfectivo, cantidad, tipo, setInhabiles],
   );
 
   const { state, pending, onSubmit } = useFormAction(saveVencimientoCausa, (s) =>
@@ -48,9 +57,18 @@ export default function CalculadoraView({ hoy, inhabiles, causas }: CalculadoraV
           Datos del plazo
         </div>
         <div className="space-y-3 p-3">
-          <TextField label="Fecha de notificación" type="date" value={desde} onChange={(e) => setDesde(e.target.value)} />
+          <SelectField
+            label="Tipo de notificación"
+            value={notifTipo}
+            onChange={(e) => setNotifTipo(e.target.value as "electronica" | "papel")}
+            options={[
+              { value: "papel", label: "Papel / personal" },
+              { value: "electronica", label: "E-cédula / electrónica (+3 días hábiles)" },
+            ]}
+          />
+          <TextField label="Fecha de la notificación" type="date" value={desde} onChange={(e) => setDesde(e.target.value)} />
           <TextField
-            label="Cantidad de días"
+            label="Cantidad de días del plazo"
             type="number"
             min={1}
             max={365}
@@ -58,7 +76,7 @@ export default function CalculadoraView({ hoy, inhabiles, causas }: CalculadoraV
             onChange={(e) => setDias(e.target.value)}
           />
           <SelectField
-            label="Tipo de plazo"
+            label="Tipo de cómputo"
             value={tipo}
             onChange={(e) => setTipo(e.target.value as "habiles" | "corridos")}
             options={[
@@ -68,8 +86,10 @@ export default function CalculadoraView({ hoy, inhabiles, causas }: CalculadoraV
           />
           <p className="flex gap-2 text-[13px] text-muted">
             <Info size={15} className="mt-px shrink-0" />
-            El plazo empieza a correr el día siguiente a la notificación. Los sábados, domingos, feriados y días
-            inhábiles que cargaste no se cuentan.
+            {notifTipo === "electronica"
+              ? "La e-cédula tiene 3 días hábiles de gracia: el plazo empieza a correr después de esos 3 días."
+              : "El plazo empieza a correr el día siguiente a la notificación."}
+            {" "}Los sábados, domingos, feriados y días inhábiles no se cuentan.
           </p>
         </div>
       </section>
@@ -86,8 +106,14 @@ export default function CalculadoraView({ hoy, inhabiles, causas }: CalculadoraV
               <div className="text-[12px] font-bold tracking-[.4px] text-muted uppercase">El plazo vence el</div>
               <div className="mt-1 text-[26px] leading-tight font-extrabold text-blue">{formatLongDate(resultado.vencimiento)}</div>
               <div className="mt-1 text-[14px] text-sub">
-                {cantidad} {cantidad === 1 ? "día" : "días"} {tipo === "habiles" ? "hábiles" : "corridos"} desde el{" "}
-                {formatDate(desde)}
+                {cantidad} {cantidad === 1 ? "día" : "días"} {tipo === "habiles" ? "hábiles" : "corridos"}
+                {notifTipo === "electronica" && (
+                  <span className="ml-1 rounded-[4px] bg-blue/10 px-[5px] py-px text-[12px] font-semibold text-blue">
+                    e-cédula
+                  </span>
+                )}
+                {" · "}notificación: {formatDate(desde)}
+                {notifTipo === "electronica" && ` · inicio del plazo: ${formatDate(desdeEfectivo)}`}
               </div>
               <div className="mt-3 rounded-[6px] bg-bg px-3 py-2 text-[13.5px] text-sub">
                 <strong className="text-text">Plazo de gracia:</strong> hasta las primeras dos horas hábiles del{" "}
@@ -158,8 +184,16 @@ export default function CalculadoraView({ hoy, inhabiles, causas }: CalculadoraV
                   puede diferir.
                 </span>
               )}
-              Herramienta de ayuda: verificá siempre el cómputo con el calendario del tribunal (ferias judiciales,
-              asuetos y días inhábiles locales) y con el código procesal aplicable.
+              Herramienta de ayuda — verificá siempre el cómputo con el{" "}
+              <a
+                href="https://www.justiciacordoba.gob.ar/justiciacordoba/Servicios/CalculadoraPlazos.aspx"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-blue hover:underline"
+              >
+                calendario oficial de Justicia Córdoba
+              </a>
+              , el código procesal aplicable y los días inhábiles específicos de tu tribunal.
             </p>
           </>
         )}

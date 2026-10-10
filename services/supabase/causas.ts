@@ -1,6 +1,6 @@
 import { createClient } from "./server";
 import type { AlertaItem } from "./layoutCounts";
-import type { CausaConRelaciones, CausaInput } from "@/types";
+import type { CausaConRelaciones, CausaInput, CausaParte } from "@/types";
 import { CAUSAS_LIMIT } from "@/utils/constants";
 
 // RLS devuelve solo causas propias + compartidas: no filtrar por user_id acá.
@@ -9,7 +9,8 @@ const CAUSA_SELECT = `
   owner:profiles!causas_user_id_fkey(id, nombre_completo, email),
   editor:profiles!causas_ultimo_editor_id_fkey(id, nombre_completo, email),
   cliente:clientes(id, nombre_completo),
-  causa_shares(id)
+  causa_shares(id),
+  causa_partes(id, nombre, tipo_persona, rol, es_nuestra_parte, caracter_abogado, orden)
 `;
 
 export type GetCausasResult = { causas: CausaConRelaciones[]; totalEnBD: number };
@@ -103,4 +104,22 @@ export async function deleteCausa(id: string) {
   const supabase = await createClient();
   // RLS: solo el owner puede borrar. Si no es owner, no borra ninguna fila.
   return supabase.from("causas").delete().eq("id", id).select("id");
+}
+
+type ParteRow = Omit<CausaParte, "id" | "created_at">;
+
+export async function saveCausaPartes(causaId: string, partes: Omit<ParteRow, "causa_id">[]) {
+  const supabase = await createClient();
+
+  const { error: deleteError } = await supabase
+    .from("causa_partes")
+    .delete()
+    .eq("causa_id", causaId);
+  if (deleteError) return { error: deleteError };
+
+  if (partes.length === 0) return { error: null };
+
+  const rows = partes.map((p) => ({ ...p, causa_id: causaId }));
+  const { error } = await supabase.from("causa_partes").insert(rows);
+  return { error };
 }
