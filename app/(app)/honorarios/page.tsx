@@ -37,12 +37,18 @@ export default async function HonorariosPage() {
   return (
     <div className="mx-auto max-w-[900px] p-3">
       <div className="grid grid-cols-1 gap-[9px] sm:grid-cols-3">
-        <StatCard label="Total acordado" value={formatCurrency(acordado)} tone="blue" small />
-        <StatCard label="Cobrado" value={formatCurrency(cobrado)} hint={`${percent}% del total`} tone="grn" small />
-        <StatCard label="Saldo pendiente" value={formatCurrency(acordado - cobrado)} tone="amb" small />
+        <div className="fade-in-up" style={{ animationDelay: "0ms" }}>
+          <StatCard label="Total acordado" value={formatCurrency(acordado)} tone="blue" small />
+        </div>
+        <div className="fade-in-up" style={{ animationDelay: "80ms" }}>
+          <StatCard label="Cobrado" value={formatCurrency(cobrado)} hint={`${percent}% del total`} tone="grn" small />
+        </div>
+        <div className="fade-in-up" style={{ animationDelay: "160ms" }}>
+          <StatCard label="Saldo pendiente" value={formatCurrency(acordado - cobrado)} tone="amb" small />
+        </div>
       </div>
 
-      <div className="mt-3 overflow-hidden rounded-[7px] border border-border bg-card">
+      <div className="fade-in-up mt-3 overflow-hidden rounded-[7px] border border-border bg-card" style={{ animationDelay: "240ms" }}>
         <div className="border-b border-border px-[13px] py-[9px] text-[12px] font-bold tracking-[.4px] text-sub uppercase">
           Honorarios por causa ({data.length})
         </div>

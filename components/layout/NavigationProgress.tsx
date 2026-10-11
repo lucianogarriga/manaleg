@@ -2,15 +2,23 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useLoadingStore } from "@/store/loadingStore";
 
 export default function NavigationProgress() {
   const pathname = usePathname();
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const safetyRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const navRef = useRef(false);
 
-  // Navigation complete → fill bar then fade
+  // Navigation complete → fill bar then fade, y liberar el loader global
   useEffect(() => {
+    if (navRef.current) {
+      navRef.current = false;
+      clearTimeout(safetyRef.current);
+      useLoadingStore.getState().stop();
+    }
     clearTimeout(timerRef.current);
     setProgress(100);
     timerRef.current = setTimeout(() => {
@@ -27,6 +35,16 @@ export default function NavigationProgress() {
       const href = link.getAttribute("href") ?? "";
       if (href.startsWith("http") || href.startsWith("#") || href === pathname) return;
       clearTimeout(timerRef.current);
+      if (!navRef.current) {
+        navRef.current = true;
+        useLoadingStore.getState().start();
+        safetyRef.current = setTimeout(() => {
+          if (navRef.current) {
+            navRef.current = false;
+            useLoadingStore.getState().stop();
+          }
+        }, 8000);
+      }
       setVisible(true);
       setProgress(25);
       timerRef.current = setTimeout(() => setProgress(65), 180);

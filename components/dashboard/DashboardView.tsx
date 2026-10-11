@@ -134,20 +134,22 @@ export default function DashboardView({ nombre, causasActivas, alertas, eventos,
 
       {/* Stat cards — 3 col desktop, 2 col mobile */}
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3">
-        {CARDS.map((card) => (
-          <StatCard key={card.label} {...card} />
+        {CARDS.map((card, i) => (
+          <div key={card.label} className="fade-in-up" style={{ animationDelay: `${i * 80}ms` }}>
+            <StatCard {...card} />
+          </div>
         ))}
       </div>
 
       {/* Layout principal */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-        <div className="w-full sm:w-[290px] sm:shrink-0">
+        <div className="fade-in-up w-full sm:w-[290px] sm:shrink-0" style={{ animationDelay: "240ms" }}>
           <MiniCalendar alertas={alertas} eventos={eventos} />
         </div>
 
         <div className="flex flex-1 flex-col gap-4">
           {/* Próximos vencimientos */}
-          <div className="rounded-xl border border-border bg-card">
+          <div className="fade-in-up rounded-xl border border-border bg-card" style={{ animationDelay: "320ms" }}>
             <div className="flex items-center justify-between border-b border-border/60 px-4 py-[11px]">
               <span className="text-[12px] font-bold uppercase tracking-[.5px] text-sub">Vencimientos próximos</span>
               <Link href="/vencimientos" className="text-[12px] font-semibold text-blue hover:underline">Ver todos</Link>
@@ -175,7 +177,7 @@ export default function DashboardView({ nombre, causasActivas, alertas, eventos,
           </div>
 
           {/* Próximos eventos */}
-          <div className="rounded-xl border border-border bg-card">
+          <div className="fade-in-up rounded-xl border border-border bg-card" style={{ animationDelay: "400ms" }}>
             <div className="flex items-center justify-between border-b border-border/60 px-4 py-[11px]">
               <span className="text-[12px] font-bold uppercase tracking-[.5px] text-sub">Próximos eventos</span>
               <Link href="/causas" className="text-[12px] font-semibold text-blue hover:underline">Ver causas</Link>

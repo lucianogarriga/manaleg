@@ -64,7 +64,7 @@ export interface Profile {
   email: string;
   nombre_completo: string | null;
   empresa: string | null;
-  plan: "free" | "intermedio" | "pro";
+  plan: "free" | "pro" | "full";
   estado_pago: "activo" | "vencido" | "prueba";
   causas_max: number;
   notificaciones_email: boolean;

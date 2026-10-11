@@ -1,5 +1,6 @@
 "use client";
 
+import { useGlobalLoading } from "@/hooks/useGlobalLoading";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
@@ -26,10 +27,10 @@ type DropView = "main" | "more";
 interface DropdownPos { bottom?: number; top?: number; left: number }
 
 function planLabel(profile: Profile): string {
-  if (profile.estado_pago === "prueba") return "Free";
-  if (profile.plan === "pro") return "Pro";
-  if (profile.plan === "intermedio") return "Inter";
-  return "Free";
+  if (profile.estado_pago === "prueba") return "FREE";
+  if (profile.plan === "full") return "FULL";
+  if (profile.plan === "pro") return "PRO";
+  return "FREE";
 }
 
 export default function UserSettings({ profile, variant = "topbar", expanded = true }: Props) {
@@ -40,6 +41,7 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
   const [contactOpen, setContactOpen] = useState(false);
   const [emailEnabled, setEmailEnabled] = useState(profile.notificaciones_email ?? true);
   const [isPending, startTransition] = useTransition();
+  useGlobalLoading(isPending);
   const [pos, setPos] = useState<DropdownPos | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
@@ -204,27 +206,6 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
               <ExternalLink size={11} className="text-muted" />
             </Link>
 
-            <div style={{ height: 1, background: "var(--color-border)", margin: "3px 0" }} />
-
-            {/* Planes */}
-            <Link href="/planes" onClick={() => setOpen(false)} className={rowCls} {...rowStyle}>
-              <Zap size={13} strokeWidth={1.8} className="shrink-0 text-blue" />
-              <span className="flex-1 text-[12.5px] text-sub">Mejorar plan</span>
-            </Link>
-
-            <div style={{ height: 1, background: "var(--color-border)", margin: "3px 0" }} />
-
-            {/* Soporte */}
-            <button type="button" onClick={() => { setOpen(false); setFeedbackOpen(true); }}
-              className={rowCls} {...rowStyle}>
-              <Bug size={13} strokeWidth={1.8} className="shrink-0 text-muted" />
-              <span className="text-[12.5px] text-sub">Comunicar un error</span>
-            </button>
-            <button type="button" onClick={() => { setOpen(false); setContactOpen(true); }}
-              className={rowCls} {...rowStyle}>
-              <Mail size={13} strokeWidth={1.8} className="shrink-0 text-muted" />
-              <span className="text-[12.5px] text-sub">Contactanos</span>
-            </button>
           </div>
         </>
       )}
@@ -241,8 +222,13 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
 
   return (
     <>
-      {feedbackOpen && <FeedbackModal type="error" onClose={() => setFeedbackOpen(false)} />}
-      {contactOpen  && <ContactModal onClose={() => setContactOpen(false)} />}
+      {typeof document !== "undefined" && createPortal(
+        <>
+          {feedbackOpen && <FeedbackModal type="error" onClose={() => setFeedbackOpen(false)} />}
+          {contactOpen  && <ContactModal onClose={() => setContactOpen(false)} />}
+        </>,
+        document.body,
+      )}
 
       <button ref={triggerRef} type="button" onClick={() => setOpen((v) => !v)}
         title={profile.nombre_completo ?? profile.email}

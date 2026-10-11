@@ -1,5 +1,6 @@
 "use client";
 
+import { useGlobalLoading } from "@/hooks/useGlobalLoading";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, X } from "lucide-react";
@@ -103,6 +104,7 @@ function NuevaTareaForm({
   onSaved: () => void;
 }) {
   const [pending, setPending] = useState(false);
+  useGlobalLoading(pending);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

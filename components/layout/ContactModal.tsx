@@ -5,8 +5,7 @@ import { Mail, X } from "lucide-react";
 export default function ContactModal({ onClose }: { onClose: () => void }) {
   return (
     <>
-      <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-[2px]" onClick={onClose} aria-hidden />
-      <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4 backdrop-blur-[2px]" onClick={onClose}>
         <div
           className="w-full max-w-[380px] overflow-hidden rounded-xl border shadow-2xl"
           style={{ background: "var(--color-card)", borderColor: "var(--color-border)" }}

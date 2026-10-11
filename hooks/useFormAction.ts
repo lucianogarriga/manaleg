@@ -1,5 +1,6 @@
 "use client";
 
+import { useGlobalLoading } from "./useGlobalLoading";
 import { useActionState, useEffect, useRef, useTransition } from "react";
 import type { FormState } from "@/types";
 
@@ -13,6 +14,7 @@ export function useFormAction(
 ) {
   const [state, dispatch, pending] = useActionState(action, {} as FormState);
   const [, startTransition] = useTransition();
+  useGlobalLoading(pending);
 
   const onSuccessRef = useRef(onSuccess);
   useEffect(() => {

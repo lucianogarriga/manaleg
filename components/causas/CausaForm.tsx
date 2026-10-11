@@ -1,5 +1,6 @@
 "use client";
 
+import { useGlobalLoading } from "@/hooks/useGlobalLoading";
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { deleteCausa, saveCausa, type CausaFormState } from "@/app/(app)/causas/actions";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
@@ -142,6 +143,7 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
 
   const v = causa;
   const busy = pending || deleting;
+  useGlobalLoading(busy);
 
   // ── Partes ──────────────────────────────────────────────────────
   const [partes, setPartes] = useState<ParteRow[]>(() => initPartes(causa));

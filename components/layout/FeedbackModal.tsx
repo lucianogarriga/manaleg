@@ -1,5 +1,6 @@
 "use client";
 
+import { useGlobalLoading } from "@/hooks/useGlobalLoading";
 import { useRef, useState, useTransition } from "react";
 import { X, MessageSquare, Bug, Send } from "lucide-react";
 import { enviarFeedback } from "@/app/(app)/ajustes/actions";
@@ -14,6 +15,7 @@ export default function FeedbackModal({ onClose, type = "feedback" }: Props) {
   const [texto, setTexto] = useState("");
   const [resultado, setResultado] = useState<{ ok?: boolean; msg?: string } | null>(null);
   const [isPending, startTransition] = useTransition();
+  useGlobalLoading(isPending);
   const ref = useRef<HTMLDivElement>(null);
 
   const handleSubmit = () => {
@@ -31,8 +33,7 @@ export default function FeedbackModal({ onClose, type = "feedback" }: Props) {
 
   return (
     <>
-      <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-[2px]" onClick={onClose} aria-hidden />
-      <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4 backdrop-blur-[2px]" onClick={onClose}>
         <div
           ref={ref}
           className="w-full max-w-[400px] overflow-hidden rounded-xl border shadow-2xl"

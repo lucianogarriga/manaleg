@@ -11,9 +11,10 @@ interface StatCardProps {
   filter: CausasFilter;
   active: boolean;
   onClick: () => void;
+  delay: number;
 }
 
-function StatCard({ label, value, variant, active, onClick }: StatCardProps) {
+function StatCard({ label, value, variant, active, onClick, delay }: StatCardProps) {
   const numColor: Record<StatCardProps["variant"], string> = {
     red:   "text-red",
     amb:   "text-amb",
@@ -24,8 +25,9 @@ function StatCard({ label, value, variant, active, onClick }: StatCardProps) {
     <button
       type="button"
       onClick={onClick}
-      className="flex min-w-0 flex-1 cursor-pointer flex-col items-center justify-center rounded-[8px] border px-3 py-[10px] transition-colors"
+      className="fade-in-up flex min-w-0 flex-1 cursor-pointer flex-col items-center justify-center rounded-[8px] border px-3 py-[10px] transition-colors"
       style={{
+        animationDelay: `${delay}ms`,
         background: active ? "var(--hover-row)" : "var(--color-card)",
         borderColor: active ? "var(--color-blue)" : "var(--color-border)",
         outline: active ? "1.5px solid var(--color-blue)" : "none",
@@ -63,10 +65,10 @@ export default function StatsRow({ causas }: { causas: CausaConRelaciones[] }) {
 
   return (
     <div className="grid grid-cols-2 gap-[10px] px-[14px] pt-[14px] pb-[10px] sm:grid-cols-4">
-      <StatCard label="Vencen hoy / vencidas" value={venceHoyOVencida} variant="red"   filter="vencen_hoy"      active={filter === "vencen_hoy"}      onClick={() => toggle("vencen_hoy")} />
-      <StatCard label="Vencen en 3 días"       value={venceEn3}         variant="amb"   filter="vencen_3dias"    active={filter === "vencen_3dias"}    onClick={() => toggle("vencen_3dias")} />
-      <StatCard label="Sin movimiento +7d"      value={sinMovimiento}    variant="muted" filter="sin_movimiento"  active={filter === "sin_movimiento"}  onClick={() => toggle("sin_movimiento")} />
-      <StatCard label="Causas activas"          value={activas.length}   variant="navy"  filter="todas"           active={false}                        onClick={() => setFilter("todas")} />
+      <StatCard label="Vencen hoy / vencidas" value={venceHoyOVencida} variant="red"   filter="vencen_hoy"      active={filter === "vencen_hoy"}      onClick={() => toggle("vencen_hoy")} delay={0} />
+      <StatCard label="Vencen en 3 días"       value={venceEn3}         variant="amb"   filter="vencen_3dias"    active={filter === "vencen_3dias"}    onClick={() => toggle("vencen_3dias")} delay={80} />
+      <StatCard label="Sin movimiento +7d"      value={sinMovimiento}    variant="muted" filter="sin_movimiento"  active={filter === "sin_movimiento"}  onClick={() => toggle("sin_movimiento")} delay={160} />
+      <StatCard label="Causas activas"          value={activas.length}   variant="navy"  filter="todas"           active={false}                        onClick={() => setFilter("todas")} delay={240} />
     </div>
   );
 }

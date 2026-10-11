@@ -6,7 +6,7 @@ export const metadata = { title: "Planes y Uso — MANALEG" };
 const PLANS = [
   {
     id: "prueba",
-    name: "Free",
+    name: "FREE",
     subtitle: "Para conocer MANALEG sin compromiso",
     priceLabel: "Gratis",
     priceSub: "15 días, sin tarjeta de crédito",
@@ -19,8 +19,8 @@ const PLANS = [
     comingSoon: [],
   },
   {
-    id: "intermedio",
-    name: "Intermedio",
+    id: "pro",
+    name: "PRO",
     subtitle: "Para abogados que necesitan más herramientas",
     priceLabel: "$ ----",
     priceSub: "/ mes · renovación automática",
@@ -40,14 +40,14 @@ const PLANS = [
     ],
   },
   {
-    id: "pro",
-    name: "Pro",
+    id: "full",
+    name: "FULL",
     subtitle: "Para estudios jurídicos y equipos",
     priceLabel: "$ ----",
     priceSub: "/ mes · renovación automática",
     highlight: false,
     features: [
-      "Todo lo del plan Intermedio",
+      "Todo lo del plan PRO",
     ],
     comingSoon: [
       "Asistente IA para resumir causas",
@@ -61,8 +61,8 @@ const PLANS = [
 export default async function PlanesPage() {
   const profile = await getCurrentProfile();
   const esPrueba = profile.estado_pago === "prueba";
-  const esPro = profile.plan === "pro" && profile.estado_pago === "activo";
-  const esInter = profile.plan === "intermedio" && profile.estado_pago === "activo";
+  const esPro = profile.plan === "full" && profile.estado_pago === "activo";
+  const esInter = profile.plan === "pro" && profile.estado_pago === "activo";
 
   return (
     <div className="mx-auto max-w-[980px] px-4 py-8">
@@ -71,9 +71,9 @@ export default async function PlanesPage() {
         {!esPrueba && (
           <p className="mt-1 text-[13.5px] text-muted">
             {esPro
-              ? "Tu plan Pro está activo."
+              ? "Tu plan FULL está activo."
               : esInter
-              ? "Tu plan Intermedio está activo."
+              ? "Tu plan PRO está activo."
               : "Tu plan está vencido. Renovalo para continuar usando MANALEG."}
           </p>
         )}
@@ -86,14 +86,14 @@ export default async function PlanesPage() {
 
       {/* Estado actual */}
       <div
-        className="mb-8 rounded-[10px] border px-5 py-4"
-        style={{ borderColor: "var(--color-border)", background: "var(--color-card)" }}
+        className="fade-in-up mx-auto mb-8 w-fit rounded-[10px] border px-5 py-4"
+        style={{ borderColor: "var(--color-border)", background: "var(--color-card)", animationDelay: "0ms" }}
       >
         <div className="flex flex-wrap items-center gap-4">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[.5px] text-muted">Plan actual</p>
             <p className="mt-[2px] text-[15px] font-bold text-text">
-              {esPrueba ? "BETA" : esPro ? "Pro" : esInter ? "Intermedio" : "Sin plan activo"}
+              {esPrueba ? "BETA" : esPro ? "FULL" : esInter ? "PRO" : "Sin plan activo"}
             </p>
           </div>
           <div>
@@ -122,16 +122,17 @@ export default async function PlanesPage() {
 
       {/* Cards de planes */}
       <div className="grid gap-4 sm:grid-cols-3">
-        {PLANS.map((plan) => {
+        {PLANS.map((plan, i) => {
           const isCurrent =
             (plan.id === "prueba" && esPrueba) ||
-            (plan.id === "pro" && esPro) ||
-            (plan.id === "intermedio" && esInter);
+            (plan.id === "full" && esPro) ||
+            (plan.id === "pro" && esInter);
           return (
             <div
               key={plan.id}
-              className="relative flex flex-col rounded-[12px] border p-6"
+              className="fade-in-up relative flex flex-col rounded-[12px] border p-6"
               style={{
+                animationDelay: `${(i + 1) * 80}ms`,
                 borderColor: plan.highlight ? "var(--color-blue)" : "var(--color-border)",
                 background: plan.highlight ? "var(--color-blue-lt)" : "var(--color-card)",
                 boxShadow: plan.highlight ? "0 0 0 1px var(--color-blue)" : undefined,

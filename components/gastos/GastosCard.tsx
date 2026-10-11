@@ -1,5 +1,6 @@
 "use client";
 
+import { useGlobalLoading } from "@/hooks/useGlobalLoading";
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
@@ -28,6 +29,7 @@ function GastoForm({
   const action = gasto ? updateGasto : createGasto;
   const [state, dispatch, pending] = useActionState<FormState, FormData>(action, {});
   const [, startSubmit] = useTransition();
+  useGlobalLoading(pending);
 
   useEffect(() => {
     if (state.message) onSaved(state.message);
