@@ -22,7 +22,7 @@ export default function Spinner({ label = "Cargando..." }: { label?: string }) {
   }, []);
 
   return (
-    <div className="flex w-[min(260px,70vw)] flex-col items-center py-12" role="status" aria-label={label}>
+    <div className="mx-auto flex w-[min(260px,70vw)] flex-col items-center py-12" role="status" aria-label={label}>
       <div
         className="relative flex h-[24px] w-full items-center justify-between overflow-hidden rounded-full px-[12px] text-[11.5px] font-semibold text-text"
         style={{ background: "color-mix(in srgb, var(--sb-accent) 18%, transparent)" }}
