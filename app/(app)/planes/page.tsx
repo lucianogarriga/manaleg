@@ -187,17 +187,22 @@ export default async function PlanesPage() {
                   Plan base
                 </div>
               ) : (
-                <a
-                  href={`mailto:contacto@manaleg.com.ar?subject=Quiero%20contratar%20el%20Plan%20${plan.name}`}
-                  className="mt-auto block rounded-[8px] bg-blue py-[9px] text-center text-[13px] font-semibold text-white transition-opacity hover:opacity-90"
+                <button
+                  type="button"
+                  disabled
+                  className="mt-auto block w-full cursor-not-allowed rounded-[8px] bg-blue py-[9px] text-center text-[13px] font-semibold text-white opacity-50"
                 >
                   Contratar Plan {plan.name}
-                </a>
+                </button>
               )}
             </div>
           );
         })}
       </div>
+
+      <p className="mt-6 text-center text-[13px] font-semibold text-muted">
+        Actualmente no están disponibles los planes PRO y FULL.
+      </p>
 
       <p className="mt-6 text-center text-[12px] text-muted">
         ¿Tenés preguntas sobre los planes? Escribinos a{" "}
