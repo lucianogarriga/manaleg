@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS public.gastos (
 
 CREATE OR REPLACE TRIGGER gastos_updated_at
   BEFORE UPDATE ON public.gastos
-  FOR EACH ROW EXECUTE FUNCTION moddatetime(updated_at);
+  FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
 
 ALTER TABLE public.gastos ENABLE ROW LEVEL SECURITY;
 
