@@ -10,10 +10,7 @@ export async function acceptUpdatedTyc(): Promise<void> {
   const userId = data?.claims.sub;
   if (!userId) redirect("/login");
 
-  const { error } = await supabase
-    .from("profiles")
-    .update({ tyc_accepted_at: new Date().toISOString(), tyc_version: CURRENT_TYC_VERSION })
-    .eq("id", userId);
+  const { error } = await supabase.rpc("aceptar_tyc", { p_version: CURRENT_TYC_VERSION });
 
   if (error) redirect("/tyc-update?error=1");
 
