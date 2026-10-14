@@ -3,7 +3,19 @@ import { escapeHtml, sendEmail } from "@/services/email/resend";
 import { esHabil, siguienteHabil } from "@/utils/diasHabiles";
 import { addDaysISO, formatDate, formatLongDate, todayISO } from "@/utils/formatters";
 
-type Origen = "vencimiento" | "evento";
+type Origen = "vencimiento" | "evento" | "causa";
+
+interface FilaCausaLegacy {
+  id: string;
+  caratula: string;
+  nro_expediente: string | null;
+  proximo_vencimiento: string;
+  tipo_vencimiento: string | null;
+  motivo_vencimiento: string | null;
+  anticipacion_alerta: string | null;
+  user_id: string;
+  causa_shares: { shared_with_user_id: string }[];
+}
 
 interface CausaDeAviso {
   caratula: string;
@@ -130,7 +142,37 @@ export async function enviarAvisos({ dryRun = false } = {}): Promise<ResumenAvis
     .returns<FilaEvento[]>();
   if (eError) throw new Error(`No se pudieron leer los eventos: ${eError.message}`);
 
+  // Vencimientos cargados desde el formulario de causa (solo en causas.proximo_vencimiento)
+  const { data: legacy, error: lError } = await admin
+    .from("causas")
+    .select("id, caratula, nro_expediente, proximo_vencimiento, tipo_vencimiento, motivo_vencimiento, anticipacion_alerta, user_id, causa_shares(shared_with_user_id)")
+    .gt("proximo_vencimiento", hoy)
+    .lte("proximo_vencimiento", horizonte)
+    .neq("estado", "Cerrada")
+    .or("tipo_vencimiento.is.null,tipo_vencimiento.in.(Vencimiento,Audiencia)")
+    .returns<FilaCausaLegacy[]>();
+  if (lError) throw new Error(`No se pudieron leer las causas: ${lError.message}`);
+
+  const yaEnTabla = new Set((vencimientos ?? []).map((v) => `${v.causa_id}:${v.fecha}`));
+  const avisosCausa: Aviso[] = (legacy ?? [])
+    .filter((c) => !yaEnTabla.has(`${c.id}:${c.proximo_vencimiento}`))
+    .map((c): Aviso => ({
+      origen: "causa",
+      origenId: c.id,
+      causaId: c.id,
+      caratula: c.caratula,
+      nro_expediente: c.nro_expediente,
+      fecha: c.proximo_vencimiento,
+      hora: null,
+      tipo: c.tipo_vencimiento ?? "Vencimiento",
+      motivo: c.motivo_vencimiento,
+      anticipacion: c.anticipacion_alerta ?? "1 día",
+      propietarioId: c.user_id,
+      colaboradores: c.causa_shares.map((s) => s.shared_with_user_id),
+    }));
+
   const avisos: Aviso[] = [
+    ...avisosCausa,
     ...(vencimientos ?? []).map((v): Aviso => ({
       origen: "vencimiento",
       origenId: v.id,
@@ -166,11 +208,13 @@ export async function enviarAvisos({ dryRun = false } = {}): Promise<ResumenAvis
 
   const { data: previos, error: prevError } = await admin
     .from("avisos_enviados")
-    .select("user_id, origen_tipo, origen_id")
+    .select("user_id, origen_tipo, origen_id, fecha_vencimiento")
     .eq("canal", "email")
     .in("origen_id", avisos.map((a) => a.origenId));
   if (prevError) throw new Error(`No se pudo leer avisos_enviados: ${prevError.message}`);
-  const yaAvisado = new Set((previos ?? []).map((p) => `${p.origen_tipo}:${p.origen_id}:${p.user_id}`));
+  const yaAvisado = new Set(
+    (previos ?? []).map((p) => `${p.origen_tipo}:${p.origen_id}:${p.user_id}:${p.fecha_vencimiento}`),
+  );
 
   const porUsuario = new Map<string, Aviso[]>();
   const usuarios = new Set(avisos.flatMap((a) => [a.propietarioId, ...a.colaboradores]));
@@ -184,7 +228,7 @@ export async function enviarAvisos({ dryRun = false } = {}): Promise<ResumenAvis
       const tieneAcceso = a.propietarioId === userId || a.colaboradores.includes(userId);
       if (!tieneAcceso || a.fecha > limiteAviso(a.anticipacion, hoy, proximoHabil)) continue;
 
-      if (yaAvisado.has(`${a.origen}:${a.origenId}:${userId}`)) {
+      if (yaAvisado.has(`${a.origen}:${a.origenId}:${userId}:${a.fecha}`)) {
         resumen.yaEnviados++;
         continue;
       }
