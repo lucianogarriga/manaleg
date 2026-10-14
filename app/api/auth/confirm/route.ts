@@ -17,6 +17,9 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     const { error } = await supabase.auth.verifyOtp({ type: tipo, token_hash: tokenHash });
     if (!error) return NextResponse.redirect(`${origin}${destino}`);
+    console.error("[auth/confirm] verifyOtp:", error.message);
+  } else {
+    console.error("[auth/confirm] faltan parámetros:", { tieneToken: Boolean(tokenHash), tipo });
   }
 
   return NextResponse.redirect(`${origin}/login?error=enlace`);
