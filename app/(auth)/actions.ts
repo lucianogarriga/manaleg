@@ -80,7 +80,7 @@ export async function solicitarRecuperacion(_prev: FormState, formData: FormData
   const origin = (await headers()).get("origin") ?? "http://localhost:3000";
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/api/auth/callback?next=/nueva-contrasena`,
+    redirectTo: `${origin}/api/auth/confirm?next=/nueva-contrasena`,
   });
 
   if (error && error.message.toLowerCase().includes("rate limit")) {
