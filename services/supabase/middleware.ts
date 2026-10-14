@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_KEY, SUPABASE_URL } from "./config";
 
-const AUTH_PAGES = ["/login", "/register"];
+const AUTH_PAGES = ["/login", "/register", "/recuperar"];
 // /api/cron no tiene sesión de usuario: se protege con CRON_SECRET en la propia ruta
 const PUBLIC_PREFIXES = [...AUTH_PAGES, "/api/auth", "/api/cron", "/api/health", "/legal"];
 

@@ -71,6 +71,42 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
   };
 }
 
+export async function solicitarRecuperacion(_prev: FormState, formData: FormData): Promise<FormState> {
+  const email = String(formData.get("email") ?? "").trim();
+  const values = { email };
+
+  if (!email) return { error: "Ingresá tu email.", values };
+
+  const origin = (await headers()).get("origin") ?? "http://localhost:3000";
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/api/auth/callback?next=/nueva-contrasena`,
+  });
+
+  if (error && error.message.toLowerCase().includes("rate limit")) {
+    return { error: traducirError(error.message), values };
+  }
+
+  return {
+    message: "Si el email está registrado, te enviamos un enlace para cambiar la contraseña.",
+    values,
+  };
+}
+
+export async function cambiarContrasena(_prev: FormState, formData: FormData): Promise<FormState> {
+  const password = String(formData.get("password") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
+
+  if (password.length < 8) return { error: "La contraseña debe tener al menos 8 caracteres." };
+  if (password !== confirm) return { error: "Las contraseñas no coinciden." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { error: traducirError(error.message) };
+
+  redirect("/causas");
+}
+
 export async function logout() {
   const supabase = await createClient();
   await supabase.auth.signOut();
