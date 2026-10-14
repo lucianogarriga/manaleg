@@ -2,17 +2,50 @@ import { createAdminClient } from "@/services/supabase/admin";
 import { escapeHtml, sendEmail } from "@/services/email/resend";
 import { esHabil, siguienteHabil } from "@/utils/diasHabiles";
 import { addDaysISO, formatDate, formatLongDate, todayISO } from "@/utils/formatters";
-import type { TipoAviso } from "@/types";
 
-interface CausaConAviso {
-  id: string;
+type Origen = "vencimiento" | "evento";
+
+interface CausaDeAviso {
   caratula: string;
   nro_expediente: string | null;
-  proximo_vencimiento: string;
-  tipo_vencimiento: TipoAviso | null;
-  motivo_vencimiento: string | null;
+  estado: string;
   user_id: string;
   causa_shares: { shared_with_user_id: string }[];
+}
+
+interface FilaVencimiento {
+  id: string;
+  causa_id: string;
+  tipo: string;
+  fecha: string;
+  motivo: string | null;
+  anticipacion: string;
+  causa: CausaDeAviso;
+}
+
+interface FilaEvento {
+  id: string;
+  causa_id: string;
+  tipo: string;
+  titulo: string;
+  fecha: string;
+  hora: string | null;
+  causa: CausaDeAviso;
+}
+
+interface Aviso {
+  origen: Origen;
+  origenId: string;
+  causaId: string;
+  caratula: string;
+  nro_expediente: string | null;
+  fecha: string;
+  hora: string | null;
+  tipo: string;
+  motivo: string | null;
+  anticipacion: string;
+  propietarioId: string;
+  colaboradores: string[];
 }
 
 interface Destinatario {
@@ -33,12 +66,15 @@ export interface ResumenAvisos {
 
 const HORIZONTE_DIAS = 21; // tope de búsqueda (por si el próximo hábil está lejos: feria judicial)
 
-// Manda por email, a cada usuario con acceso a la causa (titular y colaboradores),
-// las alertas y vencimientos que caen hasta el PRÓXIMO DÍA HÁBIL, contando sus
-// feriados y días inhábiles (nacionales + los que cargó él).
-//   Lunes a jueves → lo de mañana.  Viernes → lo del lunes (o el siguiente hábil).
+const CAUSA_EMBED = "causa:causas!inner(caratula, nro_expediente, estado, user_id, causa_shares(shared_with_user_id))";
+
+// Manda por email, a cada usuario con acceso a la causa (titular y colaboradores), los
+// vencimientos y eventos que le corresponde avisar hoy. Cada aviso se envía una sola vez:
+// se reserva en avisos_enviados antes de mandar el email, y se libera si el envío falla.
+//   Anticipación "1 día": se avisa desde el próximo día hábil del usuario (lunes a jueves → lo de mañana;
+//   viernes → lo del lunes). "3 días" y "1 semana" avisan desde esa cantidad de días antes.
 //   Si hoy no es hábil para el usuario (fin de semana, feriado, feria) no se le manda nada.
-// Se ejecuta de lunes a viernes (cron). Con dryRun=true calcula pero no envía ni registra.
+// Con dryRun=true calcula pero no envía ni registra.
 export async function enviarAvisos({ dryRun = false } = {}): Promise<ResumenAvisos> {
   const hoy = todayISO();
   const resumen: ResumenAvisos = {
@@ -67,53 +103,92 @@ export async function enviarAvisos({ dryRun = false } = {}): Promise<ResumenAvis
   }
   const inhabilesDe = (userId: string): Set<string> => new Set([...globales, ...(personales.get(userId) ?? [])]);
 
-  // Si hoy no es hábil ni para el calendario general, no hay nada que hacer
   if (!esHabil(hoy, globales)) {
     resumen.omitido = "Hoy no es día hábil (fin de semana o feriado): no se envían avisos";
     return resumen;
   }
 
-  const { data: causas, error } = await admin
-    .from("causas")
-    .select(
-      "id, caratula, nro_expediente, proximo_vencimiento, tipo_vencimiento, motivo_vencimiento, user_id, causa_shares(shared_with_user_id)",
-    )
-    .gt("proximo_vencimiento", hoy)
-    .lte("proximo_vencimiento", addDaysISO(hoy, HORIZONTE_DIAS))
-    .neq("estado", "Cerrada")
-    .returns<CausaConAviso[]>();
+  const horizonte = addDaysISO(hoy, HORIZONTE_DIAS);
 
-  if (error) throw new Error(`No se pudieron leer las causas: ${error.message}`);
-  resumen.causasCandidatas = causas.length;
-  if (causas.length === 0) return resumen;
+  const { data: vencimientos, error: vError } = await admin
+    .from("vencimientos")
+    .select(`id, causa_id, tipo, fecha, motivo, anticipacion, ${CAUSA_EMBED}`)
+    .eq("completado", false)
+    .in("tipo", ["Vencimiento", "Audiencia"])
+    .gt("fecha", hoy)
+    .lte("fecha", horizonte)
+    .neq("causa.estado", "Cerrada")
+    .returns<FilaVencimiento[]>();
+  if (vError) throw new Error(`No se pudieron leer los vencimientos: ${vError.message}`);
 
-  // Avisos que ya se mandaron (para no repetirlos)
+  const { data: eventos, error: eError } = await admin
+    .from("eventos")
+    .select(`id, causa_id, tipo, titulo, fecha, hora, ${CAUSA_EMBED}`)
+    .gt("fecha", hoy)
+    .lte("fecha", horizonte)
+    .neq("causa.estado", "Cerrada")
+    .returns<FilaEvento[]>();
+  if (eError) throw new Error(`No se pudieron leer los eventos: ${eError.message}`);
+
+  const avisos: Aviso[] = [
+    ...(vencimientos ?? []).map((v): Aviso => ({
+      origen: "vencimiento",
+      origenId: v.id,
+      causaId: v.causa_id,
+      caratula: v.causa.caratula,
+      nro_expediente: v.causa.nro_expediente,
+      fecha: v.fecha,
+      hora: null,
+      tipo: v.tipo,
+      motivo: v.motivo,
+      anticipacion: v.anticipacion,
+      propietarioId: v.causa.user_id,
+      colaboradores: v.causa.causa_shares.map((s) => s.shared_with_user_id),
+    })),
+    ...(eventos ?? []).map((e): Aviso => ({
+      origen: "evento",
+      origenId: e.id,
+      causaId: e.causa_id,
+      caratula: e.causa.caratula,
+      nro_expediente: e.causa.nro_expediente,
+      fecha: e.fecha,
+      hora: e.hora,
+      tipo: e.tipo,
+      motivo: e.titulo,
+      anticipacion: "1 día",
+      propietarioId: e.causa.user_id,
+      colaboradores: e.causa.causa_shares.map((s) => s.shared_with_user_id),
+    })),
+  ];
+
+  resumen.causasCandidatas = avisos.length;
+  if (avisos.length === 0) return resumen;
+
   const { data: previos, error: prevError } = await admin
     .from("avisos_enviados")
-    .select("causa_id, user_id, fecha_vencimiento")
-    .in("causa_id", causas.map((c) => c.id))
-    .eq("canal", "email");
+    .select("user_id, origen_tipo, origen_id")
+    .eq("canal", "email")
+    .in("origen_id", avisos.map((a) => a.origenId));
   if (prevError) throw new Error(`No se pudo leer avisos_enviados: ${prevError.message}`);
-  const yaAvisado = new Set((previos ?? []).map((p) => `${p.causa_id}:${p.user_id}:${p.fecha_vencimiento}`));
+  const yaAvisado = new Set((previos ?? []).map((p) => `${p.origen_tipo}:${p.origen_id}:${p.user_id}`));
 
-  // usuario → causas a avisar hoy, según el próximo día hábil de ESE usuario
-  const porUsuario = new Map<string, CausaConAviso[]>();
-  const usuarios = new Set(causas.flatMap((c) => [c.user_id, ...c.causa_shares.map((s) => s.shared_with_user_id)]));
+  const porUsuario = new Map<string, Aviso[]>();
+  const usuarios = new Set(avisos.flatMap((a) => [a.propietarioId, ...a.colaboradores]));
 
   for (const userId of usuarios) {
     const inh = inhabilesDe(userId);
-    if (!esHabil(hoy, inh)) continue; // hoy es inhábil para este usuario (ej. feria judicial)
-    const limite = siguienteHabil(hoy, inh);
+    if (!esHabil(hoy, inh)) continue;
+    const proximoHabil = siguienteHabil(hoy, inh);
 
-    for (const c of causas) {
-      const tieneAcceso = c.user_id === userId || c.causa_shares.some((s) => s.shared_with_user_id === userId);
-      if (!tieneAcceso || c.proximo_vencimiento > limite) continue;
+    for (const a of avisos) {
+      const tieneAcceso = a.propietarioId === userId || a.colaboradores.includes(userId);
+      if (!tieneAcceso || a.fecha > limiteAviso(a.anticipacion, hoy, proximoHabil)) continue;
 
-      if (yaAvisado.has(`${c.id}:${userId}:${c.proximo_vencimiento}`)) {
+      if (yaAvisado.has(`${a.origen}:${a.origenId}:${userId}`)) {
         resumen.yaEnviados++;
         continue;
       }
-      porUsuario.set(userId, [...(porUsuario.get(userId) ?? []), c]);
+      porUsuario.set(userId, [...(porUsuario.get(userId) ?? []), a]);
     }
   }
   if (porUsuario.size === 0) return resumen;
@@ -122,18 +197,31 @@ export async function enviarAvisos({ dryRun = false } = {}): Promise<ResumenAvis
     .from("profiles")
     .select("id, email, nombre_completo")
     .in("id", [...porUsuario.keys()])
-    .eq("notificaciones_email", true)   // respeta la preferencia del usuario
+    .eq("notificaciones_email", true)
     .returns<Destinatario[]>();
   if (perfError) throw new Error(`No se pudieron leer los perfiles: ${perfError.message}`);
 
   await Promise.allSettled(
     perfiles.map(async (perfil) => {
-      const pendientes = (porUsuario.get(perfil.id) ?? []).sort((a, b) =>
-        a.proximo_vencimiento.localeCompare(b.proximo_vencimiento),
-      );
+      const pendientes = (porUsuario.get(perfil.id) ?? []).sort((a, b) => a.fecha.localeCompare(b.fecha));
       if (pendientes.length === 0) return;
       if (dryRun) {
         resumen.emailsEnviados += 1;
+        return;
+      }
+
+      const { error: reservaError } = await admin.from("avisos_enviados").insert(
+        pendientes.map((a) => ({
+          causa_id: a.causaId,
+          user_id: perfil.id,
+          fecha_vencimiento: a.fecha,
+          canal: "email",
+          origen_tipo: a.origen,
+          origen_id: a.origenId,
+        })),
+      );
+      if (reservaError) {
+        resumen.errores.push(`No se pudo reservar el aviso: ${reservaError.message}`);
         return;
       }
 
@@ -145,18 +233,16 @@ export async function enviarAvisos({ dryRun = false } = {}): Promise<ResumenAvis
 
       if (sendError) {
         resumen.errores.push(sendError);
-        return; // no se registra: se reintenta en la próxima ejecución
+        const { error: liberarError } = await admin
+          .from("avisos_enviados")
+          .delete()
+          .eq("user_id", perfil.id)
+          .eq("canal", "email")
+          .in("origen_id", pendientes.map((a) => a.origenId));
+        if (liberarError) resumen.errores.push(`No se pudo liberar la reserva: ${liberarError.message}`);
+        return;
       }
 
-      const { error: logError } = await admin.from("avisos_enviados").insert(
-        pendientes.map((c) => ({
-          causa_id: c.id,
-          user_id: perfil.id,
-          fecha_vencimiento: c.proximo_vencimiento,
-          canal: "email",
-        })),
-      );
-      if (logError) resumen.errores.push(`No se pudo registrar el aviso enviado: ${logError.message}`);
       resumen.emailsEnviados += 1;
     }),
   );
@@ -164,48 +250,57 @@ export async function enviarAvisos({ dryRun = false } = {}): Promise<ResumenAvis
   return resumen;
 }
 
+// Hasta cuándo se avisa un aviso, según su anticipación (fechas hasta esa inclusive)
+function limiteAviso(anticipacion: string, hoy: string, proximoHabil: string): string {
+  if (anticipacion === "3 días") return addDaysISO(hoy, 3);
+  if (anticipacion === "1 semana") return addDaysISO(hoy, 7);
+  return proximoHabil;
+}
+
 // "mañana" si es el día siguiente; si no, el día (ej. "el lun 05/10")
-function cuando(fecha: string, hoy: string): string {
-  return fecha === addDaysISO(hoy, 1)
-    ? "mañana"
-    : `el ${formatLongDate(fecha).split(" ").slice(0, 2).join(" ").toLowerCase()} (${formatDate(fecha).slice(0, 5)})`;
+function cuando(fecha: string, hoy: string, hora: string | null): string {
+  const dia =
+    fecha === addDaysISO(hoy, 1)
+      ? "mañana"
+      : `el ${formatLongDate(fecha).split(" ").slice(0, 2).join(" ").toLowerCase()} (${formatDate(fecha).slice(0, 5)})`;
+  return hora ? `${dia} a las ${hora.slice(0, 5)}` : dia;
 }
 
-function armarAsunto(causas: CausaConAviso[], hoy: string): string {
-  if (causas.length === 1) {
-    const c = causas[0];
-    const verbo = c.tipo_vencimiento === "Recordatorio" ? "Recordatorio" : "Vence";
-    return `Manaleg · ${verbo} ${cuando(c.proximo_vencimiento, hoy)}: ${c.caratula}`;
+function armarAsunto(avisos: Aviso[], hoy: string): string {
+  if (avisos.length === 1) {
+    const a = avisos[0];
+    const verbo = a.origen === "evento" ? a.tipo : a.tipo === "Audiencia" ? "Audiencia" : "Vence";
+    return `Manaleg · ${verbo} ${cuando(a.fecha, hoy, a.hora)}: ${a.caratula}`;
   }
-  return `Manaleg · ${causas.length} avisos próximos`;
+  return `Manaleg · ${avisos.length} avisos próximos`;
 }
 
-function armarHtml(perfil: Destinatario, causas: CausaConAviso[], hoy: string): string {
+function armarHtml(perfil: Destinatario, avisos: Aviso[], hoy: string): string {
   const appUrl = process.env.APP_URL;
   const nombre = perfil.nombre_completo ? escapeHtml(perfil.nombre_completo) : null;
   const saludo = nombre ? `Hola, ${nombre}` : "Hola";
-  const resumen = causas.length === 1 ? "un vencimiento" : `${causas.length} vencimientos`;
+  const resumen = avisos.length === 1 ? "un aviso" : `${avisos.length} avisos`;
 
-  const cards = causas
-    .map((c) => {
-      const esAudiencia = c.tipo_vencimiento === "Audiencia";
+  const cards = avisos
+    .map((a) => {
+      const esAudiencia = a.origen === "evento" || a.tipo === "Audiencia";
       const borderColor  = esAudiencia ? "#7C3AED" : "#DC2626";
       const bgColor      = esAudiencia ? "#F5F3FF"  : "#FFFAFA";
       const wrapBorder   = esAudiencia ? "#DDD6FE"  : "#FEE2E2";
       const labelBg      = esAudiencia ? "#EDE9FE"  : "#FEE2E2";
       const labelColor   = esAudiencia ? "#6D28D9"  : "#B91C1C";
-      const chipText     = esAudiencia ? "AUDIENCIA" : "VENCIMIENTO";
-      const tipoTexto    = esAudiencia ? "Audiencia" : "Vence";
-      const fechaTexto   = escapeHtml(cuando(c.proximo_vencimiento, hoy));
-      const motivo       = c.motivo_vencimiento ? ` · ${escapeHtml(c.motivo_vencimiento)}` : "";
-      const expte        = c.nro_expediente
-        ? `<div style="font-family:monospace;font-size:11px;color:#94A3B8;margin-bottom:6px">${escapeHtml(c.nro_expediente)}</div>`
+      const chipText     = a.origen === "evento" ? a.tipo.toUpperCase() : esAudiencia ? "AUDIENCIA" : "VENCIMIENTO";
+      const tipoTexto    = a.origen === "evento" ? a.tipo : esAudiencia ? "Audiencia" : "Vence";
+      const fechaTexto   = escapeHtml(cuando(a.fecha, hoy, a.hora));
+      const motivo       = a.motivo ? ` · ${escapeHtml(a.motivo)}` : "";
+      const expte        = a.nro_expediente
+        ? `<div style="font-family:monospace;font-size:11px;color:#94A3B8;margin-bottom:6px">${escapeHtml(a.nro_expediente)}</div>`
         : "";
       return `
         <div style="border:1px solid ${wrapBorder};border-left:4px solid ${borderColor};border-radius:8px;padding:14px 16px;margin-bottom:10px;background:${bgColor}">
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
             <td style="vertical-align:top">
-              <div style="font-size:14px;font-weight:700;color:#0F172A;margin-bottom:3px;line-height:1.3">${escapeHtml(c.caratula)}</div>
+              <div style="font-size:14px;font-weight:700;color:#0F172A;margin-bottom:3px;line-height:1.3">${escapeHtml(a.caratula)}</div>
               ${expte}
               <div style="font-size:13px;color:${labelColor};font-weight:600">${tipoTexto} ${fechaTexto}${motivo}</div>
             </td>
