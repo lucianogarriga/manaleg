@@ -133,6 +133,11 @@ export default function LoginPage() {
                 : `Te quedan ${restantes} intentos.`}
             </p>
           )}
+          <p className="text-right text-[12.5px]">
+            <Link href="/recuperar" className="font-semibold hover:underline" style={{ color: "#0284c7" }}>
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </p>
         </div>
 
         <SubmitButton pending={pending} pendingText="Ingresando…">

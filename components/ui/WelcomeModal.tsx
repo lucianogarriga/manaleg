@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import { markWelcomeSeen } from "@/app/(app)/causas/welcomeAction";
+import { useCausasStore } from "@/store/causasStore";
 
 export default function WelcomeModal() {
+  const router = useRouter();
   const [open, setOpen] = useState(true);
   const [visible, setVisible] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -54,6 +57,12 @@ export default function WelcomeModal() {
     setTimeout(() => setOpen(false), 200);
     localStorage.setItem("manaleg_fab_spotlight", "1");
     await markWelcomeSeen();
+  };
+
+  const handleCargarPrimeraCausa = () => {
+    useCausasStore.getState().openCreate();
+    handleClose();
+    router.push("/causas");
   };
 
   if (!open) return null;
@@ -121,7 +130,7 @@ export default function WelcomeModal() {
         <div className="flex justify-center px-6 pb-7 pt-3">
           <button
             type="button"
-            onClick={handleClose}
+            onClick={handleCargarPrimeraCausa}
             className="cursor-pointer rounded-[7px] border border-blue bg-blue px-6 py-[8px] text-[13.5px] font-semibold text-white transition-all hover:bg-blue/90 active:scale-[.98]"
           >
             Cargar mi primera causa

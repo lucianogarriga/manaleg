@@ -28,7 +28,7 @@ export async function shareCausa(_prev: FormState, formData: FormData): Promise<
   // Usa función SECURITY DEFINER para buscar por email sin exponer RLS
   const { data: colega } = await supabase
     .rpc("buscar_perfil_por_email", { p_email: email })
-    .maybeSingle<{ id: string; nombre_completo: string | null; email: string }>();
+    .maybeSingle<{ id: string; nombre_completo: string | null }>();
 
   if (!colega) {
     return { error: "No hay ningún usuario registrado con ese email. Pedile que primero cree su cuenta en MANALEG." };
@@ -40,12 +40,12 @@ export async function shareCausa(_prev: FormState, formData: FormData): Promise<
     .insert({ causa_id: causaId, shared_with_user_id: colega.id });
 
   if (error) {
-    if (error.code === "23505") return { error: `${colega.nombre_completo ?? colega.email} ya tiene acceso a esta causa.` };
+    if (error.code === "23505") return { error: `${colega.nombre_completo ?? email} ya tiene acceso a esta causa.` };
     return { error: `No se pudo compartir la causa: ${error.message}` };
   }
 
   revalidatePath("/", "layout");
-  return { message: `Causa compartida con ${colega.nombre_completo ?? colega.email}.` };
+  return { message: `Causa compartida con ${colega.nombre_completo ?? email}.` };
 }
 
 export async function revokeAccess(shareId: string): Promise<FormState> {
