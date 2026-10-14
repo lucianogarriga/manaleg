@@ -77,7 +77,7 @@ export async function solicitarRecuperacion(_prev: FormState, formData: FormData
 
   if (!email) return { error: "Ingresá tu email.", values };
 
-  const origin = (await headers()).get("origin") ?? "http://localhost:3000";
+  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? (await headers()).get("origin") ?? "http://localhost:3000";
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${origin}/api/auth/confirm?next=/nueva-contrasena`,
