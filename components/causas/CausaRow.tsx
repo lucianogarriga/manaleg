@@ -13,15 +13,18 @@ import {
 } from "@/utils/urgencyHelpers";
 import { VIA_LABELS } from "@/utils/constants";
 import type { CausaConRelaciones } from "@/types";
+import type { PresenceUser } from "@/services/presence/canalesCausa";
+import AvataresEnLinea from "./AvataresEnLinea";
 
 interface CausaRowProps {
   causa: CausaConRelaciones;
   active: boolean;
   onSelect: () => void;
   wide?: boolean;
+  enLinea?: PresenceUser[];
 }
 
-export default function CausaRow({ causa, active, onSelect, wide = false }: CausaRowProps) {
+export default function CausaRow({ causa, active, onSelect, wide = false, enLinea = [] }: CausaRowProps) {
   const [hovered, setHovered] = useState(false);
   const cerrada = causa.estado === "Cerrada";
   const urgency = getVisualUrgency(causa.proximo_vencimiento, causa.tipo_vencimiento, cerrada);
@@ -70,6 +73,7 @@ export default function CausaRow({ causa, active, onSelect, wide = false }: Caus
                 {causa.tipo_juicio}
               </span>
             )}
+            <AvataresEnLinea users={enLinea} />
           </div>
         </div>
 
@@ -117,6 +121,7 @@ export default function CausaRow({ causa, active, onSelect, wide = false }: Caus
         {causa.tipo_juicio && (
           <span className="text-[11px] text-muted">{causa.tipo_juicio}</span>
         )}
+        <AvataresEnLinea users={enLinea} />
       </div>
       <div className="flex items-center gap-[5px]">
         <span className={`h-[6px] w-[6px] shrink-0 rounded-full ${URGENCY_DOT[urgency]}`} />

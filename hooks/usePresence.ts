@@ -1,17 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/services/supabase/client";
+import { suscribirPresencia, type PresenceUser } from "@/services/presence/canalesCausa";
 import { getInitials } from "@/utils/formatters";
 
-export interface PresenceUser {
-  user_id: string;
-  nombre: string;
-  initials: string;
-}
+export type { PresenceUser };
 
-// Conecta al canal de presencia de una causa y devuelve la lista
-// de otros usuarios que la tienen abierta en este momento.
+// Se anuncia en la causa y devuelve quiénes más la tienen abierta.
 export function usePresence(
   causaId: string | null,
   currentUserId: string,
@@ -21,37 +16,30 @@ export function usePresence(
 
   useEffect(() => {
     if (!causaId || !currentUserId) return;
-
-    const supabase = createClient();
-    const myPayload: PresenceUser = {
+    const yo: PresenceUser = {
       user_id: currentUserId,
       nombre: currentNombre ?? "Usuario",
       initials: getInitials(currentNombre, currentUserId[0]?.toUpperCase()),
     };
-
-    const channel = supabase.channel(`causa-presence:${causaId}`, {
-      config: { private: true, presence: { key: currentUserId } },
-    });
-
-    channel.on("presence", { event: "sync" }, () => {
-      const state = channel.presenceState<PresenceUser>();
-      const others = Object.entries(state)
-        .filter(([key]) => key !== currentUserId)
-        .map(([, arr]) => arr[0])
-        .filter(Boolean) as PresenceUser[];
-      setOnline(others);
-    });
-
-    channel.subscribe(async (status) => {
-      if (status === "SUBSCRIBED") {
-        await channel.track(myPayload);
-      }
-    });
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return suscribirPresencia(causaId, currentUserId, setOnline, yo);
   }, [causaId, currentUserId, currentNombre]);
 
   return online;
+}
+
+// Solo escucha: para el listado, que muestra quién tiene abierta cada causa.
+export function useEnLineaPorCausa(causaIds: string[], currentUserId: string): Record<string, PresenceUser[]> {
+  const [mapa, setMapa] = useState<Record<string, PresenceUser[]>>({});
+  const clave = causaIds.join(",");
+
+  useEffect(() => {
+    if (!currentUserId || causaIds.length === 0) return;
+    const cancelar = causaIds.map((id) =>
+      suscribirPresencia(id, currentUserId, (otros) => setMapa((prev) => ({ ...prev, [id]: otros }))),
+    );
+    return () => cancelar.forEach((f) => f());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clave, currentUserId]);
+
+  return mapa;
 }
