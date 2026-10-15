@@ -30,7 +30,7 @@ export function usePresence(
     };
 
     const channel = supabase.channel(`causa-presence:${causaId}`, {
-      config: { presence: { key: currentUserId } },
+      config: { private: true, presence: { key: currentUserId } },
     });
 
     channel.on("presence", { event: "sync" }, () => {

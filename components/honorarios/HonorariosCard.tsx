@@ -10,6 +10,7 @@ import { useHonorarios } from "@/hooks/useCausaData";
 import { useUIStore } from "@/store/uiStore";
 import type { HonorarioConPagos } from "@/types";
 import { formatCurrency, formatDate } from "@/utils/formatters";
+import { safeHref } from "@/utils/urls";
 import { monedasPresentes, totalesPorMoneda, type MonedaHonorario } from "@/utils/honorarios";
 import AnularForm from "./AnularForm";
 import HonorarioForm from "./HonorarioForm";
@@ -155,7 +156,7 @@ export default function HonorariosCard({ causaId, naked = false }: { causaId: st
                   {p.anulado && <span className="ml-2 text-[11px] italic no-underline">anulado: {p.motivo_anulacion}</span>}
                 </span>
                 {p.comprobante_drive && (
-                  <a href={p.comprobante_drive} target="_blank" rel="noopener noreferrer" aria-label="Abrir comprobante" className="flex text-muted hover:text-blue">
+                  <a href={safeHref(p.comprobante_drive)} target="_blank" rel="noopener noreferrer" aria-label="Abrir comprobante" className="flex text-muted hover:text-blue">
                     <ExternalLink size={11} />
                   </a>
                 )}
