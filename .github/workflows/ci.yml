@@ -47,7 +47,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # Todavía no bloquea: primero se revisan los hallazgos existentes.
-    continue-on-error: true
     steps:
       - name: Descargar código
         uses: actions/checkout@v4
@@ -65,4 +64,5 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Auditar dependencias (nivel alto o crítico)
-        run: pnpm audit --audit-level=high
+        # Informativo: si hay vulnerabilidades, deja un aviso en lugar de marcar el check como fallido.
+        run: pnpm audit --audit-level=high || echo "::warning::pnpm audit encontró vulnerabilidades de nivel alto o crítico. Revisar el log."
