@@ -83,19 +83,19 @@ export function useGastos(causaId: string) {
   );
 }
 
-// Una causa tiene un solo acuerdo de honorarios en la UI (el más antiguo)
-export function useHonorario(causaId: string) {
-  const { data, ...rest } = useCausaQuery<HonorarioConPagos[]>(causaId, [], (supabase, id) =>
+const EMPTY_HONORARIOS: HonorarioConPagos[] = [];
+
+// Todos los honorarios de la causa, cada uno con sus pagos
+export function useHonorarios(causaId: string) {
+  return useCausaQuery<HonorarioConPagos[]>(causaId, EMPTY_HONORARIOS, (supabase, id) =>
     supabase
       .from("honorarios")
       .select("*, pagos(*, registrado_por:profiles!pagos_registrado_por_id_fkey(id, nombre_completo, email))")
       .eq("causa_id", id)
       .order("created_at", { ascending: true })
       .order("fecha_pago", { referencedTable: "pagos", ascending: false })
-      .limit(1)
       .returns<HonorarioConPagos[]>(),
   );
-  return { ...rest, honorario: data[0] ?? null };
 }
 
 const EMPTY_VENCIMIENTOS: Vencimiento[] = [];

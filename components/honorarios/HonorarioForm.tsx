@@ -7,6 +7,7 @@ import { FormSection, TextField } from "@/components/ui/FormControls";
 import Modal from "@/components/ui/Modal";
 import ModalFooter from "@/components/ui/ModalFooter";
 import { useFormAction } from "@/hooks/useFormAction";
+import { CONCEPTOS_HONORARIO } from "@/utils/honorarios";
 import type { Honorario } from "@/types";
 
 interface HonorarioFormProps {
@@ -16,15 +17,37 @@ interface HonorarioFormProps {
   onSaved: (message: string) => void;
 }
 
+const CONCEPTOS_CON_OTRO: readonly string[] = CONCEPTOS_HONORARIO;
+const CUOTAS_SUGERIDAS = ["3", "6", "12"];
+
+function Opcion({ activo, onClick, children }: { activo: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-[6px] border px-4 py-[6px] text-[13px] font-semibold transition-colors ${
+        activo ? "border-blue bg-blue text-white" : "border-border bg-bg text-sub hover:border-blue"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
 export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: HonorarioFormProps) {
   const { state, pending, onSubmit } = useFormAction(saveHonorario, (s) => onSaved(s.message ?? "Guardado."));
   const [moneda, setMoneda] = useState<"ARS" | "USD">(honorario?.moneda ?? "ARS");
   const [consultaCobrada, setConsultaCobrada] = useState(honorario?.consulta_cobrada ?? false);
+  const conceptoInicial = honorario && CONCEPTOS_CON_OTRO.includes(honorario.concepto) ? honorario.concepto : honorario ? "Otro" : "Consulta";
+  const [concepto, setConcepto] = useState(conceptoInicial);
+  const [periodicidad, setPeriodicidad] = useState<"unico" | "mensual">(honorario?.periodicidad ?? "unico");
+  const cuotasInicial = honorario?.cuotas_mensuales ? String(honorario.cuotas_mensuales) : "indefinido";
+  const [cuotas, setCuotas] = useState(cuotasInicial);
 
   return (
     <Modal
       open
-      title={honorario ? "Editar honorarios" : "Definir honorarios"}
+      title={honorario ? "Editar honorario" : "Nuevo honorario"}
       onClose={onClose}
       footer={<ModalFooter formId="honorario-form" pending={pending} submitLabel="Guardar" onCancel={onClose} />}
     >
@@ -33,36 +56,77 @@ export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: 
         {honorario && <input type="hidden" name="id" value={honorario.id} />}
         <input type="hidden" name="moneda" value={moneda} />
         <input type="hidden" name="consulta_cobrada" value={String(consultaCobrada)} />
+        <input type="hidden" name="periodicidad" value={periodicidad} />
+        <input type="hidden" name="cuotas_mensuales" value={periodicidad === "mensual" && cuotas !== "indefinido" ? cuotas : ""} />
         {state.error && (
           <div className="px-4 pt-3">
             <FormAlert state={state} />
           </div>
         )}
 
-        <FormSection title="Acuerdo de honorarios">
-          {/* Moneda selector */}
+        <FormSection title="Concepto">
+          <div>
+            <label className="mb-1 block text-[12px] font-semibold text-sub">Tipo de honorario</label>
+            <div className="flex flex-wrap gap-2">
+              {CONCEPTOS_HONORARIO.map((c) => (
+                <Opcion key={c} activo={concepto === c} onClick={() => setConcepto(c)}>
+                  {c}
+                </Opcion>
+              ))}
+            </div>
+            <input type="hidden" name="concepto" value={concepto} />
+          </div>
+          {concepto === "Otro" && (
+            <TextField
+              label="Nombre del concepto"
+              name="concepto_otro"
+              required
+              maxLength={80}
+              defaultValue={honorario && !CONCEPTOS_CON_OTRO.includes(honorario.concepto) ? honorario.concepto : ""}
+              placeholder="Ej: Mediación, Peritaje"
+            />
+          )}
+        </FormSection>
+
+        <FormSection title="Acuerdo">
           <div>
             <label className="mb-1 block text-[12px] font-semibold text-sub">Moneda</label>
             <div className="flex gap-2">
               {(["ARS", "USD"] as const).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setMoneda(m)}
-                  className={`rounded-[6px] border px-4 py-[6px] text-[13px] font-semibold transition-colors ${
-                    moneda === m
-                      ? "border-blue bg-blue text-white"
-                      : "border-border bg-bg text-sub hover:border-blue"
-                  }`}
-                >
+                <Opcion key={m} activo={moneda === m} onClick={() => setMoneda(m)}>
                   {m}
-                </button>
+                </Opcion>
               ))}
             </div>
           </div>
 
+          <div>
+            <label className="mb-1 block text-[12px] font-semibold text-sub">Periodicidad</label>
+            <div className="flex gap-2">
+              <Opcion activo={periodicidad === "unico"} onClick={() => setPeriodicidad("unico")}>
+                Pago único / total
+              </Opcion>
+              <Opcion activo={periodicidad === "mensual"} onClick={() => setPeriodicidad("mensual")}>
+                Mensual
+              </Opcion>
+            </div>
+          </div>
+
+          {periodicidad === "mensual" && (
+            <div>
+              <label className="mb-1 block text-[12px] font-semibold text-sub">Cantidad de cuotas</label>
+              <div className="flex flex-wrap gap-2">
+                {["indefinido", ...CUOTAS_SUGERIDAS].map((c) => (
+                  <Opcion key={c} activo={cuotas === c} onClick={() => setCuotas(c)}>
+                    {c === "indefinido" ? "Indefinido" : c}
+                  </Opcion>
+                ))}
+              </div>
+            </div>
+          )}
+
           <TextField
-            label={`Monto acordado (${moneda})`}
+            label={periodicidad === "mensual" ? `Monto mensual (${moneda})` : `Monto acordado (${moneda})`}
             name="monto_acordado"
             inputMode="decimal"
             required
@@ -70,13 +134,15 @@ export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: 
             defaultValue={honorario?.monto_acordado ?? ""}
             placeholder={moneda === "USD" ? "5000" : "840000"}
           />
-          <TextField
-            label="Porcentaje (%)"
-            name="porcentaje"
-            inputMode="decimal"
-            defaultValue={honorario?.porcentaje ?? ""}
-            placeholder="Opcional"
-          />
+          {periodicidad === "unico" && (
+            <TextField
+              label="Porcentaje (%)"
+              name="porcentaje"
+              inputMode="decimal"
+              defaultValue={honorario?.porcentaje ?? ""}
+              placeholder="Opcional"
+            />
+          )}
           <TextField
             label={`Monto adicional fijo (${moneda})`}
             name="monto_adicional"
@@ -91,28 +157,12 @@ export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: 
           <div>
             <label className="mb-1 block text-[12px] font-semibold text-sub">¿Se cobró consulta?</label>
             <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setConsultaCobrada(true)}
-                className={`rounded-[6px] border px-4 py-[6px] text-[13px] font-semibold transition-colors ${
-                  consultaCobrada
-                    ? "border-blue bg-blue text-white"
-                    : "border-border bg-bg text-sub hover:border-blue"
-                }`}
-              >
+              <Opcion activo={consultaCobrada} onClick={() => setConsultaCobrada(true)}>
                 Sí
-              </button>
-              <button
-                type="button"
-                onClick={() => setConsultaCobrada(false)}
-                className={`rounded-[6px] border px-4 py-[6px] text-[13px] font-semibold transition-colors ${
-                  !consultaCobrada
-                    ? "border-blue bg-blue text-white"
-                    : "border-border bg-bg text-sub hover:border-blue"
-                }`}
-              >
+              </Opcion>
+              <Opcion activo={!consultaCobrada} onClick={() => setConsultaCobrada(false)}>
                 No
-              </button>
+              </Opcion>
             </div>
           </div>
           {consultaCobrada && (
