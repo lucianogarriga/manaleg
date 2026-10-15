@@ -17,7 +17,8 @@ interface TotalFila {
   saldo: number;
 }
 
-const PAGE_SIZE = 30;
+const PAGE_SIZE = 10;
+const MAX_LISTADOS = 50; // la lista muestra hasta 50 honorarios; los totales salen de la base sobre todos
 
 export default async function HonorariosPage({ searchParams }: { searchParams: Promise<{ pagina?: string }> }) {
   const { pagina: paginaRaw } = await searchParams;
@@ -39,6 +40,7 @@ export default async function HonorariosPage({ searchParams }: { searchParams: P
   if (error) throw new Error(`No se pudieron cargar los honorarios: ${error.message}`);
 
   const total = count ?? 0;
+  const listados = Math.min(total, MAX_LISTADOS);
   if (total === 0) {
     return (
       <EmptyState
@@ -49,7 +51,7 @@ export default async function HonorariosPage({ searchParams }: { searchParams: P
     );
   }
 
-  const totalPaginas = Math.ceil(total / PAGE_SIZE);
+  const totalPaginas = Math.ceil(listados / PAGE_SIZE);
   return (
     <div className="mx-auto max-w-[900px] p-3">
       {((totalesData ?? []) as TotalFila[]).map((t) => {
@@ -74,7 +76,7 @@ export default async function HonorariosPage({ searchParams }: { searchParams: P
 
       <div className="fade-in-up mt-3 overflow-hidden rounded-[7px] border border-border bg-card" style={{ animationDelay: "240ms" }}>
         <div className="border-b border-border px-[13px] py-[9px] text-[12px] font-bold tracking-[.4px] text-sub uppercase">
-          Honorarios por causa ({total})
+          Honorarios{total > MAX_LISTADOS ? ` (mostrando ${listados} de ${total})` : ` (${total})`}
         </div>
         {filasDePagina(data ?? [])}
       </div>
