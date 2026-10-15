@@ -97,8 +97,6 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
   const fechaPacto = text(formData, "fecha_pacto");
   const moneda = text(formData, "moneda") === "USD" ? "USD" : "ARS";
   const montoAdicionalRaw = text(formData, "monto_adicional");
-  const consultaCobrada = formData.get("consulta_cobrada") === "true";
-  const montoConsultaRaw = text(formData, "monto_consulta");
   const notasHonorarios = text(formData, "notas_honorarios") || null;
   const conceptoElegido = text(formData, "concepto");
   const concepto = conceptoElegido === "Otro" ? text(formData, "concepto_otro") : conceptoElegido;
@@ -133,13 +131,6 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
     monto_adicional = v;
   }
 
-  let monto_consulta: number | null = null;
-  if (consultaCobrada && montoConsultaRaw) {
-    const v = parseMonto(montoConsultaRaw);
-    if (v === "invalid" || (v !== null && v < 0)) return { error: "El monto de consulta no es válido." };
-    monto_consulta = v;
-  }
-
   const values = {
     concepto,
     periodicidad,
@@ -149,8 +140,6 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
     fecha_pacto: fechaPacto,
     moneda,
     monto_adicional,
-    consulta_cobrada: consultaCobrada,
-    monto_consulta: consultaCobrada ? monto_consulta : null,
     notas_honorarios: notasHonorarios,
   };
   const supabase = await createClient();

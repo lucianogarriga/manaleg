@@ -37,7 +37,6 @@ function Opcion({ activo, onClick, children }: { activo: boolean; onClick: () =>
 export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: HonorarioFormProps) {
   const { state, pending, onSubmit } = useFormAction(saveHonorario, (s) => onSaved(s.message ?? "Guardado."));
   const [moneda, setMoneda] = useState<"ARS" | "USD">(honorario?.moneda ?? "ARS");
-  const [consultaCobrada, setConsultaCobrada] = useState(honorario?.consulta_cobrada ?? false);
   const conceptoInicial = honorario && CONCEPTOS_CON_OTRO.includes(honorario.concepto) ? honorario.concepto : honorario ? "Otro" : "Consulta";
   const [concepto, setConcepto] = useState(conceptoInicial);
   const [periodicidad, setPeriodicidad] = useState<"unico" | "mensual">(honorario?.periodicidad ?? "unico");
@@ -55,7 +54,6 @@ export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: 
         <input type="hidden" name="causa_id" value={causaId} />
         {honorario && <input type="hidden" name="id" value={honorario.id} />}
         <input type="hidden" name="moneda" value={moneda} />
-        <input type="hidden" name="consulta_cobrada" value={String(consultaCobrada)} />
         <input type="hidden" name="periodicidad" value={periodicidad} />
         <input type="hidden" name="cuotas_mensuales" value={periodicidad === "mensual" && cuotas !== "indefinido" ? cuotas : ""} />
         {state.error && (
@@ -151,29 +149,6 @@ export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: 
             placeholder="Opcional"
           />
           <TextField label="Fecha del pacto" name="fecha_pacto" type="date" defaultValue={honorario?.fecha_pacto ?? ""} />
-        </FormSection>
-
-        <FormSection title="Consulta previa">
-          <div>
-            <label className="mb-1 block text-[12px] font-semibold text-sub">¿Se cobró consulta?</label>
-            <div className="flex gap-2">
-              <Opcion activo={consultaCobrada} onClick={() => setConsultaCobrada(true)}>
-                Sí
-              </Opcion>
-              <Opcion activo={!consultaCobrada} onClick={() => setConsultaCobrada(false)}>
-                No
-              </Opcion>
-            </div>
-          </div>
-          {consultaCobrada && (
-            <TextField
-              label={`Monto consulta (${moneda})`}
-              name="monto_consulta"
-              inputMode="decimal"
-              defaultValue={honorario?.monto_consulta ?? ""}
-              placeholder={moneda === "USD" ? "150" : "30000"}
-            />
-          )}
         </FormSection>
 
         <FormSection title="Notas / condiciones">
