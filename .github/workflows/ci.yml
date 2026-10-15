@@ -1,0 +1,68 @@
+name: CI
+
+# Se ejecuta en cada PR hacia main o staging, y en cada subida a esas ramas.
+on:
+  pull_request:
+    branches: [main, staging]
+  push:
+    branches: [main, staging]
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    name: Typecheck y build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Valores de prueba: el build no se conecta a Supabase, solo necesita que existan.
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Instalar pnpm (versión de package.json)
+        uses: pnpm/action-setup@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Verificar tipos (tsc)
+        run: pnpm exec tsc --noEmit
+
+      - name: Build de producción
+        run: pnpm build
+
+  auditoria:
+    name: Dependencias vulnerables (informativo)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Todavía no bloquea: primero se revisan los hallazgos existentes.
+    continue-on-error: true
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Instalar pnpm (versión de package.json)
+        uses: pnpm/action-setup@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Auditar dependencias (nivel alto o crítico)
+        run: pnpm audit --audit-level=high
