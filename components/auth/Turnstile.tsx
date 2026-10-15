@@ -7,6 +7,7 @@ declare global {
     turnstile?: {
       render: (el: HTMLElement, opts: { sitekey: string; callback: (token: string) => void; "expired-callback": () => void; "error-callback": () => void }) => string;
       reset: (widgetId?: string) => void;
+      remove?: (widgetId?: string) => void;
     };
   }
 }
@@ -15,8 +16,14 @@ const SCRIPT_URL = "https://challenges.cloudflare.com/turnstile/v0/api.js?render
 
 // CAPTCHA de Cloudflare Turnstile. Sin NEXT_PUBLIC_TURNSTILE_SITE_KEY no muestra nada.
 // El token viaja en el campo oculto "captcha_token" del formulario que lo contiene.
+// Si la clave no tiene formato de Cloudflare (p. ej. un comando pegado por error), no se muestra el widget.
+const SITE_KEY_RAW = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+const siteKey = SITE_KEY_RAW && /^0x[A-Za-z0-9_-]+$/.test(SITE_KEY_RAW) ? SITE_KEY_RAW : undefined;
+
 export default function Turnstile() {
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  if (SITE_KEY_RAW && !siteKey) {
+    console.error("[Turnstile] NEXT_PUBLIC_TURNSTILE_SITE_KEY no tiene formato válido; el captcha no se muestra.");
+  }
   const contenedor = useRef<HTMLDivElement>(null);
   const tokenInput = useRef<HTMLInputElement>(null);
 
@@ -24,20 +31,25 @@ export default function Turnstile() {
     if (!siteKey || !contenedor.current) return;
     let widgetId: string | undefined;
 
+    // Si el CAPTCHA falla, el formulario sigue funcionando (sin token). Nunca debe tirar la página.
     const renderizar = () => {
       if (!window.turnstile || !contenedor.current) return;
-      widgetId = window.turnstile.render(contenedor.current, {
-        sitekey: siteKey,
-        callback: (token) => {
-          if (tokenInput.current) tokenInput.current.value = token;
-        },
-        "expired-callback": () => {
-          if (tokenInput.current) tokenInput.current.value = "";
-        },
-        "error-callback": () => {
-          if (tokenInput.current) tokenInput.current.value = "";
-        },
-      });
+      try {
+        widgetId = window.turnstile.render(contenedor.current, {
+          sitekey: siteKey,
+          callback: (token) => {
+            if (tokenInput.current) tokenInput.current.value = token;
+          },
+          "expired-callback": () => {
+            if (tokenInput.current) tokenInput.current.value = "";
+          },
+          "error-callback": () => {
+            if (tokenInput.current) tokenInput.current.value = "";
+          },
+        });
+      } catch (err) {
+        console.error("[Turnstile] no se pudo renderizar", err);
+      }
     };
 
     if (window.turnstile) {
@@ -54,8 +66,16 @@ export default function Turnstile() {
       return () => script?.removeEventListener("load", renderizar);
     }
 
+    // Al cambiar de página el widget se quita; un error acá no debe romper la navegación
     return () => {
-      if (widgetId && window.turnstile) window.turnstile.reset(widgetId);
+      try {
+        if (widgetId && window.turnstile) {
+          if (window.turnstile.remove) window.turnstile.remove(widgetId);
+          else window.turnstile.reset(widgetId);
+        }
+      } catch (err) {
+        console.error("[Turnstile] error al limpiar el widget", err);
+      }
     };
   }, [siteKey]);
 
