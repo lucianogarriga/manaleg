@@ -8,12 +8,12 @@ Tabla `planes` con una fila por plan. Los límites viven ahí para poder cambiar
 
 | Plan | Adjuntos por archivo | Adjuntos por causa | Total por usuario |
 |---|---|---|---|
-| FREE | 5 MB | sin adjuntos (0 MB) | 0 MB |
-| Individual | 5 MB | 50 MB | 100 MB |
-| PRO | 5 MB | 50 MB | 1 GB |
-| FULL | 5 MB | 50 MB | 3 GB |
+| FREE | 5 MB | 10 MB | 10 MB |
+| Individual | 5 MB | 50 MB | 200 MB |
+| PRO | 5 MB | 100 MB | 1 GB |
+| FULL | 5 MB | 100 MB | 3 GB |
 
-Valores de referencia para revisar en la escala comercial.
+Valores de referencia para revisar en la escala comercial. Por causa en FREE se tomó 10 MB (igual al total): es un supuesto a confirmar.
 
 ## Adjuntos
 
