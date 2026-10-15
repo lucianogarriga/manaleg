@@ -15,7 +15,7 @@ export default function NuevaContrasenaPage() {
       <div className="mb-2">
         <h1 className="text-[24px] font-bold" style={{ color: "#0f172a" }}>Nueva contraseña</h1>
         <p className="mt-1 text-[13.5px]" style={{ color: "#94a3b8" }}>
-          Elegí una contraseña de al menos 8 caracteres.
+          Mínimo 10 caracteres, con letras y números.
         </p>
       </div>
 

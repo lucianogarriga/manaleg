@@ -5,6 +5,12 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/services/supabase/server";
 import type { FormState } from "@/types";
 import { dentroDelLimite, ipCliente } from "@/services/security/limites";
+import { validarPassword } from "@/utils/password";
+
+// Token del CAPTCHA (Turnstile). Undefined si el widget no está activo.
+function captcha(formData: FormData): string | undefined {
+  return String(formData.get("captcha_token") ?? "") || undefined;
+}
 
 function traducirError(message: string): string {
   if (message.includes("Invalid login credentials")) return "Email o contraseña incorrectos.";
@@ -30,7 +36,7 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
     return { error: "Demasiados intentos. Esperá unos minutos y volvé a probar.", values };
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken: captcha(formData) } });
 
   if (error) return { error: traducirError(error.message), values };
 
@@ -47,8 +53,8 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
   const values = { nombre, email };
 
   if (!nombre || !email || !password) return { error: "Completá todos los campos.", values };
-  if (password.length < 8)
-    return { error: "La contraseña debe tener al menos 8 caracteres.", values };
+  const errorPassword = validarPassword(password);
+  if (errorPassword) return { error: errorPassword, values };
   if (password !== confirm) return { error: "Las contraseñas no coinciden.", values };
   if (tyc !== "on") return { error: "Debés aceptar los Términos y Condiciones.", values };
 
@@ -65,6 +71,7 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
         nombre_completo: nombre,
       },
       emailRedirectTo: `${origin}/api/auth/callback`,
+      captchaToken: captcha(formData),
     },
   });
 
@@ -88,6 +95,7 @@ export async function solicitarRecuperacion(_prev: FormState, formData: FormData
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${origin}/api/auth/confirm?next=/nueva-contrasena`,
+    captchaToken: captcha(formData),
   });
 
   if (error && error.message.toLowerCase().includes("rate limit")) {
@@ -104,7 +112,8 @@ export async function cambiarContrasena(_prev: FormState, formData: FormData): P
   const password = String(formData.get("password") ?? "");
   const confirm = String(formData.get("confirm") ?? "");
 
-  if (password.length < 8) return { error: "La contraseña debe tener al menos 8 caracteres." };
+  const errorPassword = validarPassword(password);
+  if (errorPassword) return { error: errorPassword };
   if (password !== confirm) return { error: "Las contraseñas no coinciden." };
 
   const supabase = await createClient();

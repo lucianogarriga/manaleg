@@ -7,6 +7,7 @@ import { solicitarRecuperacion } from "../actions";
 import AuthField from "@/components/auth/AuthField";
 import FormAlert from "@/components/auth/FormAlert";
 import SubmitButton from "@/components/auth/SubmitButton";
+import Turnstile from "@/components/auth/Turnstile";
 
 export default function RecuperarPage() {
   const [state, action, pending] = useActionState(solicitarRecuperacion, {});
@@ -33,6 +34,7 @@ export default function RecuperarPage() {
         required
       />
 
+      <Turnstile />
       <SubmitButton pending={pending} pendingText="Enviando…">
         Enviar enlace
       </SubmitButton>

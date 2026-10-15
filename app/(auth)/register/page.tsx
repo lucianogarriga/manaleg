@@ -8,7 +8,9 @@ import { register } from "../actions";
 import AuthField from "@/components/auth/AuthField";
 import FormAlert from "@/components/auth/FormAlert";
 import SubmitButton from "@/components/auth/SubmitButton";
+import Turnstile from "@/components/auth/Turnstile";
 import LegalModal from "@/components/ui/LegalModal";
+import { validarPassword } from "@/utils/password";
 
 export default function RegisterPage() {
   const [state, action] = useActionState(register, {});
@@ -48,7 +50,10 @@ export default function RegisterPage() {
     if (!email) errs.email = "Ingresá tu email.";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "El email no es válido.";
     if (!password) errs.password = "Ingresá una contraseña.";
-    else if (password.length < 8) errs.password = "Mínimo 8 caracteres.";
+    else {
+      const errorPassword = validarPassword(password);
+      if (errorPassword) errs.password = errorPassword;
+    }
     if (!confirm) errs.confirm = "Repetí la contraseña.";
     else if (password && password !== confirm) errs.confirm = "Las contraseñas no coinciden.";
     if (!tyc) errs.tyc = "Debés aceptar los términos y condiciones para continuar.";
@@ -100,7 +105,7 @@ export default function RegisterPage() {
           name="password"
           type="password"
           autoComplete="new-password"
-          placeholder="Mínimo 8 caracteres"
+          placeholder="Mínimo 10, con letras y números"
           icon={Lock}
           error={fieldErrors.password}
         />
@@ -154,6 +159,7 @@ export default function RegisterPage() {
           )}
         </div>
 
+        <Turnstile />
         <SubmitButton pending={pending} pendingText="Creando cuenta…">
           Crear cuenta
         </SubmitButton>

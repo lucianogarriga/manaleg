@@ -10,15 +10,18 @@ function buildCsp(): string {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
   // Supabase usa WebSockets para realtime (wss://)
   const supabaseWss = supabaseUrl.replace(/^https:\/\//, "wss://");
+  // CAPTCHA (Turnstile) solo si está configurado: carga su script y su iframe desde Cloudflare
+  const turnstile = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? " https://challenges.cloudflare.com" : "";
 
   const directives = [
     "default-src 'self'",
     // Next.js necesita 'unsafe-inline' para hidratación. 'unsafe-eval' solo en dev (Turbopack).
-    `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : ""}`,
+    `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : ""}${turnstile}`,
     // Tailwind genera estilos inline
     "style-src 'self' 'unsafe-inline'",
     // Conexiones permitidas: propia app + Supabase REST/Auth + Supabase Realtime (wss)
-    `connect-src 'self' ${supabaseUrl} ${supabaseWss}`,
+    `connect-src 'self' ${supabaseUrl} ${supabaseWss}${turnstile}`,
+    `frame-src ${turnstile ? "https://challenges.cloudflare.com" : "'none'"}`,
     // Imágenes: propias + data URIs (avatares inline) + blob (previews de archivo)
     "img-src 'self' data: blob:",
     "font-src 'self'",
