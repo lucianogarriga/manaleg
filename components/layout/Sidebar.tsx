@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useUIStore, loadPin } from "@/store/uiStore";
 import { useCausasStore } from "@/store/causasStore";
@@ -44,7 +44,7 @@ function NavLink({ item, active, expanded, textStyle, pill, onClick }: NavLinkPr
       {/* Ícono con barra activa debajo (solo colapsado) */}
       <span className="relative flex shrink-0 items-center justify-center" style={{ width: expanded ? 16 : 28, transition: `width ${DUR}` }}>
         <Icon
-          size={expanded ? 15 : 18}
+          size={expanded ? 17 : 18}
           strokeWidth={1.8}
           style={{ color: lit ? item.iconColor : "var(--sb-fg)", transition: `color 120ms, font-size ${DUR}` }}
         />
@@ -58,7 +58,7 @@ function NavLink({ item, active, expanded, textStyle, pill, onClick }: NavLinkPr
 
       {/* Texto con subrayado progresivo en hover/activo (solo expandido) */}
       <span
-        className={`relative whitespace-nowrap text-[11.5px] ${lit ? "font-semibold" : "font-medium"}`}
+        className={`relative whitespace-nowrap text-[14px] ${lit ? "font-semibold" : "font-medium"}`}
         style={textStyle}
       >
         {item.label}
@@ -117,7 +117,7 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
   // Estilos de texto: desaparecen en opacidad Y en ancho para no desplazar los íconos
   const textStyle: React.CSSProperties = {
     opacity: exp ? 1 : 0,
-    maxWidth: exp ? "160px" : "0px",
+    maxWidth: exp ? "200px" : "0px",
     overflow: "hidden",
     pointerEvents: exp ? "auto" : "none",
     transition: `opacity ${DUR} ${exp ? TEXT_DELAY_OPEN : "0ms"}, max-width ${DUR}`,
@@ -131,16 +131,16 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex shrink-0 flex-col p-2 md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex shrink-0 flex-col p-0 md:static md:translate-x-0 md:p-2 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } ${exp ? "w-[228px]" : "md:w-[56px]"} w-[228px]`}
+        } ${exp ? "md:w-[228px]" : "md:w-[56px]"} w-full`}
         style={{ transition: `width ${DUR}` }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
         {/* Pill — la superficie flotante */}
         <div
-          className="flex flex-1 flex-col overflow-hidden rounded-xl"
+          className="flex flex-1 flex-col overflow-hidden rounded-none md:rounded-xl"
           style={{ background: "var(--sb-bg)", boxShadow: "var(--sb-shadow)" }}
         >
           {/* ── Logo ─────────────────────────────────────────────────── */}
@@ -160,11 +160,20 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
               M
             </div>
             <span
-              className="whitespace-nowrap text-[14px] font-bold"
+              className="whitespace-nowrap text-[16px] font-bold"
               style={{ color: "var(--sb-accent)", ...textStyle }}
             >
               Manaleg
             </span>
+            <button
+              type="button"
+              onClick={closeSidebar}
+              aria-label="Cerrar menú"
+              className="ml-auto mr-3 flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] md:hidden"
+              style={{ color: "var(--sb-fg)" }}
+            >
+              <X size={22} strokeWidth={1.8} />
+            </button>
           </div>
 
           {/* ── Nav ──────────────────────────────────────────────────── */}
@@ -181,7 +190,7 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
                   }}
                 >
                   <div
-                    className="px-[13px] pt-[6px] pb-[1px] text-[9px] font-bold uppercase tracking-[.9px]"
+                    className="px-[13px] pt-[6px] pb-[1px] text-[11px] font-bold uppercase tracking-[.9px]"
                     style={{ color: "var(--sb-fg)", opacity: 0.5 }}
                   >
                     {section.title}
@@ -228,7 +237,7 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
                     ? <PanelLeftClose size={14} strokeWidth={1.8} className="shrink-0" />
                     : <PanelLeftOpen  size={14} strokeWidth={1.8} className="shrink-0" />
                   }
-                  <span className="whitespace-nowrap text-[11px] font-medium" style={textStyle}>
+                  <span className="whitespace-nowrap text-[13px] font-medium" style={textStyle}>
                     {sidebarPinned ? "Colapsar menú" : "Fijar menú"}
                   </span>
                 </button>
