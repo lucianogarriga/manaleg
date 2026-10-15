@@ -1,4 +1,4 @@
-export const PASSWORD_MIN = 10;
+export const PASSWORD_MIN = 8;
 
 // Mínimo 10 caracteres, con mayúscula, minúscula y número (igual que Supabase Auth).
 // Devuelve el error, o null si la contraseña es válida.

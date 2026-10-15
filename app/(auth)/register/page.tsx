@@ -105,7 +105,7 @@ export default function RegisterPage() {
           name="password"
           type="password"
           autoComplete="new-password"
-          placeholder="Mínimo 10, con mayúsculas, minúsculas y números"
+          placeholder="Mínimo 8, con mayúsculas, minúsculas y números"
           icon={Lock}
           error={fieldErrors.password}
         />
