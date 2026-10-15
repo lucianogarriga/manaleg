@@ -7,6 +7,7 @@ declare global {
     turnstile?: {
       render: (el: HTMLElement, opts: { sitekey: string; callback: (token: string) => void; "expired-callback": () => void; "error-callback": () => void }) => string;
       reset: (widgetId?: string) => void;
+      remove?: (widgetId?: string) => void;
     };
   }
 }
@@ -24,20 +25,25 @@ export default function Turnstile() {
     if (!siteKey || !contenedor.current) return;
     let widgetId: string | undefined;
 
+    // Si el CAPTCHA falla, el formulario sigue funcionando (sin token). Nunca debe tirar la página.
     const renderizar = () => {
       if (!window.turnstile || !contenedor.current) return;
-      widgetId = window.turnstile.render(contenedor.current, {
-        sitekey: siteKey,
-        callback: (token) => {
-          if (tokenInput.current) tokenInput.current.value = token;
-        },
-        "expired-callback": () => {
-          if (tokenInput.current) tokenInput.current.value = "";
-        },
-        "error-callback": () => {
-          if (tokenInput.current) tokenInput.current.value = "";
-        },
-      });
+      try {
+        widgetId = window.turnstile.render(contenedor.current, {
+          sitekey: siteKey,
+          callback: (token) => {
+            if (tokenInput.current) tokenInput.current.value = token;
+          },
+          "expired-callback": () => {
+            if (tokenInput.current) tokenInput.current.value = "";
+          },
+          "error-callback": () => {
+            if (tokenInput.current) tokenInput.current.value = "";
+          },
+        });
+      } catch (err) {
+        console.error("[Turnstile] no se pudo renderizar", err);
+      }
     };
 
     if (window.turnstile) {
@@ -54,8 +60,16 @@ export default function Turnstile() {
       return () => script?.removeEventListener("load", renderizar);
     }
 
+    // Al cambiar de página el widget se quita; un error acá no debe romper la navegación
     return () => {
-      if (widgetId && window.turnstile) window.turnstile.reset(widgetId);
+      try {
+        if (widgetId && window.turnstile) {
+          if (window.turnstile.remove) window.turnstile.remove(widgetId);
+          else window.turnstile.reset(widgetId);
+        }
+      } catch (err) {
+        console.error("[Turnstile] error al limpiar el widget", err);
+      }
     };
   }, [siteKey]);
 
