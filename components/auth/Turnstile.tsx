@@ -16,8 +16,14 @@ const SCRIPT_URL = "https://challenges.cloudflare.com/turnstile/v0/api.js?render
 
 // CAPTCHA de Cloudflare Turnstile. Sin NEXT_PUBLIC_TURNSTILE_SITE_KEY no muestra nada.
 // El token viaja en el campo oculto "captcha_token" del formulario que lo contiene.
+// Si la clave no tiene formato de Cloudflare (p. ej. un comando pegado por error), no se muestra el widget.
+const SITE_KEY_RAW = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+const siteKey = SITE_KEY_RAW && /^0x[A-Za-z0-9_-]+$/.test(SITE_KEY_RAW) ? SITE_KEY_RAW : undefined;
+
 export default function Turnstile() {
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  if (SITE_KEY_RAW && !siteKey) {
+    console.error("[Turnstile] NEXT_PUBLIC_TURNSTILE_SITE_KEY no tiene formato válido; el captcha no se muestra.");
+  }
   const contenedor = useRef<HTMLDivElement>(null);
   const tokenInput = useRef<HTMLInputElement>(null);
 
