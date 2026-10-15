@@ -16,10 +16,10 @@ CREATE TABLE IF NOT EXISTS public.planes (
 );
 
 INSERT INTO public.planes (codigo, nombre, orden, adjunto_max_mb, causa_adjuntos_mb, total_adjuntos_mb) VALUES
-  ('free',       'FREE',       1, 5, 10,  10),
-  ('individual', 'Individual', 2, 5, 50,  200),
-  ('pro',        'PRO',        3, 5, 100, 1024),
-  ('full',       'FULL',       4, 5, 100, 3072)
+  ('free',       'Free',       1, 5, 10,  10),
+  ('plus',       'Plus',       2, 5, 50,  200),
+  ('pro',        'Pro',        3, 5, 100, 1024),
+  ('full',       'Full',       4, 5, 100, 3072)
 ON CONFLICT (codigo) DO NOTHING;
 
 ALTER TABLE public.planes ENABLE ROW LEVEL SECURITY;
