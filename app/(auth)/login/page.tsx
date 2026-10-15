@@ -44,12 +44,14 @@ function LoginTransition() {
             <span className="auth-dots" />
           </span>
         </div>
-        <div
-          role="status"
-          aria-label="Cargando"
-          className="mt-2 h-[34px] w-[34px] animate-spin rounded-full border-[3px] border-border border-t-blue"
-        />
+        <div className="mt-2 h-[3px] w-[160px] overflow-hidden rounded-full bg-border">
+          <div
+            className="h-full rounded-full bg-blue"
+            style={{ width: "40%", animation: "auth-progress 1.4s ease-in-out infinite" }}
+          />
+        </div>
       </div>
+      <style>{`@keyframes auth-progress { 0% { margin-left:-40%; } 100% { margin-left:140%; } }`}</style>
     </div>
   );
 }
