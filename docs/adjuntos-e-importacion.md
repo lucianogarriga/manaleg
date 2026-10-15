@@ -9,7 +9,7 @@ Tabla `planes` con una fila por plan. Los límites viven ahí para poder cambiar
 | Plan | Adjuntos por archivo | Adjuntos por causa | Total por usuario |
 |---|---|---|---|
 | FREE | 5 MB | 10 MB | 10 MB |
-| Individual | 5 MB | 50 MB | 200 MB |
+| Plus | 5 MB | 50 MB | 200 MB |
 | PRO | 5 MB | 100 MB | 1 GB |
 | FULL | 5 MB | 100 MB | 3 GB |
 
