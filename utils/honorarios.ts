@@ -16,6 +16,7 @@ export function totalesPorMoneda(items: Honorario[]): Record<MonedaHonorario, To
     USD: { acordado: 0, cobrado: 0, saldo: 0 },
   };
   for (const h of items) {
+    if (h.anulado) continue;
     const moneda: MonedaHonorario = h.moneda === "USD" ? "USD" : "ARS";
     t[moneda].cobrado += h.monto_cobrado;
     if (h.periodicidad === "unico") {

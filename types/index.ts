@@ -240,6 +240,8 @@ export interface Honorario {
   notas_honorarios: string | null;
   monto_cobrado: number;
   saldo_pendiente: number;
+  anulado: boolean;
+  motivo_anulacion: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -282,6 +284,8 @@ export interface Pago {
   monto: number;
   descripcion: string | null;
   comprobante_drive: string | null;
+  anulado: boolean;
+  motivo_anulacion: string | null;
   created_at: string;
 }
 

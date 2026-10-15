@@ -4,13 +4,14 @@ import { useState } from "react";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
 import { ExternalLink, Trash2 } from "lucide-react";
-import { deleteHonorario, deletePago } from "@/app/(app)/causas/detailActions";
+import { anularHonorario, anularPago, deleteHonorario, deletePago } from "@/app/(app)/causas/detailActions";
 import CardSection, { CardAction } from "@/components/ui/CardSection";
 import { useHonorarios } from "@/hooks/useCausaData";
 import { useUIStore } from "@/store/uiStore";
 import type { HonorarioConPagos } from "@/types";
 import { formatCurrency, formatDate } from "@/utils/formatters";
 import { monedasPresentes, totalesPorMoneda, type MonedaHonorario } from "@/utils/honorarios";
+import AnularForm from "./AnularForm";
 import HonorarioForm from "./HonorarioForm";
 import PagoForm from "./PagoForm";
 import ProgressBar from "./ProgressBar";
@@ -19,6 +20,8 @@ type Modal =
   | { tipo: "nuevo" }
   | { tipo: "editar"; honorario: HonorarioConPagos }
   | { tipo: "pago"; honorario: HonorarioConPagos }
+  | { tipo: "anular-honorario"; honorario: HonorarioConPagos }
+  | { tipo: "anular-pago"; pagoId: string; concepto: string }
   | null;
 
 function etiquetaPeriodicidad(h: HonorarioConPagos): string {
@@ -64,7 +67,7 @@ export default function HonorariosCard({ causaId, naked = false }: { causaId: st
 
   const lista = honorarios ?? [];
   const totales = totalesPorMoneda(lista);
-  const monedas = monedasPresentes(lista);
+  const monedas = monedasPresentes(lista.filter((h) => !h.anulado));
 
   const botonNuevo = <CardAction onClick={() => setModal({ tipo: "nuevo" })}>+ Nuevo honorario</CardAction>;
 
@@ -91,38 +94,46 @@ export default function HonorariosCard({ causaId, naked = false }: { causaId: st
 
       {lista.map((h) => {
         const moneda = h.moneda === "USD" ? "USD" : "ARS";
-        const cobrado = h.monto_cobrado;
         const esMensual = h.periodicidad === "mensual";
-        const percent = !esMensual && h.monto_acordado > 0 ? (cobrado / h.monto_acordado) * 100 : 0;
+        const percent = !esMensual && h.monto_acordado > 0 ? (h.monto_cobrado / h.monto_acordado) * 100 : 0;
         const pagos = h.pagos ?? [];
+        const activos = pagos.filter((p) => !p.anulado);
         return (
-          <div key={h.id} className="border-t border-border px-[13px] py-[11px]">
+          <div key={h.id} className={`border-t border-border px-[13px] py-[11px] ${h.anulado ? "opacity-60" : ""}`}>
             <div className="mb-[6px] flex flex-wrap items-baseline justify-between gap-x-3">
-              <span className="text-[14px] font-bold text-text">
+              <span className={`text-[14px] font-bold text-text ${h.anulado ? "line-through" : ""}`}>
                 {h.concepto} <span className="ml-1 text-[11px] font-normal text-muted">{etiquetaPeriodicidad(h)} · {moneda}</span>
+                {h.anulado && <span className="ml-2 rounded-[4px] bg-red-100 px-[5px] py-px text-[10px] font-semibold text-red-600 no-underline">ANULADO</span>}
               </span>
               <span className="flex items-center gap-3">
-                <button type="button" onClick={() => setModal({ tipo: "editar", honorario: h })} className="cursor-pointer text-[12px] font-semibold text-blue hover:underline">Editar</button>
-                <button type="button" onClick={() => setModal({ tipo: "pago", honorario: h })} className="cursor-pointer text-[12px] font-semibold text-blue hover:underline">+ Registrar pago</button>
+                {!h.anulado && (
+                  <>
+                    <button type="button" onClick={() => setModal({ tipo: "editar", honorario: h })} className="cursor-pointer text-[12px] font-semibold text-blue hover:underline">Editar</button>
+                    <button type="button" onClick={() => setModal({ tipo: "pago", honorario: h })} className="cursor-pointer text-[12px] font-semibold text-blue hover:underline">+ Registrar pago</button>
+                    <button type="button" onClick={() => setModal({ tipo: "anular-honorario", honorario: h })} className="cursor-pointer text-[12px] font-semibold text-muted hover:text-red hover:underline">Anular</button>
+                  </>
+                )}
                 <button type="button" onClick={() => onDeleteHonorario(h)} aria-label="Eliminar honorario" className="flex cursor-pointer text-muted hover:text-red">
                   <Trash2 size={12} />
                 </button>
               </span>
             </div>
 
+            {h.anulado && h.motivo_anulacion && <div className="mb-[4px] text-[11px] italic text-muted">Motivo: {h.motivo_anulacion}</div>}
+
             {esMensual ? (
               <div className="text-[12.5px] text-sub">
-                Cuota: {formatCurrency(h.monto_acordado, moneda)} · Cobrado: <span className="font-semibold text-grn">{formatCurrency(cobrado, moneda)}</span> ·{" "}
-                {h.cuotas_mensuales ? `${pagos.length} de ${h.cuotas_mensuales} pagos` : `${pagos.length} ${pagos.length === 1 ? "pago" : "pagos"} registrados`}
+                Cuota: {formatCurrency(h.monto_acordado, moneda)} · Cobrado: <span className="font-semibold text-grn">{formatCurrency(h.monto_cobrado, moneda)}</span> ·{" "}
+                {h.cuotas_mensuales ? `${activos.length} de ${h.cuotas_mensuales} pagos` : `${activos.length} ${activos.length === 1 ? "pago" : "pagos"} registrados`}
               </div>
             ) : (
               <>
                 <div className="mb-[5px] text-[12.5px] text-sub">
-                  Acordado: {formatCurrency(h.monto_acordado, moneda)} · Cobrado: <span className="font-semibold text-grn">{formatCurrency(cobrado, moneda)}</span> · Saldo: {formatCurrency(h.saldo_pendiente, moneda)}
+                  Acordado: {formatCurrency(h.monto_acordado, moneda)} · Cobrado: <span className="font-semibold text-grn">{formatCurrency(h.monto_cobrado, moneda)}</span> · Saldo: {formatCurrency(h.saldo_pendiente, moneda)}
                 </div>
                 <ProgressBar percent={percent} />
                 <div className="text-[11px] text-muted">
-                  {Math.round(percent)}% cobrado · {pagos.length} {pagos.length === 1 ? "pago registrado" : "pagos registrados"}
+                  {Math.round(percent)}% cobrado · {activos.length} {activos.length === 1 ? "pago registrado" : "pagos registrados"}
                   {h.porcentaje !== null && ` · ${h.porcentaje}% del monto`}
                 </div>
               </>
@@ -131,23 +142,33 @@ export default function HonorariosCard({ causaId, naked = false }: { causaId: st
             {(h.monto_adicional || h.consulta_cobrada || h.notas_honorarios) && (
               <div className="mt-[6px] flex flex-wrap gap-x-3 gap-y-[2px] text-[11px] text-muted">
                 {h.monto_adicional ? <span>Adicional fijo: {formatCurrency(h.monto_adicional, moneda)}</span> : null}
-                {h.consulta_cobrada && (
-                  <span>Consulta: {h.monto_consulta ? formatCurrency(h.monto_consulta, moneda) : "cobrada"}</span>
-                )}
+                {h.consulta_cobrada && <span>Consulta: {h.monto_consulta ? formatCurrency(h.monto_consulta, moneda) : "cobrada"}</span>}
                 {h.notas_honorarios && <span className="w-full italic">{h.notas_honorarios}</span>}
               </div>
             )}
 
             {pagos.map((p) => (
-              <div key={p.id} className="group mt-[6px] flex items-center gap-2 border-t border-border pt-[5px]">
+              <div key={p.id} className={`group mt-[6px] flex items-center gap-2 border-t border-border pt-[5px] ${p.anulado ? "opacity-50" : ""}`}>
                 <span className="w-[62px] shrink-0 text-[11px] text-muted">{formatDate(p.fecha_pago)}</span>
-                <span className="min-w-0 flex-1 truncate text-[13px] text-sub">{p.descripcion ?? "Pago"}</span>
+                <span className={`min-w-0 flex-1 truncate text-[13px] text-sub ${p.anulado ? "line-through" : ""}`}>
+                  {p.descripcion ?? "Pago"}
+                  {p.anulado && <span className="ml-2 text-[11px] italic no-underline">anulado: {p.motivo_anulacion}</span>}
+                </span>
                 {p.comprobante_drive && (
                   <a href={p.comprobante_drive} target="_blank" rel="noopener noreferrer" aria-label="Abrir comprobante" className="flex text-muted hover:text-blue">
                     <ExternalLink size={11} />
                   </a>
                 )}
-                <span className="text-[13.5px] font-semibold text-grn">+{formatCurrency(p.monto, moneda)}</span>
+                <span className={`text-[13.5px] font-semibold ${p.anulado ? "text-muted line-through" : "text-grn"}`}>+{formatCurrency(p.monto, moneda)}</span>
+                {!p.anulado && (
+                  <button
+                    type="button"
+                    onClick={() => setModal({ tipo: "anular-pago", pagoId: p.id, concepto: p.descripcion ?? "Pago" })}
+                    className="cursor-pointer text-[11px] text-muted opacity-0 transition-opacity hover:text-red hover:underline group-hover:opacity-100 focus:opacity-100"
+                  >
+                    Anular
+                  </button>
+                )}
                 <button type="button" onClick={() => onDeletePago(p.id)} aria-label="Eliminar pago" className="flex cursor-pointer text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-red focus:opacity-100">
                   <Trash2 size={11} />
                 </button>
@@ -186,6 +207,32 @@ export default function HonorariosCard({ causaId, naked = false }: { causaId: st
           saldo={modal.honorario.periodicidad === "unico" ? modal.honorario.saldo_pendiente : null}
           onClose={() => setModal(null)}
           onSaved={() => afterChange("Pago registrado.")}
+        />
+      )}
+      {modal?.tipo === "anular-honorario" && (
+        <AnularForm
+          titulo="Anular honorario"
+          mensaje={`"${modal.honorario.concepto}" dejará de sumar en los totales. Queda registrado en la causa como anulado.`}
+          onClose={() => setModal(null)}
+          onConfirm={async (motivo) => {
+            const r = await anularHonorario(modal.honorario.id, motivo);
+            if (r.error) return r.error;
+            afterChange(r.message ?? "Honorario anulado.");
+            return null;
+          }}
+        />
+      )}
+      {modal?.tipo === "anular-pago" && (
+        <AnularForm
+          titulo="Anular pago"
+          mensaje={`Se anula el pago "${modal.concepto}" y el monto cobrado se recalcula.`}
+          onClose={() => setModal(null)}
+          onConfirm={async (motivo) => {
+            const r = await anularPago(modal.pagoId, motivo);
+            if (r.error) return r.error;
+            afterChange(r.message ?? "Pago anulado.");
+            return null;
+          }}
         />
       )}
       {confirmDialog}

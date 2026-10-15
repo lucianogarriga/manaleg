@@ -167,6 +167,31 @@ export async function deleteHonorario(id: string): Promise<FormState> {
   return { message: "Honorario eliminado." };
 }
 
+async function anular(tabla: "honorarios" | "pagos", id: string, motivo: string | null): Promise<FormState> {
+  if (!await getAuthUserId()) return { error: "No autenticado." };
+  if (!motivo) return { error: "Escribí el motivo de la anulación." };
+  if (motivo.length > 500) return { error: "El motivo es demasiado largo (máx. 500 caracteres)." };
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from(tabla)
+    .update({ anulado: true, motivo_anulacion: motivo })
+    .eq("id", id)
+    .select("id");
+  if (error) return { error: `No se pudo anular: ${error.message}` };
+  if (!data || data.length === 0) return { error: "No se encontró el registro o no tenés permiso para anularlo." };
+
+  refresh();
+  return { message: tabla === "pagos" ? "Pago anulado." : "Honorario anulado." };
+}
+
+export async function anularHonorario(id: string, motivo: string | null): Promise<FormState> {
+  return anular("honorarios", id, motivo);
+}
+
+export async function anularPago(id: string, motivo: string | null): Promise<FormState> {
+  return anular("pagos", id, motivo);
+}
+
 // ─── PAGOS ───
 
 export async function createPago(_prev: FormState, formData: FormData): Promise<FormState> {
