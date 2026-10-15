@@ -18,7 +18,6 @@ interface HonorarioFormProps {
 }
 
 const CONCEPTOS_CON_OTRO: readonly string[] = CONCEPTOS_HONORARIO;
-const CUOTAS_SUGERIDAS = ["3", "6", "12"];
 
 function Opcion({ activo, onClick, children }: { activo: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
@@ -40,8 +39,7 @@ export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: 
   const conceptoInicial = honorario && CONCEPTOS_CON_OTRO.includes(honorario.concepto) ? honorario.concepto : honorario ? "Otro" : "Consulta";
   const [concepto, setConcepto] = useState(conceptoInicial);
   const [periodicidad, setPeriodicidad] = useState<"unico" | "mensual">(honorario?.periodicidad ?? "unico");
-  const cuotasInicial = honorario?.cuotas_mensuales ? String(honorario.cuotas_mensuales) : "indefinido";
-  const [cuotas, setCuotas] = useState(cuotasInicial);
+  const [cuotasFijas, setCuotasFijas] = useState(Boolean(honorario?.cuotas_mensuales));
 
   return (
     <Modal
@@ -55,7 +53,6 @@ export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: 
         {honorario && <input type="hidden" name="id" value={honorario.id} />}
         <input type="hidden" name="moneda" value={moneda} />
         <input type="hidden" name="periodicidad" value={periodicidad} />
-        <input type="hidden" name="cuotas_mensuales" value={periodicidad === "mensual" && cuotas !== "indefinido" ? cuotas : ""} />
         {state.error && (
           <div className="px-4 pt-3">
             <FormAlert state={state} />
@@ -114,12 +111,25 @@ export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: 
             <div>
               <label className="mb-1 block text-[12px] font-semibold text-sub">Cantidad de cuotas</label>
               <div className="flex flex-wrap gap-2">
-                {["indefinido", ...CUOTAS_SUGERIDAS].map((c) => (
-                  <Opcion key={c} activo={cuotas === c} onClick={() => setCuotas(c)}>
-                    {c === "indefinido" ? "Indefinido" : c}
-                  </Opcion>
-                ))}
+                <Opcion activo={!cuotasFijas} onClick={() => setCuotasFijas(false)}>
+                  Indefinido
+                </Opcion>
+                <Opcion activo={cuotasFijas} onClick={() => setCuotasFijas(true)}>
+                  Cantidad fija
+                </Opcion>
               </div>
+              {cuotasFijas && (
+                <div className="mt-2">
+                  <TextField
+                    label="Número de cuotas"
+                    name="cuotas_mensuales"
+                    inputMode="numeric"
+                    required
+                    defaultValue={honorario?.cuotas_mensuales ?? ""}
+                    placeholder="Ej: 6"
+                  />
+                </div>
+              )}
             </div>
           )}
 
