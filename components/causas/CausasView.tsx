@@ -18,6 +18,9 @@ import MaintenanceBanner from "@/components/ui/MaintenanceBanner";
 import CausaRow from "./CausaRow";
 import CausaCard from "./CausaCard";
 import FabSpotlight from "@/components/ui/FabSpotlight";
+import ImportarCausasModal from "./ImportarCausasModal";
+import { COLUMNAS_CAUSA } from "@/services/csv/importarCausas";
+import { escribirCsv } from "@/utils/csv";
 
 type ViewMode = "list" | "grid";
 
@@ -55,6 +58,36 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
   const search = useCausasStore((s) => s.search);
 
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [importOpen, setImportOpen] = useState(false);
+  const [avisoImport, setAvisoImport] = useState<string | null>(null);
+
+  // Exporta las causas propias cargadas en pantalla (hasta CAUSAS_LIMIT)
+  const exportarCsv = () => {
+    const filas = [
+      [...COLUMNAS_CAUSA],
+      ...causas
+        .filter((c) => c.user_id === userId)
+        .map((c) => [
+          c.caratula,
+          c.nro_expediente ?? "",
+          c.fuero ?? "",
+          c.tipo_juicio ?? "",
+          c.juzgado_camara ?? "",
+          c.parte_actora ?? "",
+          c.parte_demandada ?? "",
+          c.fecha_inicio ?? "",
+          c.estado,
+          c.notas ?? "",
+        ]),
+    ];
+    const blob = new Blob([escribirCsv(filas)], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `causas-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   useEffect(() => {
     try {
@@ -87,6 +120,13 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
           >
             + Nueva causa
           </button>
+          <button
+            type="button"
+            onClick={() => setImportOpen(true)}
+            className="mt-2 cursor-pointer text-[13px] font-semibold text-blue hover:underline"
+          >
+            o importar desde un CSV
+          </button>
         </EmptyState>
       ) : (
         <div className="flex flex-col">
@@ -101,6 +141,18 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
                 Los filtros y conteos pueden ser incompletos. Contactá al equipo para habilitar más.
               </span>
             </div>
+          )}
+
+          <div className="flex justify-end gap-3 px-3 pt-2 text-[13px] font-semibold text-blue">
+            <button type="button" onClick={() => setImportOpen(true)} className="cursor-pointer hover:underline">
+              Importar CSV
+            </button>
+            <button type="button" onClick={exportarCsv} className="cursor-pointer hover:underline">
+              Exportar CSV
+            </button>
+          </div>
+          {avisoImport && (
+            <div className="mx-3 mt-2 rounded-lg border border-grn/30 bg-grn/10 px-3 py-2 text-[12px] text-grn">{avisoImport}</div>
           )}
 
           <FilterChips
@@ -154,6 +206,11 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
         </div>
       )}
 
+      <ImportarCausasModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={(m) => setAvisoImport(m)}
+      />
       {selected && <CausaModal causa={selected} userId={userId} />}
       <FabSpotlight />
 
