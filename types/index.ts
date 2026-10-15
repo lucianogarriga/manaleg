@@ -221,10 +221,15 @@ export interface Vencimiento {
   updated_at: string;
 }
 
+export type PeriodicidadHonorario = "unico" | "mensual";
+
 export interface Honorario {
   id: string;
   causa_id: string;
   creado_por_id: string;
+  concepto: string;
+  periodicidad: PeriodicidadHonorario;
+  cuotas_mensuales: number | null;
   monto_acordado: number;
   porcentaje: number | null;
   monto_adicional: number | null;
@@ -235,6 +240,8 @@ export interface Honorario {
   notas_honorarios: string | null;
   monto_cobrado: number;
   saldo_pendiente: number;
+  anulado: boolean;
+  motivo_anulacion: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -277,6 +284,8 @@ export interface Pago {
   monto: number;
   descripcion: string | null;
   comprobante_drive: string | null;
+  anulado: boolean;
+  motivo_anulacion: string | null;
   created_at: string;
 }
 

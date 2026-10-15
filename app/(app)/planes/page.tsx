@@ -1,5 +1,5 @@
 import { getCurrentProfile } from "@/components/auth/AuthGuard";
-import { Check, Clock, Zap } from "lucide-react";
+import { Check, Clock, Info, Zap } from "lucide-react";
 
 export const metadata = { title: "Planes y Uso — MANALEG" };
 
@@ -78,9 +78,16 @@ export default async function PlanesPage() {
           </p>
         )}
         {esPrueba && (
-          <p className="mt-2 text-[13px] italic text-muted">
-            Has sido beneficiado para probar la fase BETA del software accediendo a todas las funcionalidades que cuenta el sistema actualmente de manera gratuita.
-          </p>
+          <div
+            role="note"
+            className="mt-3 flex items-start gap-2 rounded-[9px] border px-3 py-[10px] text-[13px]"
+            style={{ borderColor: "var(--color-blue)", background: "var(--color-blue-lt)", color: "var(--color-text)" }}
+          >
+            <Info size={15} strokeWidth={2.25} className="mt-[2px] shrink-0 text-blue" />
+            <p className="leading-[1.5]">
+              Sos beneficiado/a para probar la fase BETA de MANALEG: accedés de forma gratuita a todas las funcionalidades que el sistema ofrece actualmente.
+            </p>
+          </div>
         )}
       </div>
 

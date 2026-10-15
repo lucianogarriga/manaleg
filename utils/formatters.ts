@@ -58,13 +58,13 @@ export function formatRelative(iso: string): string {
   return formatDate(new Intl.DateTimeFormat("en-CA", { timeZone: TIME_ZONE }).format(new Date(iso)));
 }
 
-// 4200000 → "$4.200.000"
-export function formatCurrency(value: number | null | undefined): string {
+// 4200000 → "$4.200.000" · USD 5000.5 → "US$5.000,50"
+export function formatCurrency(value: number | null | undefined, moneda: "ARS" | "USD" = "ARS"): string {
   if (value === null || value === undefined) return "—";
   return new Intl.NumberFormat("es-AR", {
     style: "currency",
-    currency: "ARS",
-    maximumFractionDigits: 0,
+    currency: moneda,
+    maximumFractionDigits: moneda === "USD" ? 2 : 0,
   })
     .format(value)
     .replace(/\s/g, "");

@@ -97,12 +97,23 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
   const fechaPacto = text(formData, "fecha_pacto");
   const moneda = text(formData, "moneda") === "USD" ? "USD" : "ARS";
   const montoAdicionalRaw = text(formData, "monto_adicional");
-  const consultaCobrada = formData.get("consulta_cobrada") === "true";
-  const montoConsultaRaw = text(formData, "monto_consulta");
   const notasHonorarios = text(formData, "notas_honorarios") || null;
+  const conceptoElegido = text(formData, "concepto");
+  const concepto = conceptoElegido === "Otro" ? text(formData, "concepto_otro") : conceptoElegido;
+  const periodicidad = text(formData, "periodicidad") === "mensual" ? "mensual" : "unico";
+  const cuotasRaw = text(formData, "cuotas_mensuales");
 
   if (!causaId) return { error: "Falta la causa." };
+  if (!concepto) return { error: "Elegí o escribí el concepto del honorario." };
+  if (concepto.length > 80) return { error: "El concepto es demasiado largo (máx. 80 caracteres)." };
   if (notasHonorarios && notasHonorarios.length > 500) return { error: "Las notas son demasiado largas (máx. 500 caracteres)." };
+
+  let cuotasMensuales: number | null = null;
+  if (periodicidad === "mensual" && cuotasRaw) {
+    cuotasMensuales = Number(cuotasRaw);
+    if (!Number.isInteger(cuotasMensuales) || cuotasMensuales < 1 || cuotasMensuales > 600)
+      return { error: "La cantidad de cuotas debe ser un número entero entre 1 y 600." };
+  }
   if (monto === null || monto === "invalid") return { error: "Ingresá un monto acordado válido." };
   if (fechaPacto && !isISODate(fechaPacto)) return { error: "La fecha del pacto no es válida." };
 
@@ -120,21 +131,15 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
     monto_adicional = v;
   }
 
-  let monto_consulta: number | null = null;
-  if (consultaCobrada && montoConsultaRaw) {
-    const v = parseMonto(montoConsultaRaw);
-    if (v === "invalid" || (v !== null && v < 0)) return { error: "El monto de consulta no es válido." };
-    monto_consulta = v;
-  }
-
   const values = {
+    concepto,
+    periodicidad,
+    cuotas_mensuales: periodicidad === "mensual" ? cuotasMensuales : null,
     monto_acordado: monto,
     porcentaje,
     fecha_pacto: fechaPacto,
     moneda,
     monto_adicional,
-    consulta_cobrada: consultaCobrada,
-    monto_consulta: consultaCobrada ? monto_consulta : null,
     notas_honorarios: notasHonorarios,
   };
   const supabase = await createClient();
@@ -149,6 +154,42 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
 
   refresh();
   return { message: id ? "Honorarios actualizados." : "Honorarios definidos." };
+}
+
+export async function deleteHonorario(id: string): Promise<FormState> {
+  if (!await getAuthUserId()) return { error: "No autenticado." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("honorarios").delete().eq("id", id).select("id");
+  if (error) return { error: `No se pudo eliminar el honorario: ${error.message}` };
+  if (!data || data.length === 0) return { error: "No se encontró el honorario o no tenés acceso." };
+
+  refresh();
+  return { message: "Honorario eliminado." };
+}
+
+async function anular(tabla: "honorarios" | "pagos", id: string, motivo: string | null): Promise<FormState> {
+  if (!await getAuthUserId()) return { error: "No autenticado." };
+  if (!motivo) return { error: "Escribí el motivo de la anulación." };
+  if (motivo.length > 500) return { error: "El motivo es demasiado largo (máx. 500 caracteres)." };
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from(tabla)
+    .update({ anulado: true, motivo_anulacion: motivo })
+    .eq("id", id)
+    .select("id");
+  if (error) return { error: `No se pudo anular: ${error.message}` };
+  if (!data || data.length === 0) return { error: "No se encontró el registro o no tenés permiso para anularlo." };
+
+  refresh();
+  return { message: tabla === "pagos" ? "Pago anulado." : "Honorario anulado." };
+}
+
+export async function anularHonorario(id: string, motivo: string | null): Promise<FormState> {
+  return anular("honorarios", id, motivo);
+}
+
+export async function anularPago(id: string, motivo: string | null): Promise<FormState> {
+  return anular("pagos", id, motivo);
 }
 
 // ─── PAGOS ───
