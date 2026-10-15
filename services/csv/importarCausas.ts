@@ -2,6 +2,7 @@
 // Se usa en el servidor (vista previa y carga). Nunca confía en el archivo del navegador.
 import { ESTADOS_CAUSA, FUEROS } from "@/utils/constants";
 import { parsearCsv } from "@/utils/csv";
+import { parseMonto } from "@/utils/formData";
 
 export const MAX_FILAS_IMPORTACION = 500;
 
@@ -12,9 +13,11 @@ export const COLUMNAS_CAUSA = [
   "fuero",
   "tipo_juicio",
   "juzgado_camara",
+  "fecha_inicio",
+  "monto_reclamado",
+  "link_drive",
   "parte_actora",
   "parte_demandada",
-  "fecha_inicio",
   "estado",
   "notas",
 ] as const;
@@ -30,6 +33,8 @@ export interface CausaImportada {
   parte_actora: string | null;
   parte_demandada: string | null;
   fecha_inicio: string | null; // YYYY-MM-DD
+  monto_reclamado: number | null;
+  link_drive: string | null; // solo https
   estado: string;
   notas: string | null;
 }
@@ -54,6 +59,16 @@ const ALIAS: Record<string, ColumnaCausa> = {
   nro_expediente: "nro_expediente",
   numero_expediente: "nro_expediente",
   nro_expte: "nro_expediente",
+  monto: "monto_reclamado",
+  monto_reclamado: "monto_reclamado",
+  "monto_$": "monto_reclamado",
+  importe: "monto_reclamado",
+  link: "link_drive",
+  link_drive: "link_drive",
+  link_carpeta_de_drive: "link_drive",
+  link_carpeta: "link_drive",
+  carpeta_drive: "link_drive",
+  drive: "link_drive",
   fuero: "fuero",
   tipo_juicio: "tipo_juicio",
   tipo_de_juicio: "tipo_juicio",
@@ -134,6 +149,21 @@ function validarFila(
     if (!fecha) errores.push(`Fecha de inicio "${fechaTexto}" no es válida. Usá DD/MM/AAAA o AAAA-MM-DD.`);
   }
 
+  let monto: number | null = null;
+  const montoTexto = (celdas.monto_reclamado ?? "").trim();
+  if (montoTexto) {
+    const parseado = parseMonto(montoTexto);
+    if (parseado === "invalid") errores.push(`Monto "${montoTexto}" no es válido. Ejemplos: 150000, 150.000,50 o $ 150.000.`);
+    else monto = parseado;
+  }
+
+  let linkDrive: string | null = null;
+  const linkTexto = textoOpcional(celdas.link_drive, 500, "Link de Drive", errores);
+  if (linkTexto) {
+    if (/^https:\/\/\S+$/i.test(linkTexto)) linkDrive = linkTexto;
+    else errores.push("Link de Drive: tiene que empezar con https://.");
+  }
+
   const tipoJuicio = textoOpcional(celdas.tipo_juicio, 50, "Tipo de juicio", errores);
   const juzgado = textoOpcional(celdas.juzgado_camara, 50, "Juzgado/cámara", errores);
   const actora = textoOpcional(celdas.parte_actora, 150, "Parte actora", errores);
@@ -150,6 +180,8 @@ function validarFila(
     parte_actora: actora,
     parte_demandada: demandada,
     fecha_inicio: fecha,
+    monto_reclamado: monto,
+    link_drive: linkDrive,
     estado,
     notas,
   };
