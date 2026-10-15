@@ -3,6 +3,7 @@
 import { createClient } from "@/services/supabase/server";
 import { revalidatePath } from "next/cache";
 import { escapeHtml, sendEmail } from "@/services/email/resend";
+import { dentroDelLimite } from "@/services/security/limites";
 
 export async function toggleNotificacionesEmail(enabled: boolean): Promise<{ error?: string }> {
   const supabase = await createClient();
@@ -27,6 +28,9 @@ export async function enviarFeedback(mensaje: string): Promise<{ error?: string 
   const texto = mensaje.trim();
   if (!texto) return { error: "Escribí tu mensaje antes de enviar." };
   if (texto.length > 1000) return { error: "El mensaje es demasiado largo (máx. 1000 caracteres)." };
+
+  if (!(await dentroDelLimite(`feedback:${user.id}`, 5, 3600)))
+    return { error: "Enviaste varios comentarios seguidos. Probá de nuevo en un rato." };
 
   const { data: profile } = await supabase
     .from("profiles")

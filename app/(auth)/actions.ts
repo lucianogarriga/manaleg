@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/services/supabase/server";
 import type { FormState } from "@/types";
+import { dentroDelLimite, ipCliente } from "@/services/security/limites";
 
 function traducirError(message: string): string {
   if (message.includes("Invalid login credentials")) return "Email o contraseña incorrectos.";
@@ -24,6 +25,9 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
   const values = { email };
 
   if (!email || !password) return { error: "Completá email y contraseña.", values };
+
+  if (!(await dentroDelLimite(`login:${await ipCliente()}`, 20, 900)))
+    return { error: "Demasiados intentos. Esperá unos minutos y volvé a probar.", values };
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -47,6 +51,9 @@ export async function register(_prev: FormState, formData: FormData): Promise<Fo
     return { error: "La contraseña debe tener al menos 8 caracteres.", values };
   if (password !== confirm) return { error: "Las contraseñas no coinciden.", values };
   if (tyc !== "on") return { error: "Debés aceptar los Términos y Condiciones.", values };
+
+  if (!(await dentroDelLimite(`registro:${await ipCliente()}`, 5, 3600)))
+    return { error: "Demasiados intentos. Esperá unos minutos y volvé a probar.", values };
 
   const origin = (await headers()).get("origin") ?? "http://localhost:3000";
   const supabase = await createClient();

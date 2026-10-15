@@ -1,14 +1,22 @@
 "use server";
 
+import { createHash, randomBytes } from "crypto";
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { createAdminClient } from "@/services/supabase/admin";
 import { createClient } from "@/services/supabase/server";
+import { escapeHtml, sendEmail } from "@/services/email/resend";
+import { dentroDelLimite } from "@/services/security/limites";
 import { text } from "@/utils/formData";
 import type { FormState } from "@/types";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DIAS_VIGENCIA = 7;
 
-// Comparte una causa con otro usuario ya registrado (se lo busca por email).
-// RLS: solo el titular de la causa puede crear el acceso.
+// La respuesta es igual exista o no una cuenta con ese email: no revela quién está registrado.
+const MENSAJE_INVITACION = "Si el email puede recibir la invitación, le enviamos un enlace para unirse a la causa.";
+
+// Invita por email a un colega. El acceso se crea recién cuando lo acepta con el enlace.
 export async function shareCausa(_prev: FormState, formData: FormData): Promise<FormState> {
   const causaId = text(formData, "causa_id");
   const email = text(formData, "email")?.toLowerCase();
@@ -17,35 +25,58 @@ export async function shareCausa(_prev: FormState, formData: FormData): Promise<
   if (!email || !EMAIL_RE.test(email)) return { error: "Ingresá un email válido." };
 
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "No autenticado." };
+
+  if (!(await dentroDelLimite(`invitar:${user.id}`, 30, 86400)))
+    return { error: "Enviaste demasiadas invitaciones hoy. Probá mañana." };
 
   const { data: causa } = await supabase
     .from("causas")
-    .select("id, user_id")
+    .select("id, user_id, caratula")
     .eq("id", causaId)
-    .maybeSingle<{ id: string; user_id: string }>();
+    .maybeSingle<{ id: string; user_id: string; caratula: string }>();
   if (!causa) return { error: "No se encontró la causa." };
+  if (causa.user_id !== user.id) return { error: "Solo el titular de la causa puede compartirla." };
+  if (email === user.email?.toLowerCase()) return { error: "No podés compartir una causa con vos mismo." };
 
-  // Usa función SECURITY DEFINER para buscar por email sin exponer RLS
-  const { data: colega } = await supabase
-    .rpc("buscar_perfil_por_email", { p_email: email })
-    .maybeSingle<{ id: string; nombre_completo: string | null }>();
+  const token = randomBytes(32).toString("hex");
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+  const expiraAt = new Date(Date.now() + DIAS_VIGENCIA * 86400000).toISOString();
 
-  if (!colega) {
-    return { error: "No hay ningún usuario registrado con ese email. Pedile que primero cree su cuenta en MANALEG." };
-  }
-  if (colega.id === causa.user_id) return { error: "Ese usuario ya es el titular de la causa." };
-
-  const { error } = await supabase
-    .from("causa_shares")
-    .insert({ causa_id: causaId, shared_with_user_id: colega.id });
-
+  const admin = createAdminClient();
+  const { error } = await admin.from("invitaciones").insert({
+    causa_id: causaId,
+    invitado_por_id: user.id,
+    email,
+    token_hash: tokenHash,
+    expira_at: expiraAt,
+  });
   if (error) {
-    if (error.code === "23505") return { error: `${colega.nombre_completo ?? email} ya tiene acceso a esta causa.` };
-    return { error: `No se pudo compartir la causa: ${error.message}` };
+    console.error("[shareCausa] no se pudo guardar la invitación:", error.message);
+    return { message: MENSAJE_INVITACION };
   }
+
+  const h = await headers();
+  const origen = process.env.NEXT_PUBLIC_SITE_URL ?? h.get("origin") ?? "http://localhost:3000";
+  const enlace = `${origen}/invitacion/${token}`;
+  const invitador = user.user_metadata?.nombre_completo ?? user.email ?? "Un colega";
+
+  const { error: mailError } = await sendEmail({
+    to: email,
+    subject: `Manaleg · ${invitador} te invitó a una causa`,
+    html: `<!doctype html><html lang="es"><body style="font-family:-apple-system,'Segoe UI',Arial,sans-serif;background:#F1F5F9;padding:24px">
+      <div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #DDE3ED;border-radius:12px;padding:24px">
+        <p style="margin:0 0 12px;font-size:16px;color:#0F172A"><strong>${escapeHtml(invitador)}</strong> te invitó a colaborar en la causa <strong>${escapeHtml(causa.caratula)}</strong> en Manaleg.</p>
+        <p style="margin:0 0 20px;font-size:14px;color:#475569;line-height:1.6">Para aceptar, ingresá o registrate con <strong>${escapeHtml(email)}</strong> y abrí este enlace. Vence en ${DIAS_VIGENCIA} días.</p>
+        <p style="margin:0"><a href="${escapeHtml(enlace)}" style="display:inline-block;background:#2563EB;color:#fff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 22px;border-radius:8px">Ver la invitación</a></p>
+        <p style="margin:20px 0 0;font-size:12px;color:#94A3B8">Si no esperabas esta invitación, podés ignorar este email.</p>
+      </div></body></html>`,
+  });
+  if (mailError) console.error("[shareCausa] no se pudo enviar el email:", mailError);
 
   revalidatePath("/", "layout");
-  return { message: `Causa compartida con ${colega.nombre_completo ?? email}.` };
+  return { message: MENSAJE_INVITACION };
 }
 
 export async function revokeAccess(shareId: string): Promise<FormState> {
