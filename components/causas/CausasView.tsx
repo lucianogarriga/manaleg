@@ -8,6 +8,7 @@ import FAB from "@/components/ui/FAB";
 import FilterChips from "./FilterChips";
 import StatsRow from "./StatsRow";
 import { useCausas } from "@/hooks/useCausas";
+import { useEnLineaPorCausa } from "@/hooks/usePresence";
 import { useCausasStore } from "@/store/causasStore";
 import type { ClienteOption } from "@/services/supabase/clientes";
 import type { CausaConRelaciones } from "@/types";
@@ -30,6 +31,7 @@ interface CausasViewProps {
 
 export default function CausasView({ causas, totalEnBD, clientes, userId, causasMax }: CausasViewProps) {
   const { causas: visibles, total, counts } = useCausas(causas, userId);
+  const enLineaPorCausa = useEnLineaPorCausa(causas.map((c) => c.id), userId);
   // Solo causas propias cuentan para el límite (las compartidas no son del usuario)
   const causasPropias = causas.filter((c) => c.user_id === userId).length;
   // Tipos de juicio únicos presentes en la lista (para el dropdown de filtros)
@@ -120,6 +122,7 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
                   causa={causa}
                   active={false}
                   onSelect={() => select(causa.id)}
+                  enLinea={enLineaPorCausa[causa.id]}
                   wide
                 />
               ))}

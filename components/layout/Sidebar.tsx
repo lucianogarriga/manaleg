@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useUIStore, loadPin } from "@/store/uiStore";
 import { useCausasStore } from "@/store/causasStore";
@@ -42,9 +42,13 @@ function NavLink({ item, active, expanded, textStyle, pill, onClick }: NavLinkPr
       onMouseLeave={() => setHovered(false)}
     >
       {/* Ícono con barra activa debajo (solo colapsado) */}
-      <span className="relative flex shrink-0 items-center justify-center" style={{ width: expanded ? 16 : 28, transition: `width ${DUR}` }}>
+      <span
+        className={`relative flex shrink-0 items-center justify-center ${expanded ? "w-[21px] md:w-[16px]" : "w-[28px]"}`}
+        style={{ transition: `width ${DUR}` }}
+      >
         <Icon
-          size={expanded ? 15 : 18}
+          size={expanded ? 17 : 18}
+          className={expanded ? "h-[21px] w-[21px] md:h-[17px] md:w-[17px]" : "h-[18px] w-[18px]"}
           strokeWidth={1.8}
           style={{ color: lit ? item.iconColor : "var(--sb-fg)", transition: `color 120ms, font-size ${DUR}` }}
         />
@@ -58,7 +62,7 @@ function NavLink({ item, active, expanded, textStyle, pill, onClick }: NavLinkPr
 
       {/* Texto con subrayado progresivo en hover/activo (solo expandido) */}
       <span
-        className={`relative whitespace-nowrap text-[11.5px] ${lit ? "font-semibold" : "font-medium"}`}
+        className={`relative whitespace-nowrap text-[16px] md:text-[14px] ${lit ? "font-semibold" : "font-medium"}`}
         style={textStyle}
       >
         {item.label}
@@ -117,7 +121,7 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
   // Estilos de texto: desaparecen en opacidad Y en ancho para no desplazar los íconos
   const textStyle: React.CSSProperties = {
     opacity: exp ? 1 : 0,
-    maxWidth: exp ? "160px" : "0px",
+    maxWidth: exp ? "200px" : "0px",
     overflow: "hidden",
     pointerEvents: exp ? "auto" : "none",
     transition: `opacity ${DUR} ${exp ? TEXT_DELAY_OPEN : "0ms"}, max-width ${DUR}`,
@@ -131,16 +135,16 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex shrink-0 flex-col p-2 md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex shrink-0 flex-col p-0 md:static md:translate-x-0 md:p-2 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } ${exp ? "w-[228px]" : "md:w-[56px]"} w-[228px]`}
+        } ${exp ? "md:w-[228px]" : "md:w-[56px]"} w-full`}
         style={{ transition: `width ${DUR}` }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
         {/* Pill — la superficie flotante */}
         <div
-          className="flex flex-1 flex-col overflow-hidden rounded-xl"
+          className="flex flex-1 flex-col overflow-hidden rounded-none md:rounded-xl"
           style={{ background: "var(--sb-bg)", boxShadow: "var(--sb-shadow)" }}
         >
           {/* ── Logo ─────────────────────────────────────────────────── */}
@@ -154,17 +158,26 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
             }}
           >
             <div
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] text-[13px] font-bold text-white"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[7px] text-[15px] font-bold text-white md:h-7 md:w-7 md:text-[13px]"
               style={{ background: "var(--sb-accent)" }}
             >
               M
             </div>
             <span
-              className="whitespace-nowrap text-[14px] font-bold"
+              className="whitespace-nowrap text-[19px] font-bold md:text-[16px]"
               style={{ color: "var(--sb-accent)", ...textStyle }}
             >
               Manaleg
             </span>
+            <button
+              type="button"
+              onClick={closeSidebar}
+              aria-label="Cerrar menú"
+              className="ml-auto mr-3 flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] md:hidden"
+              style={{ color: "var(--sb-fg)" }}
+            >
+              <X size={22} strokeWidth={1.8} />
+            </button>
           </div>
 
           {/* ── Nav ──────────────────────────────────────────────────── */}
@@ -181,7 +194,7 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
                   }}
                 >
                   <div
-                    className="px-[13px] pt-[6px] pb-[1px] text-[9px] font-bold uppercase tracking-[.9px]"
+                    className="px-[13px] pt-[6px] pb-[1px] text-[12.5px] font-bold uppercase tracking-[.9px] md:text-[11px]"
                     style={{ color: "var(--sb-fg)", opacity: 0.5 }}
                   >
                     {section.title}
@@ -228,7 +241,7 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
                     ? <PanelLeftClose size={14} strokeWidth={1.8} className="shrink-0" />
                     : <PanelLeftOpen  size={14} strokeWidth={1.8} className="shrink-0" />
                   }
-                  <span className="whitespace-nowrap text-[11px] font-medium" style={textStyle}>
+                  <span className="whitespace-nowrap text-[13px] font-medium" style={textStyle}>
                     {sidebarPinned ? "Colapsar menú" : "Fijar menú"}
                   </span>
                 </button>

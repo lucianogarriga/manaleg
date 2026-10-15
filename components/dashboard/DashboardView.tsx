@@ -6,6 +6,14 @@ import { formatCurrency, formatDate, getDaysUntil, todayISO } from "@/utils/form
 import { getDeadlineLabel, getUrgency, URGENCY_TEXT } from "@/utils/urgencyHelpers";
 import type { AlertaItem } from "@/services/supabase/layoutCounts";
 import type { DashboardStats } from "@/services/supabase/dashboardStats";
+
+// Honorarios cobrados en los últimos 30 días, cada moneda por separado: "$1.200.000 · US$500"
+function textoHonorarios(h: DashboardStats["honorariosCobrados"]): string {
+  const partes = (["ARS", "USD"] as const)
+    .filter((m) => (h[m]?.este30 ?? 0) > 0)
+    .map((m) => formatCurrency(h[m]?.este30 ?? 0, m));
+  return partes.length > 0 ? partes.join(" · ") : formatCurrency(0);
+}
 import type { Evento } from "@/types";
 import { pct, StatCard, type StatCardProps } from "./StatCard";
 import { MiniCalendar } from "./MiniCalendar";
@@ -46,7 +54,8 @@ export default function DashboardView({ nombre, causasActivas, alertas, eventos,
 
   const trendCausas     = stats ? pct(stats.causasNuevasEste30, stats.causasNuevasPrev30) : null;
   const trendClientes   = stats ? pct(stats.clientesNuevosEste30, stats.clientesNuevosPrev30) : null;
-  const trendHonorarios = stats ? pct(stats.honorariosCobradosEste30, stats.honorariosCobradosPrev30) : null;
+  const honPesos = stats?.honorariosCobrados.ARS;
+  const trendHonorarios = honPesos ? pct(honPesos.este30, honPesos.prev30) : null;
   const barVenc         = stats && causasActivas > 0 ? Math.round((stats.vencimientosProx7 / causasActivas) * 100) : 0;
 
   const CARDS: StatCardProps[] = [
@@ -111,7 +120,7 @@ export default function DashboardView({ nombre, causasActivas, alertas, eventos,
       iconBg: "rgba(4,120,87,.15)",
       iconColor: "var(--color-grn)",
       label: "Honorarios cobrados",
-      value: stats ? formatCurrency(stats.honorariosCobradosEste30) : "—",
+      value: stats ? textoHonorarios(stats.honorariosCobrados) : "—",
       sub: stats ? "últimos 30 días" : undefined,
       trend: trendHonorarios,
       barPct: stats && trendHonorarios !== null && trendHonorarios > 0 ? Math.min(100, trendHonorarios) : 0,

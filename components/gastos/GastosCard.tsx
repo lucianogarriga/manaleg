@@ -13,6 +13,7 @@ import FormAlert from "@/components/auth/FormAlert";
 import { useGastos } from "@/hooks/useCausaData";
 import { useUIStore } from "@/store/uiStore";
 import { formatCurrency, formatDate } from "@/utils/formatters";
+import { safeHref } from "@/utils/urls";
 import type { FormState, Gasto } from "@/types";
 
 function GastoForm({
@@ -164,7 +165,7 @@ export default function GastosCard({ causaId, naked = false }: { causaId: string
             {g.tipo && <div className="text-[11px] text-muted">{g.tipo}</div>}
           </div>
           {g.comprobante_url && (
-            <a href={g.comprobante_url} target="_blank" rel="noopener noreferrer"
+            <a href={safeHref(g.comprobante_url)} target="_blank" rel="noopener noreferrer"
               aria-label="Ver comprobante"
               className="flex text-muted hover:text-blue">
               <ExternalLink size={11} />

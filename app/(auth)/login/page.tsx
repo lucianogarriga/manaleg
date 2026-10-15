@@ -8,6 +8,7 @@ import { login } from "../actions";
 import AuthField from "@/components/auth/AuthField";
 import FormAlert from "@/components/auth/FormAlert";
 import SubmitButton from "@/components/auth/SubmitButton";
+import Turnstile from "@/components/auth/Turnstile";
 
 // Debe coincidir con el rate limit configurado en Supabase Dashboard → Auth → Rate Limits
 const MAX_INTENTOS = 5;
@@ -140,6 +141,7 @@ export default function LoginPage() {
           </p>
         </div>
 
+        <Turnstile />
         <SubmitButton pending={pending} pendingText="Ingresando…">
           Ingresar
         </SubmitButton>

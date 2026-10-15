@@ -1,9 +1,10 @@
 import { FolderOpen } from "lucide-react";
+import { safeHref } from "@/utils/urls";
 
 export default function DriveLink({ href, label }: { href: string; label: string }) {
   return (
     <a
-      href={href}
+      href={safeHref(href)}
       target="_blank"
       rel="noopener noreferrer"
       className="mx-3 mt-[10px] flex items-center gap-2 rounded-[7px] border border-dashed border-border bg-card px-3 py-[9px] text-[13.5px] font-medium text-blue hover:bg-blue-lt/50"
