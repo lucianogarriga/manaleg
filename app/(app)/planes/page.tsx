@@ -84,12 +84,9 @@ export default async function PlanesPage() {
             style={{ borderColor: "var(--color-blue)", background: "var(--color-blue-lt)", color: "var(--color-text)" }}
           >
             <Info size={15} strokeWidth={2.25} className="mt-[2px] shrink-0 text-blue" />
-            <div>
-              <p className="font-bold text-blue">Recordatorio</p>
-              <p className="mt-[2px] leading-[1.5]">
-                Sos beneficiado/a para probar la fase BETA de MANALEG: accedés de forma gratuita a todas las funcionalidades que el sistema ofrece actualmente.
-              </p>
-            </div>
+            <p className="leading-[1.5]">
+              Sos beneficiado/a para probar la fase BETA de MANALEG: accedés de forma gratuita a todas las funcionalidades que el sistema ofrece actualmente.
+            </p>
           </div>
         )}
       </div>
