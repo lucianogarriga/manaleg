@@ -89,6 +89,21 @@ export default function ImportarCausasModal({ open, onClose, onImported }: Props
     cerrar();
   };
 
+  // Al tildar "duplicadas", se marcan las filas duplicadas que se pueden cargar; al destildarla, se desmarcan.
+  const cambiarIncluirDuplicadas = (activo: boolean) => {
+    setIncluirDuplicadas(activo);
+    if (!vista) return;
+    setSeleccion((prev) => {
+      const nuevo = new Set(prev);
+      for (const f of vista.filas) {
+        if (!f.duplicada) continue;
+        if (activo && (f.datos || (permitirErrores && f.reparable))) nuevo.add(f.numero);
+        else nuevo.delete(f.numero);
+      }
+      return nuevo;
+    });
+  };
+
   // Al tildar la opción de errores, se marcan las filas con error reparable; al destildarla, se desmarcan.
   const cambiarPermitirErrores = (activo: boolean) => {
     setPermitirErrores(activo);
@@ -191,20 +206,20 @@ export default function ImportarCausasModal({ open, onClose, onImported }: Props
               <input
                 type="checkbox"
                 checked={incluirDuplicadas}
-                onChange={(e) => setIncluirDuplicadas(e.target.checked)}
+                onChange={(e) => cambiarIncluirDuplicadas(e.target.checked)}
               />
               Cargar también las causas duplicadas (mismo número de expediente)
             </label>
 
             {conErrores > 0 && (
-              <div className="flex flex-col gap-2 rounded-lg border border-red/30 bg-red/5 px-3 py-2">
-                <label className="flex items-center gap-2 text-[13px]">
+              <div className="flex flex-col gap-2">
+                <label className="flex items-center gap-2 text-[13px] text-red">
                   <input
                     type="checkbox"
                     checked={permitirErrores}
                     onChange={(e) => cambiarPermitirErrores(e.target.checked)}
                   />
-                  Cargar también las filas con errores (las marcadas en rojo)
+                  Cargar también las filas con errores
                 </label>
                 {permitirErrores && (
                   <div className="flex flex-col gap-1 pl-6 text-[12.5px]">
