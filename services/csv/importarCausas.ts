@@ -2,7 +2,6 @@
 // Se usa en el servidor (vista previa y carga). Nunca confía en el archivo del navegador.
 import { ESTADOS_CAUSA, FUEROS } from "@/utils/constants";
 import { parsearCsv } from "@/utils/csv";
-import { parseMonto } from "@/utils/formData";
 
 export const MAX_FILAS_IMPORTACION = 500;
 
@@ -118,6 +117,34 @@ function normalizarFecha(valor: string): string | null {
   return `${anio}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
 }
 
+// Montos del CSV, en cualquiera de estos formatos:
+//   150000 · 150000,50 · 150.000,50 (Argentina) · 1,500,000.00 (Excel en inglés) · $ 150.000
+// El último separador (coma o punto) con 1 o 2 dígitos después es la coma decimal; el resto son miles.
+const MONTO_MAX_CSV = 9_999_999_999;
+
+export function parsearMontoCsv(valor: string): number | "invalid" {
+  let limpio = valor.replace(/[$\s]/g, "");
+  const ultimaComa = limpio.lastIndexOf(",");
+  const ultimoPunto = limpio.lastIndexOf(".");
+  const ultimoSep = Math.max(ultimaComa, ultimoPunto);
+
+  if (ultimoSep >= 0) {
+    const decimales = limpio.length - ultimoSep - 1;
+    const esDecimal = decimales === 1 || decimales === 2;
+    if (esDecimal) {
+      const entera = limpio.slice(0, ultimoSep).replace(/[.,]/g, "");
+      const dec = limpio.slice(ultimoSep + 1);
+      limpio = `${entera}.${dec}`;
+    } else {
+      limpio = limpio.replace(/[.,]/g, "");
+    }
+  }
+
+  if (!/^\d+(\.\d{1,2})?$/.test(limpio)) return "invalid";
+  const n = Number(limpio);
+  return n <= MONTO_MAX_CSV ? n : "invalid";
+}
+
 function validarFila(
   celdas: Record<ColumnaCausa, string | undefined>,
   errores: string[],
@@ -152,7 +179,7 @@ function validarFila(
   let monto: number | null = null;
   const montoTexto = (celdas.monto_reclamado ?? "").trim();
   if (montoTexto) {
-    const parseado = parseMonto(montoTexto);
+    const parseado = parsearMontoCsv(montoTexto);
     if (parseado === "invalid") errores.push(`Monto "${montoTexto}" no es válido. Ejemplos: 150000, 150.000,50 o $ 150.000.`);
     else monto = parseado;
   }

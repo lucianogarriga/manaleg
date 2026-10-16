@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { AlertTriangle, Scale } from "lucide-react";
+import { AlertTriangle, FileSpreadsheet, Scale } from "lucide-react";
 import { CAUSAS_LIMIT, normalizeTipoJuicio } from "@/utils/constants";
 import EmptyState from "@/components/ui/EmptyState";
 import FAB from "@/components/ui/FAB";
@@ -112,8 +112,16 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
         <EmptyState
           icon={Scale}
           title="Todavía no cargaste causas"
-          description="Creá tu primera causa para empezar a seguir vencimientos, movimientos y honorarios."
+          description="Creá tu primera causa para empezar a seguir vencimientos, movimientos y honorarios, o subí tus expedientes desde un archivo CSV."
         >
+          <button
+            type="button"
+            onClick={() => setImportOpen(true)}
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-[6px] border border-grn/50 bg-grn/10 px-4 py-[7px] text-[14px] font-semibold text-grn hover:bg-grn/20"
+          >
+            <FileSpreadsheet size={15} strokeWidth={1.8} />
+            Importar CSV
+          </button>
           <button
             type="button"
             onClick={atLimit ? undefined : openCreate}
@@ -145,11 +153,21 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
             </div>
           )}
 
-          <div className="flex justify-end gap-3 px-3 pt-2 text-[13px] font-semibold text-blue">
-            <button type="button" onClick={() => setImportOpen(true)} className="cursor-pointer hover:underline">
+          <div className="flex flex-wrap justify-end gap-2 px-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setImportOpen(true)}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-grn/50 bg-grn/10 px-3 py-1.5 text-[12.5px] font-semibold text-grn transition-colors hover:bg-grn/20"
+            >
+              <FileSpreadsheet size={15} strokeWidth={1.8} />
               Importar CSV
             </button>
-            <button type="button" onClick={exportarCsv} className="cursor-pointer hover:underline">
+            <button
+              type="button"
+              onClick={exportarCsv}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-grn/40 px-3 py-1.5 text-[12.5px] font-semibold text-grn transition-colors hover:bg-grn/10"
+            >
+              <FileSpreadsheet size={15} strokeWidth={1.8} />
               Exportar CSV
             </button>
           </div>
