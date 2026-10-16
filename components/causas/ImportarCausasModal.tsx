@@ -108,9 +108,19 @@ export default function ImportarCausasModal({ open, onClose, onImported }: Props
   const libres = vista ? (vista.causasMax ?? 0) - (vista.causasPropias ?? 0) : 0;
   const excedeLimite = aCargar > libres;
   const conErrores = vista?.filas.filter((f) => f.errores.length > 0).length ?? 0;
+  // Filas completas que se cargarían sin tocar ninguna opción.
+  const listas = vista?.filas.filter((f) => f.datos && (incluirDuplicadas || !f.duplicada)).length ?? 0;
+  const soloDuplicadas = !!vista && listas === 0 && vista.filas.some((f) => f.duplicada);
+  const soloConErrores = !!vista && listas === 0 && !soloDuplicadas && conErrores > 0 && !permitirErrores;
+
+  const seleccionarListas = () => {
+    if (!vista) return;
+    setSeleccion(new Set(vista.filas.filter(cargable).map((f) => f.numero)));
+  };
+  const seleccionarNinguna = () => setSeleccion(new Set());
 
   return (
-    <Modal open={open} title="Importar causas desde CSV" onClose={cerrar}>
+    <Modal open={open} title="Importar causas desde CSV" onClose={cerrar} ancho="xl">
       <div className="flex flex-col gap-3 px-4 py-4 text-[13px] text-sub">
         <div className="flex flex-col gap-2 rounded-lg border border-border bg-bg/60 p-3">
           <span className="text-[12px] font-semibold text-muted">Columnas del archivo</span>
@@ -171,9 +181,9 @@ export default function ImportarCausasModal({ open, onClose, onImported }: Props
 
             <div className="flex flex-wrap gap-3 text-[12px]">
               <span>Filas: <strong>{vista.filas.length}</strong></span>
-              <span>Válidas: <strong>{vista.filas.length - conErrores}</strong></span>
-              <span className="text-red">Con errores: <strong>{conErrores}</strong></span>
+              <span>Listas para cargar: <strong>{listas}</strong></span>
               <span>Duplicadas: <strong>{vista.filas.filter((f) => f.duplicada).length}</strong></span>
+              <span className="text-red">Con errores: <strong>{conErrores}</strong></span>
               <span>Lugares libres en tu plan: <strong>{libres}</strong></span>
             </div>
 
@@ -230,6 +240,29 @@ export default function ImportarCausasModal({ open, onClose, onImported }: Props
               </div>
             )}
 
+            <div className="flex flex-wrap items-center justify-between gap-2 text-[12px]">
+              <span className="text-muted">Filas marcadas para cargar: {aCargar}</span>
+              <div className="flex gap-2">
+                <button type="button" onClick={seleccionarListas} className="cursor-pointer rounded-md border border-border px-2 py-0.5 text-sub hover:bg-bg">
+                  Marcar todas las cargables
+                </button>
+                <button type="button" onClick={seleccionarNinguna} className="cursor-pointer rounded-md border border-border px-2 py-0.5 text-sub hover:bg-bg">
+                  Desmarcar todas
+                </button>
+              </div>
+            </div>
+
+            {soloDuplicadas && (
+              <div className="rounded-lg border border-amb/30 bg-amb/10 px-3 py-2 text-[12.5px] text-amb">
+                Todas las causas válidas ya existen en tu cuenta. Tildá "Cargar también las causas duplicadas" si querés cargarlas igual.
+              </div>
+            )}
+            {soloConErrores && (
+              <div className="rounded-lg border border-amb/30 bg-amb/10 px-3 py-2 text-[12.5px] text-amb">
+                Todas las filas tienen errores. Tildá "Cargar también las filas con errores" para cargarlas con los campos marcados.
+              </div>
+            )}
+
             <div className="max-h-[320px] overflow-auto rounded-lg border border-border">
               <table className="w-full text-left text-[12px]">
                 <thead className="sticky top-0 bg-card text-muted">
@@ -257,9 +290,9 @@ export default function ImportarCausasModal({ open, onClose, onImported }: Props
                           />
                         </td>
                         <td className="px-2 py-1">{f.numero + 1}</td>
-                        <td className="px-2 py-1">{f.datos?.caratula ?? "—"}</td>
-                        <td className="px-2 py-1">{f.datos?.nro_expediente ?? "—"}</td>
-                        <td className="px-2 py-1">{f.datos?.estado ?? "—"}</td>
+                        <td className="px-2 py-1">{(f.datos ?? f.datosVacios)?.caratula ?? "—"}</td>
+                        <td className="px-2 py-1">{(f.datos ?? f.datosVacios)?.nro_expediente ?? "—"}</td>
+                        <td className="px-2 py-1">{(f.datos ?? f.datosVacios)?.estado ?? "—"}</td>
                         <td className="px-2 py-1 text-[11px]">
                           {f.errores.length > 0 && <div className="text-red">{f.errores.join(" ")}</div>}
                           {f.errores.length > 0 && f.reparable && (
