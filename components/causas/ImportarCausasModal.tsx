@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FileSpreadsheet } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import { confirmarCausas, previsualizarCausas, type VistaPreviaCausas } from "@/app/(app)/causas/importActions";
 import { COLUMNAS_CAUSA, MAX_FILAS_IMPORTACION } from "@/services/csv/importarCausas";
@@ -111,21 +112,50 @@ export default function ImportarCausasModal({ open, onClose, onImported }: Props
   return (
     <Modal open={open} title="Importar causas desde CSV" onClose={cerrar}>
       <div className="flex flex-col gap-3 px-4 py-4 text-[13px] text-sub">
-        <p>
-          Columnas: <span className="font-mono text-[12px]">{COLUMNAS_CAUSA.join(", ")}</span>. Solo <strong>caratula</strong> es obligatoria.
-          Fechas como DD/MM/AAAA. Hasta {MAX_FILAS_IMPORTACION} filas, 1 MB.
+        <div className="flex flex-col gap-2 rounded-lg border border-border bg-bg/60 p-3">
+          <span className="text-[12px] font-semibold text-muted">Columnas del archivo</span>
+          <div className="flex flex-wrap gap-1.5">
+            {COLUMNAS_CAUSA.map((c) => (
+              <span
+                key={c}
+                className={`rounded-md border px-2 py-0.5 font-mono text-[11.5px] ${
+                  c === "caratula" ? "border-blue/40 bg-blue-lt text-blue" : "border-border bg-card text-sub"
+                }`}
+              >
+                {c}
+              </span>
+            ))}
+          </div>
+        </div>
+        <p className="text-[11.5px] italic text-muted">
+          Solo caratula es obligatoria. Fechas como DD/MM/AAAA. Hasta {MAX_FILAS_IMPORTACION} filas, 1 MB.
         </p>
 
-        <input
-          type="file"
-          accept=".csv,text/csv"
-          disabled={cargando}
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) analizar(f);
-          }}
-          className="text-[13px]"
-        />
+        <div className="flex flex-col gap-1.5">
+          <input
+            id="archivo-csv-causas"
+            type="file"
+            accept=".csv,text/csv"
+            disabled={cargando}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) analizar(f);
+            }}
+            className="sr-only"
+          />
+          <label
+            htmlFor="archivo-csv-causas"
+            className={`inline-flex w-fit items-center gap-2 rounded-[6px] border border-border bg-card px-3.5 py-[7px] text-[13.5px] font-semibold text-text transition-colors hover:bg-bg ${
+              cargando ? "pointer-events-none opacity-50" : "cursor-pointer"
+            }`}
+          >
+            <FileSpreadsheet size={15} strokeWidth={1.8} className="text-grn" />
+            Elegir archivo
+          </label>
+          <span className="text-[12px] text-muted">
+            {archivo ? archivo.name : "No se ha seleccionado ningún archivo"}
+          </span>
+        </div>
 
         {error && (
           <div className="rounded-lg border border-red/30 bg-red/10 px-3 py-2 text-[13px] text-red">{error}</div>
