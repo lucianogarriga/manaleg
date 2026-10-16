@@ -24,9 +24,14 @@ export function parseMonto(value: string | null): number | null | "invalid" {
   if (ultimoSep >= 0) {
     const decimales = limpio.length - ultimoSep - 1;
     if (decimales === 1 || decimales === 2) {
-      const entera = limpio.slice(0, ultimoSep).replace(/[.,]/g, "");
+      // La parte entera puede ser un número simple o tener separadores de miles válidos.
+      const parteEntera = limpio.slice(0, ultimoSep);
+      if (!/^\d+$/.test(parteEntera) && !/^\d{1,3}([.,]\d{3})+$/.test(parteEntera)) return "invalid";
+      const entera = parteEntera.replace(/[.,]/g, "");
       limpio = `${entera}.${limpio.slice(ultimoSep + 1)}`;
     } else {
+      // Separadores de miles: cada grupo después del primero tiene que tener exactamente 3 dígitos.
+      if (!/^\d{1,3}([.,]\d{3})+$/.test(limpio)) return "invalid";
       limpio = limpio.replace(/[.,]/g, "");
     }
   }

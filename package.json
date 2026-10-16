@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "gen:types": "supabase gen types typescript --project-id vxcdtaribgdilhofdwvg > types/database.ts"
+    "gen:types": "supabase gen types typescript --project-id vxcdtaribgdilhofdwvg > types/database.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -25,7 +26,8 @@
     "@types/react-dom": "^19",
     "supabase": "^2.120.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   },
   "packageManager": "pnpm@12.6.0"
 }

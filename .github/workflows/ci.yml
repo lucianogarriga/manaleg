@@ -39,6 +39,9 @@ jobs:
       - name: Verificar tipos (tsc)
         run: pnpm exec tsc --noEmit
 
+      - name: Pruebas unitarias (parser de montos y CSV)
+        run: pnpm test
+
       - name: Build de producción
         run: pnpm build
 
