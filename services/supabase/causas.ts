@@ -81,7 +81,7 @@ export async function createCausa(input: CausaInput) {
   ]);
 
   const total = countResult.count ?? 0;
-  const max = profileResult.data?.causas_max ?? 100;
+  const max = profileResult.data?.causas_max ?? 60; // beta: límite inicial de causas
 
   if (total >= max) {
     return {

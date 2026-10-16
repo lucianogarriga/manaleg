@@ -9,9 +9,10 @@ interface ModalProps {
   onClose: () => void;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  ancho?: "md" | "xl"; // md: 640px (por defecto), xl: 960px para tablas
 }
 
-export default function Modal({ open, title, onClose, children, footer }: ModalProps) {
+export default function Modal({ open, title, onClose, children, footer, ancho = "md" }: ModalProps) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -28,7 +29,7 @@ export default function Modal({ open, title, onClose, children, footer }: ModalP
         aria-modal="true"
         aria-label={title}
         onMouseDown={(e) => e.stopPropagation()}
-        className="flex max-h-[92vh] w-full max-w-[640px] flex-col overflow-hidden rounded-t-[10px] border border-border bg-card shadow-xl sm:rounded-[9px]"
+        className={`flex max-h-[92vh] w-full flex-col ${ancho === "xl" ? "max-w-[960px]" : "max-w-[640px]"} overflow-hidden rounded-t-[10px] border border-border bg-card shadow-xl sm:rounded-[9px]`}
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <h2 className="text-[16px] font-bold text-text">{title}</h2>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { AlertTriangle, Scale } from "lucide-react";
+import { AlertTriangle, FileSpreadsheet, Scale, X } from "lucide-react";
 import { CAUSAS_LIMIT, normalizeTipoJuicio } from "@/utils/constants";
 import EmptyState from "@/components/ui/EmptyState";
 import FAB from "@/components/ui/FAB";
@@ -18,6 +18,9 @@ import MaintenanceBanner from "@/components/ui/MaintenanceBanner";
 import CausaRow from "./CausaRow";
 import CausaCard from "./CausaCard";
 import FabSpotlight from "@/components/ui/FabSpotlight";
+import ImportarCausasModal from "./ImportarCausasModal";
+import { COLUMNAS_CAUSA } from "@/services/csv/importarCausas";
+import { escribirCsv } from "@/utils/csv";
 
 type ViewMode = "list" | "grid";
 
@@ -55,6 +58,45 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
   const search = useCausasStore((s) => s.search);
 
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [importOpen, setImportOpen] = useState(false);
+  const [avisoImport, setAvisoImport] = useState<string | null>(null);
+
+  // El aviso de importación se cierra solo a los 5 segundos.
+  useEffect(() => {
+    if (!avisoImport) return;
+    const t = setTimeout(() => setAvisoImport(null), 5000);
+    return () => clearTimeout(t);
+  }, [avisoImport]);
+
+  // Exporta las causas propias cargadas en pantalla (hasta CAUSAS_LIMIT)
+  const exportarCsv = () => {
+    const filas = [
+      [...COLUMNAS_CAUSA],
+      ...causas
+        .filter((c) => c.user_id === userId)
+        .map((c) => [
+          c.caratula,
+          c.nro_expediente ?? "",
+          c.fuero ?? "",
+          c.tipo_juicio ?? "",
+          c.juzgado_camara ?? "",
+          c.fecha_inicio ?? "",
+          c.monto_reclamado != null ? String(c.monto_reclamado) : "",
+          c.link_drive ?? "",
+          c.parte_actora ?? "",
+          c.parte_demandada ?? "",
+          c.estado,
+          c.notas ?? "",
+        ]),
+    ];
+    const blob = new Blob([escribirCsv(filas)], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `causas-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   useEffect(() => {
     try {
@@ -77,8 +119,16 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
         <EmptyState
           icon={Scale}
           title="Todavía no cargaste causas"
-          description="Creá tu primera causa para empezar a seguir vencimientos, movimientos y honorarios."
+          description="Creá tu primera causa para empezar a seguir vencimientos, movimientos y honorarios, o subí tus expedientes desde un archivo CSV."
         >
+          <button
+            type="button"
+            onClick={() => setImportOpen(true)}
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-[6px] border border-grn/50 bg-grn/10 px-4 py-[7px] text-[14px] font-semibold text-grn hover:bg-grn/20"
+          >
+            <FileSpreadsheet size={15} strokeWidth={1.8} />
+            Importar CSV
+          </button>
           <button
             type="button"
             onClick={atLimit ? undefined : openCreate}
@@ -86,6 +136,13 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
             className="cursor-pointer rounded-[6px] bg-blue px-4 py-[7px] text-[14px] font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             + Nueva causa
+          </button>
+          <button
+            type="button"
+            onClick={() => setImportOpen(true)}
+            className="mt-2 cursor-pointer text-[13px] font-semibold text-blue hover:underline"
+          >
+            o importar desde un CSV
           </button>
         </EmptyState>
       ) : (
@@ -100,6 +157,38 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
                 Tenés <strong>{totalEnBD}</strong> causas pero solo se muestran las primeras <strong>{CAUSAS_LIMIT}</strong>.
                 Los filtros y conteos pueden ser incompletos. Contactá al equipo para habilitar más.
               </span>
+            </div>
+          )}
+
+          <div className="flex flex-wrap justify-end gap-2 px-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setImportOpen(true)}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-grn/50 bg-grn/10 px-3 py-1.5 text-[12.5px] font-semibold text-grn transition-colors hover:bg-grn/20"
+            >
+              <FileSpreadsheet size={15} strokeWidth={1.8} />
+              Importar CSV
+            </button>
+            <button
+              type="button"
+              onClick={exportarCsv}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-grn/40 px-3 py-1.5 text-[12.5px] font-semibold text-grn transition-colors hover:bg-grn/10"
+            >
+              <FileSpreadsheet size={15} strokeWidth={1.8} />
+              Exportar CSV
+            </button>
+          </div>
+          {avisoImport && (
+            <div className="mx-3 mt-2 flex items-start gap-2 rounded-lg border border-grn/30 bg-grn/10 px-3 py-2 text-[12px] text-grn">
+              <span className="flex-1">{avisoImport}</span>
+              <button
+                type="button"
+                onClick={() => setAvisoImport(null)}
+                aria-label="Cerrar aviso"
+                className="shrink-0 cursor-pointer rounded p-0.5 text-grn hover:bg-grn/20"
+              >
+                <X size={14} />
+              </button>
             </div>
           )}
 
@@ -154,6 +243,11 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
         </div>
       )}
 
+      <ImportarCausasModal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={(m) => setAvisoImport(m)}
+      />
       {selected && <CausaModal causa={selected} userId={userId} />}
       <FabSpotlight />
 
