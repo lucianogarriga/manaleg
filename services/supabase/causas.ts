@@ -71,19 +71,30 @@ export async function getCausaById(id: string): Promise<CausaConRelaciones | nul
 }
 
 // user_id y ultimo_editor_id los completa la base (default auth.uid() / trigger)
+// Cuántas causas propias tiene el usuario (no cuenta las compartidas con él).
+export async function contarCausasPropias(userId: string): Promise<number> {
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("causas")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId);
+  return count ?? 0;
+}
+
 export async function createCausa(input: CausaInput) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { data: null, error: { message: "No autenticado." } } as const;
 
-  // Verificar límite del plan antes de insertar
-  const [countResult, profileResult] = await Promise.all([
-    supabase.from("causas").select("id", { count: "exact", head: true }),
+  // Verificar límite del plan antes de insertar (solo causas propias)
+  const [propias, profileResult] = await Promise.all([
+    contarCausasPropias(user.id),
     supabase.from("profiles").select("causas_max").single<{ causas_max: number }>(),
   ]);
 
-  const total = countResult.count ?? 0;
   const max = profileResult.data?.causas_max ?? 60; // beta: límite inicial de causas
 
-  if (total >= max) {
+  if (propias >= max) {
     return {
       data: null,
       error: {

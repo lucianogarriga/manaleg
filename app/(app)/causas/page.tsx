@@ -1,6 +1,6 @@
 import CausasView from "@/components/causas/CausasView";
 import { getCurrentProfile } from "@/components/auth/AuthGuard";
-import { getCausas } from "@/services/supabase/causas";
+import { contarCausasPropias, getCausas } from "@/services/supabase/causas";
 import { getClienteOptions } from "@/services/supabase/clientes";
 
 export default async function CausasPage() {
@@ -9,6 +9,8 @@ export default async function CausasPage() {
     getCausas(),
     getClienteOptions(),
   ]);
+  // Conteo real de causas propias (la lista se limita a 60 filas, el conteo no)
+  const causasPropias = await contarCausasPropias(profile.id);
 
   return (
     <CausasView
@@ -17,6 +19,7 @@ export default async function CausasPage() {
       clientes={clientes}
       userId={profile.id}
       causasMax={profile.causas_max}
+      causasPropias={causasPropias}
     />
   );
 }

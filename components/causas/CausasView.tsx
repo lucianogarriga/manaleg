@@ -30,13 +30,12 @@ interface CausasViewProps {
   clientes: ClienteOption[];
   userId: string;
   causasMax: number;
+  causasPropias: number; // conteo real en la base (no depende del tope de la lista)
 }
 
-export default function CausasView({ causas, totalEnBD, clientes, userId, causasMax }: CausasViewProps) {
+export default function CausasView({ causas, totalEnBD, clientes, userId, causasMax, causasPropias }: CausasViewProps) {
   const { causas: visibles, total, counts } = useCausas(causas, userId);
   const enLineaPorCausa = useEnLineaPorCausa(causas.map((c) => c.id), userId);
-  // Solo causas propias cuentan para el límite (las compartidas no son del usuario)
-  const causasPropias = causas.filter((c) => c.user_id === userId).length;
   // Tipos de juicio únicos presentes en la lista (para el dropdown de filtros)
   const tiposJuicio = useMemo(() => {
     const seen = new Map<string, string>();
@@ -148,6 +147,14 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
       ) : (
         <div className="flex flex-col">
           <MaintenanceBanner compact />
+          {atLimit && (
+            <div className="mx-3 mt-2 flex items-center gap-2 rounded-lg border border-red/30 bg-red/10 px-3 py-2 text-[12.5px] text-red">
+              <AlertTriangle size={13} className="shrink-0" />
+              <span>
+                Alcanzaste el límite de <strong>{causasMax}</strong> causas de tu plan. No podés cargar más hasta ampliarlo.
+              </span>
+            </div>
+          )}
           <StatsRow causas={causas} />
 
           {totalEnBD > CAUSAS_LIMIT && (

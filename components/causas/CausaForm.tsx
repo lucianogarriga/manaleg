@@ -224,8 +224,9 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
       <form id="causa-form" onSubmit={onSubmit}>
         {causa && <input type="hidden" name="id" value={causa.id} />}
 
+        {/* Sticky: el error queda visible aunque el formulario esté desplazado */}
         {(state.error || deleteError) && (
-          <div className="px-4 pt-3">
+          <div className="sticky top-0 z-10 bg-card px-4 pt-3 pb-2">
             <FormAlert state={{ error: state.error ?? deleteError }} />
           </div>
         )}
