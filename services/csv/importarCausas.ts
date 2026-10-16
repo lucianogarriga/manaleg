@@ -40,9 +40,14 @@ export interface CausaImportada {
 
 export interface FilaAnalizada {
   numero: number; // número de fila del archivo (1 = primera fila de datos)
-  datos: CausaImportada | null; // null si la fila tiene errores
+  datos: CausaImportada | null; // fila completa y sin errores
   errores: string[];
+  advertencias: string[]; // se cargan igual, pero el usuario tiene que saberlo (p. ej. fuero "Otro")
   duplicada: boolean; // el número de expediente ya existe en la cuenta o se repite en el archivo
+  // Filas con errores que se pueden cargar igual (tienen carátula):
+  reparable: boolean;
+  datosVacios: CausaImportada | null; // los campos con error quedan vacíos
+  datosErroneo: CausaImportada | null; // los campos de texto con error dicen "Campo erroneo"
 }
 
 export interface AnalisisCausas {
@@ -93,12 +98,19 @@ function normalizarEncabezado(valor: string): string {
     .replace(/[\s-]+/g, "_");
 }
 
+// Devuelve el texto recortado, o null si está vacío o es demasiado largo (en ese caso anota el error).
 function textoOpcional(valor: string | undefined, max: number, etiqueta: string, errores: string[]): string | null {
   const t = (valor ?? "").trim();
   if (!t) return null;
-  if (t.length > max) errores.push(`${etiqueta}: máximo ${max} caracteres.`);
+  if (t.length > max) {
+    errores.push(`${etiqueta}: máximo ${max} caracteres.`);
+    return null;
+  }
   return t;
 }
+
+// Texto que se usa en lugar de un campo de texto con error, si el usuario elige esa opción.
+export const TEXTO_CAMPO_ERRONEO = "Campo erroneo";
 
 // Acepta 2026-10-15 o 15/10/2026. Devuelve YYYY-MM-DD o null si no es una fecha real.
 function normalizarFecha(valor: string): string | null {
@@ -145,30 +157,53 @@ export function parsearMontoCsv(valor: string): number | "invalid" {
   return n <= MONTO_MAX_CSV ? n : "invalid";
 }
 
-function validarFila(
-  celdas: Record<ColumnaCausa, string | undefined>,
-  errores: string[],
-): CausaImportada | null {
-  const caratula = textoOpcional(celdas.caratula, 80, "Carátula", errores);
+interface ResultadoFila {
+  fila: CausaImportada; // campos con error en null
+  caratulaValida: boolean;
+  camposTextoConError: string[]; // campos de texto con error (para la opción "Campo erroneo")
+  errores: string[];
+  advertencias: string[];
+}
+
+function validarFila(celdas: Record<ColumnaCausa, string | undefined>): ResultadoFila {
+  const errores: string[] = [];
+  const advertencias: string[] = [];
+  const camposTextoConError: string[] = [];
+
+  // Cada campo de texto: si es demasiado largo, queda con error (y puede marcarse como "Campo erroneo").
+  const texto = (campo: ColumnaCausa, max: number, etiqueta: string) => {
+    const antes = errores.length;
+    const valor = textoOpcional(celdas[campo], max, etiqueta, errores);
+    if (errores.length > antes) camposTextoConError.push(campo);
+    return valor;
+  };
+
+  const caratula = texto("caratula", 80, "Carátula");
   if (!caratula) errores.push("Carátula: es obligatoria.");
 
-  const nro = textoOpcional(celdas.nro_expediente, 60, "Número de expediente", errores);
+  const nro = texto("nro_expediente", 60, "Número de expediente");
 
+  // Fuero que no está en la lista: se carga como "Otro" y se avisa.
   let fuero: string | null = null;
-  const fueroTexto = textoOpcional(celdas.fuero, 50, "Fuero", errores);
+  const fueroTexto = textoOpcional(celdas.fuero, 50, "Fuero", []);
   if (fueroTexto) {
     fuero = FUEROS.find((f) => f.toLowerCase() === fueroTexto.toLowerCase()) ?? null;
-    if (!fuero) errores.push(`Fuero "${fueroTexto}" no existe. Opciones: ${FUEROS.join(", ")}.`);
+    if (!fuero) {
+      fuero = "Otro";
+      advertencias.push(`Fuero "${fueroTexto}" no está en la lista: se va a cargar como "Otro".`);
+    }
   }
 
+  // Estado que no existe: se carga como "Iniciada" y se avisa.
   let estado = "Iniciada";
-  const estadoTexto = textoOpcional(celdas.estado, 30, "Estado", errores);
+  const estadoTexto = textoOpcional(celdas.estado, 30, "Estado", []);
   if (estadoTexto) {
     const encontrado = ESTADOS_CAUSA.find((e) => e.toLowerCase() === estadoTexto.toLowerCase());
     if (encontrado) estado = encontrado;
-    else errores.push(`Estado "${estadoTexto}" no existe. Opciones: ${ESTADOS_CAUSA.join(", ")}.`);
+    else advertencias.push(`Estado "${estadoTexto}" no existe: se va a cargar como "Iniciada".`);
   }
 
+  // Campos que no son texto: si tienen error, quedan vacíos en cualquier caso.
   let fecha: string | null = null;
   const fechaTexto = (celdas.fecha_inicio ?? "").trim();
   if (fechaTexto) {
@@ -185,32 +220,38 @@ function validarFila(
   }
 
   let linkDrive: string | null = null;
-  const linkTexto = textoOpcional(celdas.link_drive, 500, "Link de Drive", errores);
+  const linkTexto = (celdas.link_drive ?? "").trim();
   if (linkTexto) {
-    if (/^https:\/\/\S+$/i.test(linkTexto)) linkDrive = linkTexto;
+    if (linkTexto.length > 500) errores.push("Link de Drive: máximo 500 caracteres.");
+    else if (/^https:\/\/\S+$/i.test(linkTexto)) linkDrive = linkTexto;
     else errores.push("Link de Drive: tiene que empezar con https://.");
   }
 
-  const tipoJuicio = textoOpcional(celdas.tipo_juicio, 50, "Tipo de juicio", errores);
-  const juzgado = textoOpcional(celdas.juzgado_camara, 50, "Juzgado/cámara", errores);
-  const actora = textoOpcional(celdas.parte_actora, 150, "Parte actora", errores);
-  const demandada = textoOpcional(celdas.parte_demandada, 150, "Parte demandada", errores);
-  const notas = textoOpcional(celdas.notas, 500, "Notas", errores);
+  const tipoJuicio = texto("tipo_juicio", 50, "Tipo de juicio");
+  const juzgado = texto("juzgado_camara", 50, "Juzgado/cámara");
+  const actora = texto("parte_actora", 150, "Parte actora");
+  const demandada = texto("parte_demandada", 150, "Parte demandada");
+  const notas = texto("notas", 500, "Notas");
 
-  if (errores.length > 0 || !caratula) return null;
   return {
-    caratula,
-    nro_expediente: nro,
-    fuero,
-    tipo_juicio: tipoJuicio,
-    juzgado_camara: juzgado,
-    parte_actora: actora,
-    parte_demandada: demandada,
-    fecha_inicio: fecha,
-    monto_reclamado: monto,
-    link_drive: linkDrive,
-    estado,
-    notas,
+    fila: {
+      caratula: caratula ?? "",
+      nro_expediente: nro,
+      fuero,
+      tipo_juicio: tipoJuicio,
+      juzgado_camara: juzgado,
+      parte_actora: actora,
+      parte_demandada: demandada,
+      fecha_inicio: fecha,
+      monto_reclamado: monto,
+      link_drive: linkDrive,
+      estado,
+      notas,
+    },
+    caratulaValida: !!caratula,
+    camposTextoConError,
+    errores,
+    advertencias,
   };
 }
 
@@ -251,17 +292,33 @@ export function analizarCsvCausas(texto: string, expedientesExistentes: Set<stri
       celdas[columna] = pos === undefined ? undefined : celdasCrudas[pos];
     }
 
-    const errores: string[] = [];
-    const datosFila = validarFila(celdas, errores);
-
-    const nro = datosFila?.nro_expediente ?? null;
+    const r = validarFila(celdas);
+    const sinErrores = r.errores.length === 0 && r.caratulaValida;
+    const conErroresTexto = (campos: string[]) => {
+      const copia = { ...r.fila };
+      for (const campo of campos) (copia as Record<string, unknown>)[campo] = TEXTO_CAMPO_ERRONEO;
+      return copia;
+    };
+    const reparable = r.caratulaValida && r.errores.length > 0;
+    const datosFila = sinErrores ? r.fila : null;
+    const nro = r.fila.nro_expediente;
     let duplicada = false;
-    if (nro) {
+    if (nro && r.caratulaValida) {
       duplicada = expedientesExistentes.has(nro) || vistos.has(nro);
       vistos.add(nro);
     }
 
-    return { numero: i + 1, datos: datosFila, errores, duplicada };
+    return {
+      numero: i + 1,
+      datos: datosFila,
+      errores: r.errores,
+      advertencias: r.advertencias,
+      duplicada,
+      reparable,
+      // Los campos con error ya quedaron en null en r.fila (fecha, monto, link y textos demasiado largos).
+      datosVacios: r.caratulaValida ? r.fila : null,
+      datosErroneo: r.caratulaValida ? conErroresTexto(r.camposTextoConError) : null,
+    };
   });
 
   return { columnasDesconocidas, filas: resultado };

@@ -25,6 +25,7 @@ export const FUEROS = [
   "Familia",
   "Extrajudicial",
   "Administrativo",
+  "Otro",
 ] as const;
 
 export const VIAS_PROCESO = [

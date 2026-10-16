@@ -16,6 +16,8 @@ export default function ImportarCausasModal({ open, onClose, onImported }: Props
   const [vista, setVista] = useState<VistaPreviaCausas | null>(null);
   const [seleccion, setSeleccion] = useState<Set<number>>(new Set());
   const [incluirDuplicadas, setIncluirDuplicadas] = useState(false);
+  const [permitirErrores, setPermitirErrores] = useState(false);
+  const [modoErrores, setModoErrores] = useState<"vacios" | "erroneo">("vacios");
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,11 +25,17 @@ export default function ImportarCausasModal({ open, onClose, onImported }: Props
   const seleccionPorDefecto = (v: VistaPreviaCausas) =>
     new Set(v.filas.filter((f) => f.datos && !f.duplicada).map((f) => f.numero));
 
+  // Filas que se pueden cargar: válidas, o con errores si el usuario eligió esa opción.
+  const cargable = (f: VistaPreviaCausas["filas"][number]) =>
+    (!!f.datos || (permitirErrores && f.reparable)) && (incluirDuplicadas || !f.duplicada);
+
   const cerrar = () => {
     setArchivo(null);
     setVista(null);
     setSeleccion(new Set());
     setIncluirDuplicadas(false);
+    setPermitirErrores(false);
+    setModoErrores("vacios");
     setError(null);
     onClose();
   };
@@ -66,6 +74,10 @@ export default function ImportarCausasModal({ open, onClose, onImported }: Props
     fd.append("archivo", archivo);
     seleccion.forEach((n) => fd.append("fila", String(n)));
     if (incluirDuplicadas) fd.append("incluirDuplicadas", "on");
+    if (permitirErrores) {
+      fd.append("permitirErrores", "on");
+      fd.append("modoErrores", modoErrores);
+    }
     const r = await confirmarCausas(fd);
     setCargando(false);
     if (r.error) {
@@ -76,8 +88,22 @@ export default function ImportarCausasModal({ open, onClose, onImported }: Props
     cerrar();
   };
 
-  const filasElegibles = vista?.filas.filter((f) => f.datos && (incluirDuplicadas || !f.duplicada)) ?? [];
-  const aCargar = filasElegibles.filter((f) => seleccion.has(f.numero)).length;
+  // Al tildar la opción de errores, se marcan las filas con error reparable; al destildarla, se desmarcan.
+  const cambiarPermitirErrores = (activo: boolean) => {
+    setPermitirErrores(activo);
+    if (!vista) return;
+    setSeleccion((prev) => {
+      const nuevo = new Set(prev);
+      for (const f of vista.filas) {
+        if (f.datos) continue;
+        if (activo && f.reparable && (incluirDuplicadas || !f.duplicada)) nuevo.add(f.numero);
+        else nuevo.delete(f.numero);
+      }
+      return nuevo;
+    });
+  };
+
+  const aCargar = vista?.filas.filter((f) => cargable(f) && seleccion.has(f.numero)).length ?? 0;
   const libres = vista ? (vista.causasMax ?? 0) - (vista.causasPropias ?? 0) : 0;
   const excedeLimite = aCargar > libres;
   const conErrores = vista?.filas.filter((f) => f.errores.length > 0).length ?? 0;
@@ -130,6 +156,44 @@ export default function ImportarCausasModal({ open, onClose, onImported }: Props
               Cargar también las causas duplicadas (mismo número de expediente)
             </label>
 
+            {conErrores > 0 && (
+              <div className="flex flex-col gap-2 rounded-lg border border-red/30 bg-red/5 px-3 py-2">
+                <label className="flex items-center gap-2 text-[13px]">
+                  <input
+                    type="checkbox"
+                    checked={permitirErrores}
+                    onChange={(e) => cambiarPermitirErrores(e.target.checked)}
+                  />
+                  Cargar también las filas con errores (las marcadas en rojo)
+                </label>
+                {permitirErrores && (
+                  <div className="flex flex-col gap-1 pl-6 text-[12.5px]">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="modoErrores"
+                        checked={modoErrores === "vacios"}
+                        onChange={() => setModoErrores("vacios")}
+                      />
+                      Dejar vacíos los campos con error
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="modoErrores"
+                        checked={modoErrores === "erroneo"}
+                        onChange={() => setModoErrores("erroneo")}
+                      />
+                      Escribir <span className="font-mono">Campo erroneo</span> en los campos de texto con error
+                    </label>
+                    <span className="text-[11.5px] text-muted">
+                      Fechas, montos y links con error quedan vacíos en ambos casos.
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {excedeLimite && (
               <div className="rounded-lg border border-amb/30 bg-amb/10 px-3 py-2 text-[13px] text-amb">
                 Tu plan permite {libres} causas más y elegiste {aCargar}. No se va a cargar ninguna: desmarcá filas o ampliá tu plan.
@@ -151,7 +215,7 @@ export default function ImportarCausasModal({ open, onClose, onImported }: Props
                 <tbody>
                   {vista.filas.map((f) => {
                     const valida = !!f.datos;
-                    const marcable = valida && (incluirDuplicadas || !f.duplicada);
+                    const marcable = cargable(f);
                     return (
                       <tr key={f.numero} className={`border-t border-border ${valida ? "" : "bg-red/5"}`}>
                         <td className="px-2 py-1">
@@ -168,8 +232,14 @@ export default function ImportarCausasModal({ open, onClose, onImported }: Props
                         <td className="px-2 py-1">{f.datos?.estado ?? "—"}</td>
                         <td className="px-2 py-1 text-[11px]">
                           {f.errores.length > 0 && <div className="text-red">{f.errores.join(" ")}</div>}
+                          {f.errores.length > 0 && f.reparable && (
+                            <div className="text-amb">Se puede cargar con los campos marcados.</div>
+                          )}
+                          {f.advertencias.map((a) => (
+                            <div key={a} className="text-amb">{a}</div>
+                          ))}
                           {f.duplicada && <div className="text-amb">Duplicada: ya existe ese expediente.</div>}
-                          {valida && !f.duplicada && <div className="text-grn">OK</div>}
+                          {valida && !f.duplicada && f.advertencias.length === 0 && <div className="text-grn">OK</div>}
                         </td>
                       </tr>
                     );

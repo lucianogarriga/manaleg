@@ -59,11 +59,17 @@ export async function confirmarCausas(formData: FormData): Promise<{ error?: str
 
   const elegidas = new Set(formData.getAll("fila").map((v) => Number(v)));
   const incluirDuplicadas = formData.get("incluirDuplicadas") === "on";
+  const permitirErrores = formData.get("permitirErrores") === "on";
+  const erroneo = formData.get("modoErrores") === "erroneo";
 
+  // Una fila se carga si es válida, o si tiene errores y el usuario eligió cargarla con los campos marcados.
   const aCargar = r.analisis.filas.filter(
-    (f) => f.datos && elegidas.has(f.numero) && (incluirDuplicadas || !f.duplicada),
+    (f) =>
+      elegidas.has(f.numero) &&
+      (incluirDuplicadas || !f.duplicada) &&
+      (f.datos || (permitirErrores && f.reparable)),
   );
-  if (aCargar.length === 0) return { error: "No hay causas válidas para cargar." };
+  if (aCargar.length === 0) return { error: "No hay causas para cargar con la selección actual." };
 
   // Límite del plan: se rechaza el archivo completo, sin cargar a medias.
   const libres = r.causasMax - r.causasPropias;
@@ -76,9 +82,13 @@ export async function confirmarCausas(formData: FormData): Promise<{ error?: str
   const supabase = await createClient();
   const { error } = await supabase
     .from("causas")
-    .insert(aCargar.map((f) => aFilaCausa(f.datos!)));
+    .insert(
+      aCargar.map((f) => aFilaCausa((f.datos ?? (erroneo ? f.datosErroneo : f.datosVacios))!)),
+    );
   if (error) return { error: `No se pudo importar: ${error.message}. No se cargó ninguna causa.` };
 
   revalidatePath("/", "layout");
-  return { message: `Se cargaron ${aCargar.length} causas.` };
+  const conErrores = aCargar.filter((f) => !f.datos).length;
+  const extra = conErrores ? ` ${conErrores} con campos marcados.` : "";
+  return { message: `Se cargaron ${aCargar.length} causas.${extra}` };
 }
