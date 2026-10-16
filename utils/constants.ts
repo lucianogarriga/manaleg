@@ -25,6 +25,8 @@ export const FUEROS = [
   "Familia",
   "Extrajudicial",
   "Administrativo",
+  "Federal",
+  "Comercial",
   "Otro",
 ] as const;
 
@@ -82,6 +84,16 @@ export const TIPOS_JUICIO_POR_FUERO: Record<string, string[]> = {
     "Recurso administrativo", "Ejecución fiscal", "Multa tributaria",
     "Impugnación de acto administrativo", "Amparo",
     "Reclamo de daños al Estado",
+  ],
+  "Federal": [
+    "Amparo federal", "Ejecución fiscal (AFIP/ARCA)", "Recurso de apelación fiscal",
+    "Contencioso administrativo federal", "Delitos federales", "Extradición",
+    "Cuestiones de competencia federal", "Acción de inconstitucionalidad",
+  ],
+  "Comercial": [
+    "Concurso preventivo", "Quiebra", "Pagarés y cheques", "Cobro ejecutivo mercantil",
+    "Disolución de sociedad", "Sociedades comerciales", "Marcas y patentes",
+    "Contratos comerciales", "Competencia desleal", "Defensa del consumidor",
   ],
 };
 
