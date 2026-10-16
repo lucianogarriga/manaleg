@@ -11,18 +11,28 @@ export function oneOf<T extends string>(value: string | null, options: readonly 
 
 const MONTO_MAX = 9_999_999_999; // cabe en NUMERIC(12,2) y DECIMAL(15,2)
 
-// "4.200.000" → 4200000 · "4200000,50" o "1.234,50" → con coma decimal · "5000.50" → con punto decimal.
-// null si está vacío, "invalid" si no es un monto válido o supera el tope.
+// Acepta cualquier formato de número habitual:
+//   150000 · 150000,50 · 150.000,50 (Argentina) · 1,500,000.00 (Excel en inglés) · $ 150.000 · 5000.50
+// Regla: el último separador (coma o punto) seguido de 1 o 2 dígitos es la coma decimal;
+// los demás separadores son de miles. Devuelve null si está vacío, "invalid" si no es un monto válido.
 export function parseMonto(value: string | null): number | null | "invalid" {
   if (value === null) return null;
-  const limpio = value.replace(/[$\s]/g, "");
-  let normalizado: string;
-  if (limpio.includes(",")) normalizado = limpio.replace(/\./g, "").replace(",", ".");
-  else if (/^\d{1,3}(\.\d{3})+$/.test(limpio)) normalizado = limpio.replace(/\./g, "");
-  else normalizado = limpio;
+  let limpio = value.replace(/[$\s]/g, "");
+  if (limpio === "") return null;
 
-  if (!/^\d+(\.\d{1,2})?$/.test(normalizado)) return "invalid";
-  const n = Number(normalizado);
+  const ultimoSep = Math.max(limpio.lastIndexOf(","), limpio.lastIndexOf("."));
+  if (ultimoSep >= 0) {
+    const decimales = limpio.length - ultimoSep - 1;
+    if (decimales === 1 || decimales === 2) {
+      const entera = limpio.slice(0, ultimoSep).replace(/[.,]/g, "");
+      limpio = `${entera}.${limpio.slice(ultimoSep + 1)}`;
+    } else {
+      limpio = limpio.replace(/[.,]/g, "");
+    }
+  }
+
+  if (!/^\d+(\.\d{1,2})?$/.test(limpio)) return "invalid";
+  const n = Number(limpio);
   return n <= MONTO_MAX ? n : "invalid";
 }
 
