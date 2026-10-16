@@ -37,7 +37,7 @@ async function analizarArchivo(formData: FormData): Promise<
   const analisis = analizarCsvCausas(await archivo.text(), existentes);
   return {
     analisis,
-    causasMax: perfil.data?.causas_max ?? 100,
+    causasMax: perfil.data?.causas_max ?? 60,
     causasPropias: propias.data?.length ?? 0,
   };
 }

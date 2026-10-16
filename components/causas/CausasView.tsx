@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { AlertTriangle, FileSpreadsheet, Scale } from "lucide-react";
+import { AlertTriangle, FileSpreadsheet, Scale, X } from "lucide-react";
 import { CAUSAS_LIMIT, normalizeTipoJuicio } from "@/utils/constants";
 import EmptyState from "@/components/ui/EmptyState";
 import FAB from "@/components/ui/FAB";
@@ -60,6 +60,13 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [importOpen, setImportOpen] = useState(false);
   const [avisoImport, setAvisoImport] = useState<string | null>(null);
+
+  // El aviso de importación se cierra solo a los 5 segundos.
+  useEffect(() => {
+    if (!avisoImport) return;
+    const t = setTimeout(() => setAvisoImport(null), 5000);
+    return () => clearTimeout(t);
+  }, [avisoImport]);
 
   // Exporta las causas propias cargadas en pantalla (hasta CAUSAS_LIMIT)
   const exportarCsv = () => {
@@ -172,7 +179,17 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
             </button>
           </div>
           {avisoImport && (
-            <div className="mx-3 mt-2 rounded-lg border border-grn/30 bg-grn/10 px-3 py-2 text-[12px] text-grn">{avisoImport}</div>
+            <div className="mx-3 mt-2 flex items-start gap-2 rounded-lg border border-grn/30 bg-grn/10 px-3 py-2 text-[12px] text-grn">
+              <span className="flex-1">{avisoImport}</span>
+              <button
+                type="button"
+                onClick={() => setAvisoImport(null)}
+                aria-label="Cerrar aviso"
+                className="shrink-0 cursor-pointer rounded p-0.5 text-grn hover:bg-grn/20"
+              >
+                <X size={14} />
+              </button>
+            </div>
           )}
 
           <FilterChips
