@@ -5,6 +5,37 @@ import { FileSpreadsheet } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import { confirmarCausas, previsualizarCausas, type VistaPreviaCausas } from "@/app/(app)/causas/importActions";
 import { COLUMNAS_CAUSA, MAX_FILAS_IMPORTACION } from "@/services/csv/importarCausas";
+import { escribirCsv } from "@/utils/csv";
+
+// Plantilla con el encabezado y una fila de ejemplo que el usuario puede reemplazar.
+const EJEMPLO = {
+  caratula: "Pérez c/ García s/ Daños y perjuicios",
+  nro_expediente: "EXP-1234/2026",
+  fuero: "Civil y Comercial",
+  tipo_juicio: "Daños y perjuicios",
+  juzgado_camara: "Juzgado Civil 3",
+  fecha_inicio: "15/03/2026",
+  monto_reclamado: "150000,50",
+  link_drive: "https://drive.google.com/drive/folders/ejemplo",
+  parte_actora: "Pérez, Carlos",
+  parte_demandada: "García, Ana",
+  estado: "Iniciada",
+  notas: "Fila de ejemplo: borrarla antes de importar",
+};
+
+function descargarPlantilla() {
+  const filas = [
+    [...COLUMNAS_CAUSA],
+    COLUMNAS_CAUSA.map((c) => EJEMPLO[c] ?? ""),
+  ];
+  const blob = new Blob([escribirCsv(filas)], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "plantilla-causas.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 interface Props {
   open: boolean;
@@ -155,6 +186,26 @@ export default function ImportarCausasModal({ open, onClose, onImported }: Props
         <p className="text-[11.5px] italic text-muted">
           Solo caratula es obligatoria. Fechas como DD/MM/AAAA. Hasta {MAX_FILAS_IMPORTACION} filas, 1 MB.
         </p>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={descargarPlantilla}
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-[6px] border border-grn/40 px-3 py-1.5 text-[12.5px] font-semibold text-grn transition-colors hover:bg-grn/10"
+          >
+            <FileSpreadsheet size={15} strokeWidth={1.8} />
+            Descargar plantilla CSV
+          </button>
+        </div>
+
+        <details className="rounded-lg border border-border bg-bg/60 px-3 py-2 text-[12.5px]">
+          <summary className="cursor-pointer font-semibold text-blue">¿Cómo guardo mi planilla de Excel como CSV?</summary>
+          <div className="mt-2 flex flex-col gap-2 text-sub">
+            <p><strong>En Excel:</strong> Archivo → Guardar como → en <em>Tipo</em> elegí <strong>CSV UTF-8 (delimitado por comas)</strong>. Si no aparece, elegí <strong>CSV (delimitado por comas)</strong>. Aceptá los avisos de Excel.</p>
+            <p><strong>En Google Sheets:</strong> Archivo → Descargar → <strong>Valores separados por comas (.csv)</strong>.</p>
+            <p className="text-muted">Solo se guarda la hoja que está abierta. La primera fila tiene que ser el encabezado con los nombres de las columnas. Las fechas van como DD/MM/AAAA.</p>
+          </div>
+        </details>
 
         <div className="flex flex-col gap-1.5">
           <input
