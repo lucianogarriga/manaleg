@@ -55,7 +55,7 @@ function parsePartes(raw: string): { partes?: ParteInput[]; error?: string } {
 function parseCausa(formData: FormData): { input?: CausaInput; error?: string } {
   const caratula = text(formData, "caratula");
   if (!caratula) return { error: "La carátula es obligatoria." };
-  if (caratula.length > 80) return { error: "La carátula es demasiado larga (máx. 80 caracteres)." };
+  if (caratula.length > 200) return { error: "La carátula es demasiado larga (máx. 200 caracteres)." };
 
   const monto = parseMonto(text(formData, "monto_reclamado"));
   if (monto === "invalid") return { error: "El monto reclamado no es un número válido." };
