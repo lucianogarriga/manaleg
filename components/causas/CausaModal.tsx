@@ -20,6 +20,7 @@ import InfoTooltip from "@/components/ui/InfoTooltip";
 import TodoList from "@/components/todos/TodoList";
 import { useShares } from "@/hooks/useCausaData";
 import { usePresence } from "@/hooks/usePresence";
+import { cargarVisibilidadPresencia, guardarVisibilidadPresencia } from "@/services/supabase/presencia";
 import AvataresEnLinea from "./AvataresEnLinea";
 import { useAuthStore } from "@/store/authStore";
 import { useCausasStore } from "@/store/causasStore";
@@ -45,7 +46,28 @@ export default function CausaModal({ causa, userId }: Props) {
   const vencimientosRef = useRef<HTMLDivElement>(null);
 
   const profile = useAuthStore((s) => s.profile);
-  const onlineUsers = usePresence(causa.id, userId, profile?.nombre_completo ?? null);
+  // Desactivada por defecto: solo se anuncia si el usuario la activa en esta causa.
+  const [presenciaVisible, setPresenciaVisible] = useState(false);
+  const onlineUsers = usePresence(causa.id, userId, profile?.nombre_completo ?? null, presenciaVisible);
+
+  useEffect(() => {
+    let vigente = true;
+    cargarVisibilidadPresencia(causa.id, userId)
+      .then((visible) => { if (vigente) setPresenciaVisible(visible); })
+      .catch((err) => console.error("[Presencia] no se pudo cargar la preferencia", err));
+    return () => { vigente = false; };
+  }, [causa.id, userId]);
+
+  async function cambiarPresencia(visible: boolean) {
+    setPresenciaVisible(visible);
+    try {
+      await guardarVisibilidadPresencia(causa.id, userId, visible);
+    } catch (err) {
+      console.error("[Presencia] no se pudo guardar la preferencia", err);
+      setPresenciaVisible(!visible);
+      showToast({ message: "No se pudo guardar tu preferencia de presencia." });
+    }
+  }
 
   const cerrada = causa.estado === "Cerrada";
   const urgency = getUrgency(causa.proximo_vencimiento, cerrada);
@@ -163,6 +185,21 @@ export default function CausaModal({ causa, userId }: Props) {
 
               {/* Avatares de presencia — otros usuarios viendo esta causa */}
               <AvataresEnLinea users={onlineUsers} />
+              <label
+                className="flex cursor-pointer items-start gap-1.5 text-[12px] leading-tight text-sub"
+                title="Si lo activás, quienes comparten esta causa ven que estás dentro."
+              >
+                <input
+                  type="checkbox"
+                  checked={presenciaVisible}
+                  onChange={(e) => cambiarPresencia(e.target.checked)}
+                  className="mt-[2px] h-[13px] w-[13px] shrink-0 accent-blue"
+                />
+                <span className="flex flex-col">
+                  <span>Mostrar que estoy dentro de la causa</span>
+                  <span className="text-[10.5px] text-muted">No queda historial.</span>
+                </span>
+              </label>
 
               {/* Acciones */}
               <span className="ml-auto flex items-center gap-4">

@@ -140,7 +140,7 @@ export default function LegalModal({ type, onClose }: LegalModalProps) {
 
         {/* Scroll body */}
         <div className="overflow-y-auto px-4 py-3">
-          <p className="mb-3 text-[11px] text-muted">Versión 1.0 — vigente desde el 1 de octubre de 2026</p>
+          <p className="mb-3 text-[11px] text-muted">Versión 1.1 — vigente desde el 18 de octubre de 2026</p>
           <div className="legal-prose">
             {type === "terminos" ? TERMINOS : PRIVACIDAD}
           </div>
