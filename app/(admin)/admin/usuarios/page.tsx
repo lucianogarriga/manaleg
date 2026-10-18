@@ -12,11 +12,10 @@ export default async function UsuariosAdmin() {
 
   return (
     <>
-      <Encabezado titulo="Usuarios" descripcion="Distribución y actividad, sin identificar a nadie." />
+      <Encabezado titulo="Usuarios" descripcion="Distribución por plan y estado de pago. Sin identificar a nadie." />
       <section className="grid grid-cols-2 gap-3 md:grid-cols-3">
-        <Tarjeta titulo="Activos 30 días" valor={m.usuarios.activos30} />
-        <Tarjeta titulo="En línea ahora" valor={m.usuarios.enLinea} />
         <Tarjeta titulo="Total" valor={m.usuarios.total} />
+        <Tarjeta titulo="Nuevos 30 días" valor={m.usuarios.nuevos30} />
       </section>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <Panel titulo="Por plan">

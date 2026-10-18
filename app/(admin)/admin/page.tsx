@@ -12,10 +12,9 @@ export default async function ResumenAdmin() {
 
   return (
     <>
-      <Encabezado titulo="Resumen" descripcion="Solo conteos agregados. No se muestran datos personales ni de clientes." />
-      <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <Encabezado titulo="Resumen" descripcion="Solo conteos agregados. El panel no muestra datos personales ni de clientes." />
+      <section className="grid grid-cols-2 gap-3 md:grid-cols-3">
         <Tarjeta titulo="Usuarios" valor={m.usuarios.total} />
-        <Tarjeta titulo="En línea ahora" valor={m.usuarios.enLinea} detalle="Actividad en los últimos 5 min" />
         <Tarjeta titulo="Nuevos 7 días" valor={m.usuarios.nuevos7} />
         <Tarjeta titulo="Nuevos 30 días" valor={m.usuarios.nuevos30} />
       </section>

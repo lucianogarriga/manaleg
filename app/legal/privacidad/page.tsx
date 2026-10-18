@@ -51,7 +51,6 @@ export default function PrivacidadPage() {
               <li>Dirección IP registrada en logs de acceso para fines de seguridad.</li>
               <li>Timestamps de creación y modificación de registros.</li>
               <li>Datos de sesión necesarios para la autenticación.</li>
-              <li>Fecha y hora de la última actividad de la cuenta (dato <em>ultima_actividad</em>), que se actualiza como máximo cada 2 minutos mientras el usuario utiliza la aplicación.</li>
             </ul>
           </Section>
 
@@ -65,8 +64,9 @@ export default function PrivacidadPage() {
               <li>Cumplir obligaciones legales aplicables.</li>
               <li>Realizar controles internos, mejorar la experiencia de uso y evaluar los planes del servicio, mediante estadísticas agregadas.</li>
             </ul>
-            <p><strong>Estadísticas internas.</strong> Las estadísticas de uso son de carácter agregado (totales, promedios y distribuciones). No incluyen nombres, direcciones de correo electrónico, identificadores de usuario ni otros datos que permitan identificar a una persona, ni el contenido de las causas o de los clientes. Solo el personal autorizado de MANALEG puede consultarlas, con contraseña y segundo factor de autenticación, y cada consulta queda registrada.</p>
-            <p><strong>Registros de conexión.</strong> La fecha y hora de la última actividad de cada cuenta, y la dirección IP, se utilizan únicamente para seguridad y control del servicio, y se conservan según el plazo de la sección 6.</p>
+            <p><strong>Panel de estadísticas internas.</strong> El panel de administración de MANALEG no procesa datos personales. Muestra únicamente conteos, promedios y distribuciones anónimas (por ejemplo, cantidad de usuarios por plan o de causas por estado). No incluye nombres, direcciones de correo electrónico, identificadores de usuario ni contenido de causas o de clientes. Los datos de cuenta descriptos en la sección 2 se usan para prestar el servicio y no forman parte de estas estadísticas.</p>
+            <p>Solo el personal autorizado de MANALEG puede consultar el panel, con contraseña y segundo factor de autenticación, y cada consulta queda registrada.</p>
+            <p><strong>Registros de conexión.</strong> La dirección IP se registra en los logs de acceso únicamente para seguridad y control del servicio, y se conserva según el plazo de la sección 6.</p>
             <p>No utilizamos los datos para fines publicitarios ni los compartimos con terceros con fines comerciales.</p>
           </Section>
 
