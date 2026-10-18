@@ -5,6 +5,7 @@ import { parsearCsv } from "@/utils/csv";
 import { parseMonto } from "@/utils/formData";
 
 export const MAX_FILAS_IMPORTACION = 500;
+export const CARATULA_MAX = 200; // la base no limita la carátula; el límite es de la app
 
 // Columnas que se importan, en el orden en que se exportan.
 export const COLUMNAS_CAUSA = [
@@ -61,6 +62,9 @@ export interface AnalisisCausas {
 const ALIAS: Record<string, ColumnaCausa> = {
   caratula: "caratula",
   expediente: "nro_expediente",
+  expte: "nro_expediente",
+  exp: "nro_expediente",
+  observaciones: "notas",
   nro_expediente: "nro_expediente",
   numero_expediente: "nro_expediente",
   nro_expte: "nro_expediente",
@@ -151,8 +155,9 @@ function validarFila(celdas: Record<ColumnaCausa, string | undefined>): Resultad
     return valor;
   };
 
-  const caratula = texto("caratula", 80, "Carátula");
-  if (!caratula) errores.push("Carátula: es obligatoria.");
+  const caratula = texto("caratula", CARATULA_MAX, "Carátula");
+  // Solo es "obligatoria" si la celda está vacía (si es demasiado larga, el error ya lo indica).
+  if (!(celdas.caratula ?? "").trim()) errores.push("Carátula: es obligatoria.");
 
   const nro = texto("nro_expediente", 60, "Número de expediente");
 

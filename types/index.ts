@@ -67,6 +67,8 @@ export interface Profile {
   plan: "free" | "pro" | "full";
   estado_pago: "activo" | "vencido" | "prueba";
   causas_max: number;
+  es_admin: boolean;
+  ultima_actividad: string | null;
   notificaciones_email: boolean;
   tyc_accepted_at: string | null;
   tyc_version: string | null;
