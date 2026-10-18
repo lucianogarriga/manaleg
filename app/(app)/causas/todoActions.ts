@@ -63,6 +63,20 @@ export async function updateTodoEstado(id: string, estado: string): Promise<Form
   return { message: "Tarea movida." };
 }
 
+export async function updateTodoTexto(id: string, texto: string): Promise<FormState> {
+  const limpio = texto.trim();
+  if (!limpio) return { error: "La tarea no puede quedar vacía." };
+  if (limpio.length > 300) return { error: "La tarea es demasiado larga (máx. 300 caracteres)." };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("todos").update({ texto: limpio }).eq("id", id).select("id");
+
+  if (error) return { error: `No se pudo modificar la tarea: ${error.message}` };
+  if (!data || data.length === 0) return { error: "No tenés permiso para modificar esta tarea." };
+  refresh();
+  return { message: "Tarea modificada." };
+}
+
 export async function deleteTodo(id: string): Promise<FormState> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("todos").delete().eq("id", id).select("id");

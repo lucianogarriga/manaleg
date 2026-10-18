@@ -1,10 +1,10 @@
 "use client";
 
 import { useGlobalLoading } from "@/hooks/useGlobalLoading";
-import { useActionState, useEffect, useRef, useTransition } from "react";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2 } from "lucide-react";
-import { createTodo, deleteTodo, toggleTodo } from "@/app/(app)/causas/todoActions";
+import { Pencil, Trash2 } from "lucide-react";
+import { createTodo, deleteTodo, toggleTodo, updateTodoTexto } from "@/app/(app)/causas/todoActions";
 import { useTodos } from "@/hooks/useCausaData";
 import { useUIStore } from "@/store/uiStore";
 import type { FormState } from "@/types";
@@ -46,6 +46,12 @@ export default function TodoList({ causaId }: { causaId: string }) {
     else { reload(); router.refresh(); }
   };
 
+  const onEdit = async (id: string, texto: string) => {
+    const result = await updateTodoTexto(id, texto);
+    if (result.error) showToast({ message: result.error });
+    else { reload(); router.refresh(); }
+  };
+
   const pendientes = todos.filter((t) => !t.completado);
   const completadas = todos.filter((t) => t.completado);
 
@@ -82,6 +88,7 @@ export default function TodoList({ causaId }: { causaId: string }) {
           {pendientes.map((t) => (
             <TodoItem key={t.id} texto={t.texto} completado={false}
               onToggle={() => onToggle(t.id, t.completado)}
+              onEdit={(texto) => onEdit(t.id, texto)}
               onDelete={() => onDelete(t.id)} />
           ))}
           {completadas.length > 0 && (
@@ -92,6 +99,7 @@ export default function TodoList({ causaId }: { causaId: string }) {
               {completadas.map((t) => (
                 <TodoItem key={t.id} texto={t.texto} completado
                   onToggle={() => onToggle(t.id, t.completado)}
+                  onEdit={(texto) => onEdit(t.id, texto)}
                   onDelete={() => onDelete(t.id)} />
               ))}
             </>
@@ -103,31 +111,73 @@ export default function TodoList({ causaId }: { causaId: string }) {
 }
 
 function TodoItem({
-  texto, completado, onToggle, onDelete,
+  texto, completado, onToggle, onEdit, onDelete,
 }: {
   texto: string; completado: boolean;
-  onToggle: () => void; onDelete: () => void;
+  onToggle: () => void; onEdit: (texto: string) => void; onDelete: () => void;
 }) {
+  const [editando, setEditando] = useState(false);
+  const [borrador, setBorrador] = useState(texto);
+
+  const empezarEdicion = () => {
+    setBorrador(texto);
+    setEditando(true);
+  };
+
+  const guardar = () => {
+    setEditando(false);
+    if (borrador.trim() && borrador.trim() !== texto) onEdit(borrador);
+  };
+
   return (
     <div className="group flex items-center gap-[10px] border-t border-border/50 px-[14px] py-[7px]">
       <input
         type="checkbox"
         checked={completado}
         onChange={onToggle}
+        disabled={editando}
         className="h-[14px] w-[14px] shrink-0 cursor-pointer"
         style={{ accentColor: "var(--color-blue)", colorScheme: "light dark" }}
       />
-      <span className={`flex-1 text-[13px] ${completado ? "text-muted line-through" : "text-text"}`}>
-        {texto}
-      </span>
-      <button
-        type="button"
-        onClick={onDelete}
-        aria-label="Eliminar tarea"
-        className="flex cursor-pointer text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-red focus:opacity-100"
-      >
-        <Trash2 size={11} />
-      </button>
+      {editando ? (
+        <input
+          autoFocus
+          value={borrador}
+          maxLength={300}
+          onChange={(e) => setBorrador(e.target.value)}
+          onBlur={guardar}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") e.currentTarget.blur();
+            if (e.key === "Escape") { setBorrador(texto); setEditando(false); }
+          }}
+          aria-label="Modificar tarea"
+          className="flex-1 bg-transparent text-[13px] text-text outline-none border-b border-blue"
+        />
+      ) : (
+        <span className={`flex-1 text-[13px] ${completado ? "text-muted line-through" : "text-text"}`}>
+          {texto}
+        </span>
+      )}
+      {!editando && (
+        <button
+          type="button"
+          onClick={empezarEdicion}
+          aria-label="Modificar tarea"
+          className="flex cursor-pointer text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-blue focus:opacity-100"
+        >
+          <Pencil size={11} />
+        </button>
+      )}
+      {!editando && (
+        <button
+          type="button"
+          onClick={onDelete}
+          aria-label="Eliminar tarea"
+          className="flex cursor-pointer text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-red focus:opacity-100"
+        >
+          <Trash2 size={11} />
+        </button>
+      )}
     </div>
   );
 }
