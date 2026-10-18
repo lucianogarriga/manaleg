@@ -63,9 +63,10 @@ export default function PrivacidadPage() {
               <li>Comunicar actualizaciones del servicio, cambios en Términos o en esta Política.</li>
               <li>Detectar y prevenir usos fraudulentos o contrarios a los Términos de Uso.</li>
               <li>Cumplir obligaciones legales aplicables.</li>
-              <li>Elaborar estadísticas internas agregadas sobre el uso del servicio (cantidad de usuarios, distribución por plan, cantidad de causas por estado, promedios).</li>
+              <li>Realizar controles internos, mejorar la experiencia de uso y evaluar los planes del servicio, mediante estadísticas agregadas.</li>
             </ul>
-            <p>Las estadísticas internas se muestran solo como totales y promedios. No identifican a ninguna persona, no muestran el contenido de las causas ni de los clientes, y solo pueden verlas personas autorizadas de MANALEG, con contraseña y segundo factor de autenticación. Cada acceso queda registrado en un registro de auditoría.</p>
+            <p><strong>Estadísticas internas.</strong> Las estadísticas de uso son de carácter agregado (totales, promedios y distribuciones). No incluyen nombres, direcciones de correo electrónico, identificadores de usuario ni otros datos que permitan identificar a una persona, ni el contenido de las causas o de los clientes. Solo el personal autorizado de MANALEG puede consultarlas, con contraseña y segundo factor de autenticación, y cada consulta queda registrada.</p>
+            <p><strong>Registros de conexión.</strong> La fecha y hora de la última actividad de cada cuenta, y la dirección IP, se utilizan únicamente para seguridad y control del servicio, y se conservan según el plazo de la sección 6.</p>
             <p>No utilizamos los datos para fines publicitarios ni los compartimos con terceros con fines comerciales.</p>
           </Section>
 
