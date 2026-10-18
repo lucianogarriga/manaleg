@@ -51,6 +51,7 @@ export default function PrivacidadPage() {
               <li>Dirección IP registrada en logs de acceso para fines de seguridad.</li>
               <li>Timestamps de creación y modificación de registros.</li>
               <li>Datos de sesión necesarios para la autenticación.</li>
+              <li>Fecha y hora de la última actividad de la cuenta (dato <em>ultima_actividad</em>), que se actualiza como máximo cada 2 minutos mientras el usuario utiliza la aplicación.</li>
             </ul>
           </Section>
 
@@ -62,7 +63,9 @@ export default function PrivacidadPage() {
               <li>Comunicar actualizaciones del servicio, cambios en Términos o en esta Política.</li>
               <li>Detectar y prevenir usos fraudulentos o contrarios a los Términos de Uso.</li>
               <li>Cumplir obligaciones legales aplicables.</li>
+              <li>Elaborar estadísticas internas agregadas sobre el uso del servicio (cantidad de usuarios, distribución por plan, cantidad de causas por estado, promedios).</li>
             </ul>
+            <p>Las estadísticas internas se muestran solo como totales y promedios. No identifican a ninguna persona, no muestran el contenido de las causas ni de los clientes, y solo pueden verlas personas autorizadas de MANALEG, con contraseña y segundo factor de autenticación. Cada acceso queda registrado en un registro de auditoría.</p>
             <p>No utilizamos los datos para fines publicitarios ni los compartimos con terceros con fines comerciales.</p>
           </Section>
 

@@ -1,5 +1,5 @@
 import { Encabezado, ErrorCarga, Panel, Tarjeta } from "@/components/admin/Primitivas";
-import { BarrasVerticales } from "@/components/admin/Graficos";
+import { BarrasVerticales, Dona } from "@/components/admin/Graficos";
 import { cargarMetricas } from "@/services/admin/metricas";
 
 export default async function ResumenAdmin() {
@@ -25,6 +25,14 @@ export default async function ResumenAdmin() {
           datos={m.registrosPorSemana.map((s) => ({ etiqueta: s.semana, valor: s.registros }))}
         />
       </Panel>
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <Panel titulo="Usuarios por plan">
+          <Dona datos={Object.entries(m.usuarios.porPlan).map(([etiqueta, valor]) => ({ etiqueta, valor }))} />
+        </Panel>
+        <Panel titulo="Causas por estado">
+          <Dona datos={Object.entries(m.causas.porEstado).map(([etiqueta, valor]) => ({ etiqueta, valor }))} />
+        </Panel>
+      </div>
     </>
   );
 }
