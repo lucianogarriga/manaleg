@@ -52,7 +52,7 @@ export default function TycUpdateModal() {
         <p className="mb-2 text-[13px] font-semibold text-text">Qué cambió:</p>
         <ul className="mb-4 list-disc space-y-2 pl-5 text-[13px] leading-[1.55] text-sub">
           <li>
-            <strong className="text-text">Presencia en causas compartidas:</strong> quienes comparten una causa pueden ver, con tu nombre, que la tenés abierta. Está activada por defecto y podés desactivarla en cada causa.
+            <strong className="text-text">Presencia en causas compartidas:</strong> quienes comparten una causa pueden ver, con tu nombre, que la tenés abierta. Viene desactivada por defecto: solo se muestra si la activás en cada causa.
           </li>
           <li>
             <strong className="text-text">Panel de estadísticas internas:</strong> aclaramos que no procesa datos personales.

@@ -46,7 +46,7 @@ export default function CausaModal({ causa, userId }: Props) {
   const vencimientosRef = useRef<HTMLDivElement>(null);
 
   const profile = useAuthStore((s) => s.profile);
-  // Hasta cargar la preferencia no se anuncia la presencia: por defecto, no se muestra.
+  // Desactivada por defecto: solo se anuncia si el usuario la activa en esta causa.
   const [presenciaVisible, setPresenciaVisible] = useState(false);
   const onlineUsers = usePresence(causa.id, userId, profile?.nombre_completo ?? null, presenciaVisible);
 
@@ -187,7 +187,7 @@ export default function CausaModal({ causa, userId }: Props) {
               <AvataresEnLinea users={onlineUsers} />
               <label
                 className="flex cursor-pointer items-start gap-1.5 text-[12px] leading-tight text-sub"
-                title="Si lo desactivás, quienes comparten esta causa no ven que estás dentro."
+                title="Si lo activás, quienes comparten esta causa ven que estás dentro."
               >
                 <input
                   type="checkbox"

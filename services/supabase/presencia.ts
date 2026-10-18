@@ -2,8 +2,8 @@
 
 import { createClient } from "@/services/supabase/client";
 
-// Si el usuario quiere que los demás que comparten la causa vean que la tiene abierta.
-// Sin fila guardada, cuenta como visible.
+// Si el usuario quiere que los demás que comparten la causa vean que está dentro.
+// Sin fila guardada, cuenta como oculta: la presencia está desactivada por defecto.
 export async function cargarVisibilidadPresencia(causaId: string, userId: string): Promise<boolean> {
   const supabase = createClient();
   const { data, error } = await supabase
@@ -13,7 +13,7 @@ export async function cargarVisibilidadPresencia(causaId: string, userId: string
     .eq("user_id", userId)
     .maybeSingle();
   if (error) throw error;
-  return data?.visible ?? true;
+  return data?.visible ?? false;
 }
 
 export async function guardarVisibilidadPresencia(causaId: string, userId: string, visible: boolean): Promise<void> {
