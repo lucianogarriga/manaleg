@@ -62,9 +62,11 @@ export default function LoginPage() {
   const [showTransition, setShowTransition] = useState(false);
   const [intentos, setIntentos] = useState(0);
 
+  // Se muestra mientras se valida. Si las credenciales fallan, se oculta y el error aparece en el formulario.
   useEffect(() => {
     if (pending) setShowTransition(true);
-  }, [pending]);
+    else if (state.error) setShowTransition(false);
+  }, [pending, state]);
 
   // Cuenta solo los errores de credenciales incorrectas (no rate limit, no email sin confirmar, etc.)
   useEffect(() => {
