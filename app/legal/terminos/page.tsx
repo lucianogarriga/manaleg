@@ -16,7 +16,7 @@ export default function TerminosPage() {
         </div>
 
         <h1 className="mb-2 text-[26px] font-bold text-text">Términos y Condiciones</h1>
-        <p className="mb-8 text-[13px] text-muted">Versión 1.0 — vigente desde el 1 de octubre de 2026</p>
+        <p className="mb-8 text-[13px] text-muted">Versión 1.1 — vigente desde el 18 de octubre de 2026</p>
 
         <div className="mb-6 rounded-[8px] border border-border bg-card px-4 py-3">
           <p className="text-[12.5px] text-sub leading-[1.6]">
