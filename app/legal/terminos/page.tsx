@@ -18,11 +18,6 @@ export default function TerminosPage() {
         <h1 className="mb-2 text-[26px] font-bold text-text">Términos y Condiciones</h1>
         <p className="mb-8 text-[13px] text-muted">Versión 1.1 — vigente desde el 18 de octubre de 2026</p>
 
-        <div className="mb-6 rounded-[8px] border border-border bg-card px-4 py-3">
-          <p className="text-[12.5px] text-sub leading-[1.6]">
-            <strong className="text-text">Prestador del servicio:</strong> Luciano Garriga, CUIT 20-38329129-2 · San Jerónimo 280, EP Of. 9, Córdoba, Argentina · <strong>contacto@manaleg.com.ar</strong>
-          </p>
-        </div>
 
         <div className="prose-legal">
           <Section title="1. Aceptación de los términos">
@@ -39,7 +34,7 @@ export default function TerminosPage() {
             <ul>
               <li>Solo pueden registrarse personas mayores de 18 años con plena capacidad legal.</li>
               <li>Cada usuario es el único responsable de mantener la confidencialidad de sus credenciales de acceso. Ante cualquier uso no autorizado de su cuenta, debe notificarlo de inmediato a MANALEG.</li>
-              <li>Queda prohibido ceder o compartir las credenciales de acceso con terceros no autorizados. La plataforma ofrece funcionalidad nativa de <strong>compartir causas</strong> con otros usuarios registrados; dicha funcionalidad es el canal habilitado para la colaboración y no constituye una infracción a esta cláusula.</li>
+              <li>Queda prohibido ceder o compartir las credenciales de acceso con terceros no autorizados. La plataforma ofrece funcionalidad nativa de compartir causas con otros usuarios registrados; dicha funcionalidad es el canal habilitado para la colaboración y no constituye una infracción a esta cláusula.</li>
               <li>El usuario se compromete a utilizar la plataforma exclusivamente para fines lícitos y compatibles con el ejercicio profesional del derecho.</li>
               <li>No está permitido intentar acceder a cuentas, datos o sistemas de otros usuarios, ni realizar ingeniería inversa, scraping o cualquier acción que comprometa la integridad de la plataforma.</li>
             </ul>
@@ -47,15 +42,15 @@ export default function TerminosPage() {
 
           <Section title="4. Datos, contenido y encargo del tratamiento (art. 25 Ley 25.326)">
             <p>El usuario es el único y exclusivo responsable de la exactitud, veracidad, legalidad y licitud de los datos que ingresa en la plataforma, incluyendo los datos personales de sus clientes, partes y terceros vinculados a sus causas.</p>
-            <p>Conforme al artículo 25 de la Ley N° 25.326, la prestación del servicio implica un <strong>contrato de encargo de tratamiento</strong> entre el usuario (responsable del tratamiento) y MANALEG (encargado del tratamiento). Los términos de dicho encargo son los siguientes:</p>
+            <p>Conforme al artículo 25 de la Ley N° 25.326, la prestación del servicio implica un contrato de encargo de tratamiento entre el usuario (responsable del tratamiento) y MANALEG (encargado del tratamiento). Los términos de dicho encargo son los siguientes:</p>
             <ul>
-              <li><strong>Datos objeto del encargo:</strong> todos los datos personales que el usuario ingrese en la plataforma en relación a sus clientes, partes y terceros vinculados a sus causas.</li>
-              <li><strong>Finalidad:</strong> exclusivamente la prestación del servicio de gestión de causas contratado. MANALEG no tratará estos datos para fines propios.</li>
-              <li><strong>Categorías de titulares:</strong> clientes del usuario, partes actoras y demandadas, terceros vinculados a expedientes judiciales o extrajudiciales.</li>
-              <li><strong>Subencargados autorizados:</strong> Supabase Inc. (almacenamiento), Vercel Inc. (hosting), Resend Inc. (notificaciones por email), según lo detallado en la Política de Privacidad. El usuario presta consentimiento para su intervención al aceptar estos términos.</li>
-              <li><strong>Medidas de seguridad:</strong> cifrado TLS en tránsito, cifrado en reposo, Row Level Security (RLS) a nivel de base de datos, autenticación segura.</li>
-              <li><strong>Devolución y supresión:</strong> al darse de baja el usuario, MANALEG procederá a la eliminación de los datos en un plazo de 30 días conforme a lo previsto en la sección 9.</li>
-              <li><strong>Confidencialidad:</strong> MANALEG y su personal mantienen deber de secreto sobre los datos tratados, incluso con posterioridad a la finalización del contrato.</li>
+              <li>Datos objeto del encargo: todos los datos personales que el usuario ingrese en la plataforma en relación a sus clientes, partes y terceros vinculados a sus causas.</li>
+              <li>Finalidad: exclusivamente la prestación del servicio de gestión de causas contratado. MANALEG no tratará estos datos para fines propios.</li>
+              <li>Categorías de titulares: clientes del usuario, partes actoras y demandadas, terceros vinculados a expedientes judiciales o extrajudiciales.</li>
+              <li>Subencargados autorizados: Supabase Inc. (almacenamiento), Vercel Inc. (hosting), Resend Inc. (notificaciones por email), según lo detallado en la Política de Privacidad. El usuario presta consentimiento para su intervención al aceptar estos términos.</li>
+              <li>Medidas de seguridad: cifrado TLS en tránsito, cifrado en reposo, Row Level Security (RLS) a nivel de base de datos, autenticación segura.</li>
+              <li>Devolución y supresión: al darse de baja el usuario, MANALEG procederá a la eliminación de los datos en un plazo de 30 días conforme a lo previsto en la sección 9.</li>
+              <li>Confidencialidad: MANALEG y su personal mantienen deber de secreto sobre los datos tratados, incluso con posterioridad a la finalización del contrato.</li>
             </ul>
             <p>Es obligación del usuario contar con las habilitaciones legales para tratar datos personales de sus clientes y terceros, informarles sobre su recopilación y finalidad (art. 6 Ley 25.326), y observar las normas de ética y confidencialidad de la profesión jurídica.</p>
             <p>MANALEG no accede, revisa ni utiliza los datos de causas o clientes del usuario, salvo lo estrictamente necesario para la prestación técnica del servicio o en cumplimiento de una orden judicial o requerimiento legal.</p>
@@ -69,10 +64,10 @@ export default function TerminosPage() {
           <Section title="6. Disponibilidad del servicio">
             <p>MANALEG procura mantener el servicio disponible de manera continua, pero no garantiza disponibilidad ininterrumpida ni libre de errores. Podrán producirse interrupciones por las siguientes causas, sin que ello genere derecho a indemnización:</p>
             <ul>
-              <li><strong>Mantenimiento programado:</strong> tareas periódicas de actualización, mejora o mantenimiento preventivo de la plataforma. Se procurará notificar con anticipación razonable.</li>
-              <li><strong>Incidentes técnicos:</strong> fallas en servidores, infraestructura de base de datos, proveedores de hosting o servicios de terceros que integran la plataforma (Supabase, Vercel, u otros).</li>
-              <li><strong>Actualizaciones:</strong> despliegue de nuevas versiones del software que requieran tiempo de inactividad.</li>
-              <li><strong>Fuerza mayor:</strong> eventos ajenos al control razonable de MANALEG, incluyendo desastres naturales, cortes de conectividad, ataques informáticos u otras circunstancias extraordinarias.</li>
+              <li>Mantenimiento programado: tareas periódicas de actualización, mejora o mantenimiento preventivo de la plataforma. Se procurará notificar con anticipación razonable.</li>
+              <li>Incidentes técnicos: fallas en servidores, infraestructura de base de datos, proveedores de hosting o servicios de terceros que integran la plataforma (Supabase, Vercel, u otros).</li>
+              <li>Actualizaciones: despliegue de nuevas versiones del software que requieran tiempo de inactividad.</li>
+              <li>Fuerza mayor: eventos ajenos al control razonable de MANALEG, incluyendo desastres naturales, cortes de conectividad, ataques informáticos u otras circunstancias extraordinarias.</li>
             </ul>
             <p>MANALEG no será responsable por la pérdida de datos derivada de interrupciones del servicio no imputables a culpa grave o dolo de su parte. Se recomienda al usuario mantener respaldos propios de la información crítica.</p>
           </Section>
@@ -86,11 +81,11 @@ export default function TerminosPage() {
               <li>Consecuencias jurídicas derivadas del vencimiento de plazos procesales, con independencia de las alertas configuradas en la plataforma. MANALEG es una herramienta de apoyo; la responsabilidad profesional recae exclusivamente en el abogado o profesional del derecho usuario del servicio.</li>
               <li>Actuaciones de terceros proveedores de infraestructura o servicios complementarios.</li>
             </ul>
-            <p>En ningún caso la responsabilidad total acumulada de MANALEG frente a un usuario, por cualquier concepto, podrá exceder el monto abonado por el usuario durante los <strong>tres (3) meses</strong> anteriores al hecho generador del daño. Esta limitación no aplica en los casos en que la ley la prohíba expresamente, incluyendo los derechos irrenunciables reconocidos a los usuarios en su carácter de consumidores por la Ley N° 24.240.</p>
+            <p>En ningún caso la responsabilidad total acumulada de MANALEG frente a un usuario, por cualquier concepto, podrá exceder el monto abonado por el usuario durante los tres (3) meses anteriores al hecho generador del daño. Esta limitación no aplica en los casos en que la ley la prohíba expresamente, incluyendo los derechos irrenunciables reconocidos a los usuarios en su carácter de consumidores por la Ley N° 24.240.</p>
           </Section>
 
           <Section title="8. Baja de la cuenta y portabilidad de datos">
-            <p>El usuario puede solicitar la baja de su cuenta en cualquier momento escribiendo a <strong>contacto@manaleg.com.ar</strong>. Dentro de los <strong>30 días</strong> de recibida la solicitud, MANALEG procederá a la eliminación de los datos personales de cuenta conforme a lo previsto en la Política de Privacidad.</p>
+            <p>El usuario puede solicitar la baja de su cuenta en cualquier momento escribiendo a contacto@manaleg.com.ar. Dentro de los 30 días de recibida la solicitud, MANALEG procederá a la eliminación de los datos personales de cuenta conforme a lo previsto en la Política de Privacidad.</p>
             <p>Antes de solicitar la baja, el usuario puede exportar la información de sus causas desde la plataforma. MANALEG no ofrece garantía de conservación de datos una vez confirmada la baja.</p>
             <p>En caso de incumplimiento de pago, MANALEG podrá suspender el servicio tras notificación previa, sin eliminar los datos durante un período de gracia de 30 días para facilitar la exportación.</p>
           </Section>
@@ -100,12 +95,15 @@ export default function TerminosPage() {
           </Section>
 
           <Section title="11. Ley aplicable y jurisdicción">
-            <p>Estos Términos y Condiciones se rigen exclusivamente por las leyes de la República Argentina. Para cualquier controversia derivada de su interpretación, ejecución o incumplimiento, las partes acuerdan someterse a la jurisdicción de los <strong>Tribunales Ordinarios de la Ciudad de Córdoba</strong>, con expresa renuncia a cualquier otro fuero o jurisdicción que pudiera corresponder. Al aceptar estos Términos, el usuario presta su consentimiento expreso a esta prórroga de jurisdicción.</p>
+            <p>Estos Términos y Condiciones se rigen exclusivamente por las leyes de la República Argentina. Para cualquier controversia derivada de su interpretación, ejecución o incumplimiento, las partes acuerdan someterse a la jurisdicción de los Tribunales Ordinarios de la Ciudad de Córdoba, con expresa renuncia a cualquier otro fuero o jurisdicción que pudiera corresponder. Al aceptar estos Términos, el usuario presta su consentimiento expreso a esta prórroga de jurisdicción.</p>
           </Section>
 
           <Section title="12. Contacto">
-            <p>Para consultas sobre estos Términos y Condiciones podés escribir a <strong>contacto@manaleg.com.ar</strong>. Responderemos en un plazo máximo de 10 días hábiles.</p>
+            <p>Para consultas sobre estos Términos y Condiciones podés escribir a contacto@manaleg.com.ar. Responderemos en un plazo máximo de 10 días hábiles.</p>
           </Section>
+          <section className="prose-section">
+            <p>Prestador del servicio: Luciano Garriga, CUIT 20-38329129-2 · San Jerónimo 280, EP Of. 9, Córdoba, Argentina · contacto@manaleg.com.ar</p>
+          </section>
         </div>
 
         <div className="mt-10 flex items-center gap-4 border-t border-border pt-6">
