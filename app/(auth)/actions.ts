@@ -21,8 +21,14 @@ function traducirError(message: string): string {
     return "La contraseña debe tener al menos 6 caracteres.";
   if (message.toLowerCase().includes("rate limit"))
     return "Demasiados intentos. Esperá unos minutos y volvé a probar.";
-  return "Ocurrió un error. Intentá de nuevo.";
+  if (message.toLowerCase().includes("captcha"))
+    return "No pudimos verificar que sos una persona. Recargá la página e intentá de nuevo.";
+  if (message.toLowerCase().includes("database error") || message.toLowerCase().includes("unexpected"))
+    return "El servicio no responde en este momento. Intentá de nuevo en unos minutos.";
+  return `No pudimos completar la operación (${message}). Intentá de nuevo.`;
 }
+
+const ERROR_CONEXION = "No pudimos conectarnos con el servidor. Revisá tu conexión a internet e intentá de nuevo.";
 
 export async function login(_prev: FormState, formData: FormData): Promise<FormState> {
   const email = String(formData.get("email") ?? "").trim();
@@ -36,7 +42,13 @@ export async function login(_prev: FormState, formData: FormData): Promise<FormS
     return { error: "Demasiados intentos. Esperá unos minutos y volvé a probar.", values };
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken: captcha(formData) } });
+  // Si no hay conexión, la librería lanza una excepción en vez de devolver error.
+  let error;
+  try {
+    ({ error } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken: captcha(formData) } }));
+  } catch {
+    return { error: ERROR_CONEXION, values };
+  }
 
   if (error) return { error: traducirError(error.message), values };
 

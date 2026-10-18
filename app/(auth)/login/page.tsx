@@ -19,7 +19,7 @@ function LoginTransition() {
   return (
     <div
       className="fixed inset-0 z-[200] flex flex-col items-center justify-center"
-      style={{ background: "var(--color-bg)" }}
+      style={{ background: "#f0f4f8" }}
     >
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
         <div
@@ -40,12 +40,12 @@ function LoginTransition() {
           M
         </div>
         <div className="flex flex-col items-center gap-1">
-          <span className="text-[18px] font-bold text-text">Manaleg</span>
-          <span className="text-[13px] text-muted">
+          <span className="text-[18px] font-bold" style={{ color: "#0f172a" }}>Manaleg</span>
+          <span className="text-[13px]" style={{ color: "#94a3b8" }}>
             <span className="auth-dots" />
           </span>
         </div>
-        <div className="mt-2 h-[3px] w-[160px] overflow-hidden rounded-full bg-border">
+        <div className="mt-2 h-[3px] w-[160px] overflow-hidden rounded-full" style={{ background: "#e2e8f0" }}>
           <div
             className="h-full rounded-full bg-blue"
             style={{ width: "40%", animation: "auth-progress 1.4s ease-in-out infinite" }}
