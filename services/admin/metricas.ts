@@ -1,4 +1,4 @@
-// Consultas del panel de admin. Solo devuelven conteos agregados (ver migraciones 20261017 y 20261018).
+// Consultas del panel de admin. Solo devuelven conteos agregados (ver migraciones 20261017, 20261018 y 20261020).
 // Corren con la sesión del admin: la base verifica es_admin y MFA (aal2) en cada función.
 import { createClient } from "@/services/supabase/server";
 
@@ -7,8 +7,6 @@ export interface Metricas {
     total: number;
     nuevos7: number;
     nuevos30: number;
-    enLinea: number;
-    activos30: number;
     porPlan: Record<string, number>;
     porEstadoPago: Record<string, number>;
   };

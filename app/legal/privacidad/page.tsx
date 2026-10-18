@@ -62,7 +62,11 @@ export default function PrivacidadPage() {
               <li>Comunicar actualizaciones del servicio, cambios en Términos o en esta Política.</li>
               <li>Detectar y prevenir usos fraudulentos o contrarios a los Términos de Uso.</li>
               <li>Cumplir obligaciones legales aplicables.</li>
+              <li>Realizar controles internos, mejorar la experiencia de uso y evaluar los planes del servicio, mediante estadísticas agregadas.</li>
             </ul>
+            <p><strong>Panel de estadísticas internas.</strong> El panel de administración de MANALEG no procesa datos personales. Muestra únicamente conteos, promedios y distribuciones anónimas (por ejemplo, cantidad de usuarios por plan o de causas por estado). No incluye nombres, direcciones de correo electrónico, identificadores de usuario ni contenido de causas o de clientes. Los datos de cuenta descriptos en la sección 2 se usan para prestar el servicio y no forman parte de estas estadísticas.</p>
+            <p>Solo el personal autorizado de MANALEG puede consultar el panel, con contraseña y segundo factor de autenticación, y cada consulta queda registrada.</p>
+            <p><strong>Registros de conexión.</strong> La dirección IP se registra en los logs de acceso únicamente para seguridad y control del servicio, y se conserva según el plazo de la sección 6.</p>
             <p>No utilizamos los datos para fines publicitarios ni los compartimos con terceros con fines comerciales.</p>
           </Section>
 
