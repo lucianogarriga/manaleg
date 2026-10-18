@@ -9,6 +9,7 @@ import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import TitleUpdater from "./TitleUpdater";
 import NavigationProgress from "./NavigationProgress";
+import Heartbeat from "./Heartbeat";
 
 // Estructura base: Sidebar fijo + columna principal (Topbar + contenido).
 // Cada página maneja su propio scroll dentro del área de contenido.
@@ -25,6 +26,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex h-dvh w-full overflow-hidden md:gap-2 md:p-3 md:pl-2">
       <AuthHydrator profile={profile} />
+      <Heartbeat />
       <Sidebar profile={profile} counts={counts} />
       {/* Área derecha: topbar + contenido sobre bg (sin card wrapper) */}
       <div
