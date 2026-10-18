@@ -48,8 +48,8 @@ export default function PrivacidadPage() {
             </ul>
             <p><strong>Presencia en causas compartidas:</strong></p>
             <ul>
-              <li>Cuando una causa está compartida, los usuarios que tienen acceso a ella pueden ver, en tiempo real, tu nombre y tus iniciales mientras la tenés abierta. Esa información no se guarda como historial.</li>
-              <li>Podés desactivarla en cada causa con la opción <em>"Mostrar que la tengo abierta"</em>. Lo que guardamos es solo esa preferencia (sí o no), por causa.</li>
+              <li>Cuando una causa está compartida, los usuarios que tienen acceso a ella ven, en tiempo real, tu nombre y tus iniciales mientras estás dentro de la causa. Esta función viene <strong>activada por defecto</strong>.</li>
+              <li>Podés desactivarla en cada causa con la opción <em>"Mostrar que estoy dentro de la causa"</em>. Lo que guardamos es solo esa preferencia (sí o no), por causa. No queda historial de presencia.</li>
               <li>Ni el panel de administración ni los usuarios sin acceso a la causa ven esta información.</li>
             </ul>
             <p><strong>Datos técnicos:</strong></p>

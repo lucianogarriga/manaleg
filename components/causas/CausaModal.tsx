@@ -186,16 +186,19 @@ export default function CausaModal({ causa, userId }: Props) {
               {/* Avatares de presencia — otros usuarios viendo esta causa */}
               <AvataresEnLinea users={onlineUsers} />
               <label
-                className="flex cursor-pointer items-center gap-1.5 text-[12px] text-sub"
-                title="Si lo desactivás, quienes comparten esta causa no ven que la tenés abierta."
+                className="flex cursor-pointer items-start gap-1.5 text-[12px] leading-tight text-sub"
+                title="Si lo desactivás, quienes comparten esta causa no ven que estás dentro."
               >
                 <input
                   type="checkbox"
                   checked={presenciaVisible}
                   onChange={(e) => cambiarPresencia(e.target.checked)}
-                  className="h-[13px] w-[13px] accent-blue"
+                  className="mt-[2px] h-[13px] w-[13px] shrink-0 accent-blue"
                 />
-                Mostrar que la tengo abierta
+                <span className="flex flex-col">
+                  <span>Mostrar que estoy dentro de la causa</span>
+                  <span className="text-[10.5px] text-muted">No queda historial.</span>
+                </span>
               </label>
 
               {/* Acciones */}
