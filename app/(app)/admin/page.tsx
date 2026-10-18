@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCurrentProfile } from "@/components/auth/AuthGuard";
 import { createClient } from "@/services/supabase/server";
+import MfaAdmin from "@/components/admin/MfaAdmin";
 
 // Panel de super admin: solo lectura, sin datos personales.
 // Acceso controlado en la base (es_admin + MFA aal2). Esta página solo muestra lo que la base devuelve.
@@ -86,14 +87,7 @@ export default async function AdminPage() {
   // Exige MFA verificado (aal2). Sin eso, la base no devuelve datos.
   const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
   if (aal?.currentLevel !== "aal2") {
-    return (
-      <div className="mx-auto max-w-[640px] p-6">
-        <h1 className="text-[20px] font-bold text-text">Verificación en dos pasos requerida</h1>
-        <p className="mt-2 text-[13px] text-sub">
-          Para ver el panel de administración hay que verificar la identidad con un código de tu app de autenticación.
-        </p>
-      </div>
-    );
+    return <MfaAdmin />;
   }
 
   // Registra el acceso en la auditoría antes de leer nada.
