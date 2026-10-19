@@ -91,7 +91,7 @@ export default function TerminosPage() {
           </Section>
 
           <Section title="10. Modificaciones">
-            <p>MANALEG se reserva el derecho de modificar estos Términos y Condiciones en cualquier momento. Los cambios serán notificados al email registrado con un mínimo de 15 días de anticipación. El uso continuado del servicio transcurrido ese plazo implica la aceptación de las nuevas condiciones. La versión vigente y la fecha de entrada en vigor siempre estarán disponibles en esta página.</p>
+            <p>Podemos actualizar estos Términos y Condiciones y la Política de Privacidad. Los cambios no sustanciales entran en vigor al publicarse, con su fecha de vigencia y el historial de versiones en esta página. Si un cambio agrega finalidades, tipos de datos o transferencias, te lo comunicaremos dentro de la aplicación y te pediremos que lo aceptes para seguir usando el servicio. Hasta que lo aceptes, no usaremos tus datos para esas nuevas finalidades ni los transferiremos a nuevos destinatarios. Si no querés aceptarlo, podés dar de baja tu cuenta en cualquier momento.</p>
           </Section>
 
           <Section title="11. Ley aplicable y jurisdicción">

@@ -113,7 +113,7 @@ export default function PrivacidadPage() {
           </Section>
 
           <Section title="10. Modificaciones">
-            <p>Esta Política puede ser actualizada. Notificaremos los cambios con al menos 15 días de anticipación al email registrado. El uso continuado del servicio implica la aceptación de la política vigente.</p>
+            <p>Podemos actualizar esta Política y los Términos y Condiciones. Los cambios no sustanciales entran en vigor al publicarse, con su fecha de vigencia y el historial de versiones en esta página. Si un cambio agrega finalidades, tipos de datos o transferencias, te lo comunicaremos dentro de la aplicación y te pediremos que lo aceptes para seguir usando el servicio. Hasta que lo aceptes, no usaremos tus datos para esas nuevas finalidades ni los transferiremos a nuevos destinatarios. Si no querés aceptarlo, podés dar de baja tu cuenta en cualquier momento.</p>
           </Section>
 
           <Section title="11. Cookies y tecnologías de rastreo">
