@@ -70,3 +70,47 @@ Orden de despliegue a producción: **primero migraciones, después el código** 
 ## 6. Después de producción
 
 Prueba rápida en producción: login, crear causa, compartir causa, honorarios, dashboard.
+
+## 7. Alta y baja de administradores del panel
+
+El panel `/admin` solo lo ve una cuenta con `es_admin = true` y con segundo factor (TOTP) verificado. `es_admin` se asigna **solo desde el SQL Editor de Supabase**, nunca desde la aplicación: el trigger `proteger_es_admin` rechaza cualquier cambio que no venga del rol de servicio o del dueño de la base.
+
+**Antes de dar de alta**
+- La persona tiene cuenta en MANALEG con el email que va a usar como admin.
+- El titular del servicio autorizó el alta. Dejar constancia con fecha y motivo en el registro interno.
+- Idealmente, una cuenta distinta de la personal de uso diario.
+
+**Alta** (en producción y en staging, por separado)
+1. Abrir el SQL Editor del proyecto correspondiente.
+2. Confirmar que la cuenta existe:
+   ```sql
+   select id, email, es_admin from public.profiles where email = 'EMAIL';
+   ```
+   Si no aparece, la persona tiene que registrarse primero.
+3. Dar de alta:
+   ```sql
+   update public.profiles set es_admin = true where email = 'EMAIL';
+   ```
+4. Verificar: repetir el `select`. `es_admin` tiene que ser `true`.
+5. La persona entra a `/admin` con su contraseña. La primera vez se le pide activar el segundo factor: escanear el código QR con una app de autenticación y cargar el código de 6 dígitos. Sin ese paso no ve el panel.
+
+**Baja** (inmediata)
+```sql
+update public.profiles set es_admin = false where email = 'EMAIL';
+```
+Verificar con el `select`. Si hay sospecha de compromiso, además cerrar las sesiones de esa cuenta en Authentication → Users.
+
+**Auditoría**
+Cada consulta al panel queda en `admin_auditoria`, tabla sin acceso desde la aplicación. Revisar periódicamente:
+```sql
+select a.creado_at, p.email, a.seccion
+from public.admin_auditoria a
+join public.profiles p on p.id = a.admin_id
+order by a.creado_at desc
+limit 50;
+```
+
+**Reglas**
+- Cada admin usa su propia cuenta. Nunca compartir una contraseña de admin.
+- No dar de alta admins por pedido en un chat ni desde la app: solo el titular ejecuta el SQL.
+- Pocos admins: idealmente uno o dos.
