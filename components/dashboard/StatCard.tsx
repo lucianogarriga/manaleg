@@ -74,19 +74,15 @@ export function StatCard({
   trend, sparkline, sparkColor, barPct, barColor, href,
 }: StatCardProps) {
   const inner = (
-    <div className="flex flex-col gap-2 rounded-xl border border-border bg-card p-3 transition-colors h-full sm:gap-3 sm:p-4">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-[9px] min-w-0">
-          <div
-            className="flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-[8px]"
-            style={{ background: iconBg }}
-          >
-            <Icon size={15} strokeWidth={2} style={{ color: iconColor }} />
-          </div>
-          <span className="text-[10.5px] font-bold uppercase tracking-[.6px] text-muted leading-tight">
-            {label}
-          </span>
-        </div>
+    <div className="relative flex h-full flex-col gap-2 overflow-hidden rounded-xl border border-border bg-card p-3 transition-colors sm:gap-3 sm:p-4">
+      {/* Ícono de fondo: decorativo, difuminado y sin interactuar con el contenido */}
+      <div aria-hidden className="pointer-events-none absolute -right-2 -bottom-3">
+        <Icon size={96} strokeWidth={1.5} style={{ color: iconColor, opacity: 0.12 }} />
+      </div>
+      <div className="relative flex items-start justify-between gap-2">
+        <span className="min-w-0 text-[14px] font-bold leading-tight text-text sm:text-[15px]">
+          {label}
+        </span>
         {trend !== undefined && <span className="hidden sm:block"><Trend value={trend ?? null} /></span>}
       </div>
 
