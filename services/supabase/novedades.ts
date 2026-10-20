@@ -86,8 +86,19 @@ export interface DiaCalendario {
   tareas: number;
 }
 
+// Últimas 7 semanas (la más antigua primero), para las barras de tendencia.
+export interface Tendencias {
+  causasActivas: number[];
+  vencimientos: number[];
+  inactivas: number[];
+  cobrado: number[];
+  pendientePeriodo: number[];
+  pendienteTotal: number[];
+}
+
 export interface NovedadesCompletas {
   datos: Novedades;
+  tendencias: Tendencias;
   vencimientos: VencimientoFila[];
   vencimientosLejanos: VencimientoFila[];
   audiencias: AudienciaFila[];
@@ -110,8 +121,9 @@ export async function cargarNovedades(periodo: Periodo): Promise<NovedadesComple
   const en14 = addDaysISO(hoy, 14);
   const mes = rangoMes(hoy);
 
-  const [rpc, venc, lejanos, aud, tar, calVenc, calAud, calTar] = await Promise.all([
+  const [rpc, tend, venc, lejanos, aud, tar, calVenc, calAud, calTar] = await Promise.all([
     supabase.rpc("estadisticas_novedades", { p_periodo: periodo }),
+    supabase.rpc("estadisticas_tendencias"),
     supabase
       .from("vencimientos")
       .select("id, fecha, tipo, motivo, causa:causas(caratula)")
@@ -161,6 +173,7 @@ export async function cargarNovedades(periodo: Periodo): Promise<NovedadesComple
   ]);
 
   if (rpc.error) throw new Error(`No se pudieron calcular los indicadores: ${rpc.error.message}`);
+  if (tend.error) throw new Error(`No se pudieron calcular las tendencias: ${tend.error.message}`);
   if (venc.error || lejanos.error || aud.error || tar.error || calVenc.error || calAud.error || calTar.error)
     throw new Error("No se pudieron cargar las listas del dashboard.");
 
@@ -182,6 +195,7 @@ export async function cargarNovedades(periodo: Periodo): Promise<NovedadesComple
 
   return {
     datos: rpc.data as Novedades,
+    tendencias: tend.data as Tendencias,
     vencimientos: (venc.data ?? []).map((v) => ({
       id: v.id, fecha: v.fecha, tipo: v.tipo, motivo: v.motivo, causa: etiquetaCausa(v.causa),
     })),

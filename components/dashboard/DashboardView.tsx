@@ -98,7 +98,7 @@ export default function DashboardView({ inicial, preferencia }: Props) {
   const hoy = todayISO();
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 px-4 pb-6 md:px-6">
       {/* ── Encabezado ── */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -199,6 +199,7 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
           titulo="Causas activas"
           valor={n.causas.activas}
           sub={`${n.causas.judiciales} judiciales · ${n.causas.extrajudiciales} extrajudiciales`}
+          serie={d.tendencias.causasActivas}
           badge={<Badge tono="up">+{n.causas.nuevasMes} nuevas este mes</Badge>}
         />
         <KpiCard
@@ -206,6 +207,7 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
           valor={vencAll}
           alerta={n.vencimientos.vencidos > 0}
           sub={`${n.vencimientos.vencidos} vencido · ${n.vencimientos.urgentes} urgente · ${n.vencimientos.proximos} próximo`}
+          serie={d.tendencias.vencimientos}
           badge={n.vencimientos.vencidos > 0 ? <Badge tono="bad">{n.vencimientos.vencidos} vencido{n.vencimientos.vencidos > 1 ? "s" : ""}</Badge> : <Badge tono="nil">al día</Badge>}
         />
         <KpiCard
@@ -213,6 +215,7 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
           valor={n.causas.inactivas30}
           alerta={n.causas.inactivas30 > 0}
           sub="Sin movimiento hace más de 30 días"
+          serie={d.tendencias.inactivas}
           badge={<Badge tono={n.causas.inactivas30 > 0 ? "warn" : "nil"}>{n.causas.inactivas30 > 0 ? "revisar" : "al día"}</Badge>}
         />
       </div>
@@ -229,17 +232,20 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
           titulo="Honorarios cobrados"
           valor={<Montos valores={n.financiero.cobrado} />}
           sub={`${per.nombre} · ${per.comparacion}`}
+          serie={d.tendencias.cobrado}
           badge={<div className="flex flex-col items-end gap-1">{badgesVariacion(n.financiero.cobrado, n.financiero.cobradoPrev)}</div>}
         />
         <KpiCard
           titulo={`Pendiente del ${DUR_PERIODO[periodo].toLowerCase()}`}
           valor={<Montos valores={n.financiero.pendientePeriodo} />}
           sub="Cobrado vs. facturado del período"
+          serie={d.tendencias.pendientePeriodo}
         />
         <KpiCard
           titulo="Pendiente de cobro total"
           valor={<Montos valores={n.financiero.pendienteTotal} />}
           sub={`en ${n.financiero.pendienteCausasTotal} causas`}
+          serie={d.tendencias.pendienteTotal}
         />
       </div>
 
@@ -476,10 +482,10 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
             })}
           </div>
         </Card>
-        <Tile titulo="Clientes activos" sub={`${n.clientes.conSaldo} con saldo pendiente`} valor={n.clientes.activos} />
+        <Tile titulo="Clientes activos" sub="Con causas abiertas" valor={n.clientes.activos} />
         <Tile titulo="Consultas recibidas" sub="Módulo de captación" valor="—" grisada />
         <Tile titulo="Conversión de consultas" sub="Consultas que pasaron a cliente" valor="—" grisada />
-        <Card className="md:col-span-3">
+        <Card className="md:col-span-2">
           <Titulo derecha={
             <div className="flex gap-2">
               <Segmentado titulo="Moneda" valores={["ARS", "USD"] as Moneda[]} actual={moneda} onChange={setMoneda}
@@ -488,6 +494,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
           } sub={`Facturado del período · ${moneda === "ARS" ? "en $" : "en US$"}`}>Facturación por fuero</Titulo>
           <BarrasH filas={facturacionFuero} formato={(v) => formatCurrency(v, moneda)} />
         </Card>
+        <Tile titulo="Clientes con saldo" sub="Con honorarios pendientes de cobro" valor={n.clientes.conSaldo} className="flex flex-col justify-center" />
       </div>
 
       <SeccionEncabezado sub="Entrada de causas">Actividad</SeccionEncabezado>
@@ -499,7 +506,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
             ? <BarrasVerticales meses={meses} valores={nuevasPorMes} />
             : <Ondas meses={meses} series={[{ valores: nuevasPorMes, color: "var(--color-blue)", posicion: "arriba" }]} formato={(v) => String(Math.round(v))} />}
         </Card>
-        <Tile titulo="Causas nuevas este mes" sub={`${textoVariacion(n.causas.nuevasMes, n.causas.nuevasMesPrev)} vs. mes anterior`} valor={n.causas.nuevasMes} />
+        <Tile titulo="Causas nuevas este mes" sub={`${textoVariacion(n.causas.nuevasMes, n.causas.nuevasMesPrev)} vs. mes anterior`} valor={n.causas.nuevasMes} className="flex flex-col justify-center" />
       </div>
       <p className="text-[12px] text-muted">
         <Link href="/causas" className="text-blue hover:underline">Ver causas →</Link>

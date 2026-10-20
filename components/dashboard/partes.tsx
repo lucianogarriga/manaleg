@@ -5,6 +5,9 @@ import type { Dinero, Moneda } from "@/services/supabase/novedades";
 
 export const MONEDAS: Moneda[] = ["ARS", "USD"];
 
+// Número entero con separador de miles, como en el resto de la app.
+export const numero = (n: number) => Math.round(n).toLocaleString("es-AR");
+
 // Porcentaje de variación: null cuando no hay base de comparación.
 export function variacion(actual: number, previo: number): number | null {
   if (previo === 0) return actual > 0 ? 100 : null;
@@ -105,26 +108,53 @@ export function BadgeHoy({ etiqueta, valor, rojo = false }: { etiqueta: string; 
   );
 }
 
-// Tarjeta KPI: título, número, subtítulo y badge (variación o dato).
-export function KpiCard({ titulo, valor, sub, badge, alerta = false, grisada = false, onClick }: {
+// Barras de tendencia de las últimas 7 semanas (la última resaltada).
+export function Tendencia({ serie }: { serie: number[] }) {
+  const max = Math.max(...serie, 1);
+  return (
+    <div className="flex h-[52px] shrink-0 items-end gap-[5px]" aria-hidden>
+      {serie.map((v, i) => {
+        const ultima = i === serie.length - 1;
+        return (
+          <span
+            key={i}
+            className="w-[7px] rounded-[3px]"
+            style={{
+              height: `${Math.max(10, (v / max) * 100)}%`,
+              background: ultima ? "var(--color-blue)" : "var(--color-gray)",
+              opacity: ultima ? 1 : 0.45,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+// Tarjeta KPI: título, número, subtítulo, badge y tendencia de fondo.
+export function KpiCard({ titulo, valor, sub, badge, alerta = false, grisada = false, serie, onClick }: {
   titulo: string;
   valor: ReactNode;
   sub?: ReactNode;
   badge?: ReactNode;
   alerta?: boolean;
   grisada?: boolean;
+  serie?: number[];
   onClick?: () => void;
 }) {
   return (
     <Card warn={alerta && !grisada} className={`${grisada ? "opacity-60" : "transition-colors hover:border-blue"} ${onClick ? "cursor-pointer" : ""}`}>
-      <div onClick={onClick} className="flex h-full flex-col justify-between gap-3">
+      <div onClick={onClick} className="flex h-full flex-col gap-3">
         <div className="flex items-start justify-between gap-2">
-          <div className="text-[18px] font-semibold leading-tight text-text">{titulo}</div>
+          <div className="text-[16px] font-semibold leading-tight text-text">{titulo}</div>
           {badge}
         </div>
-        <div>
-          <div className="text-[30px] font-bold leading-none tabular-nums text-text">{valor}</div>
-          {sub && <div className="mt-1.5 text-[12px] text-muted">{sub}</div>}
+        <div className="flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-[22px] font-bold leading-tight tabular-nums text-text">{valor}</div>
+            {sub && <div className="mt-1 text-[12px] text-muted">{sub}</div>}
+          </div>
+          {serie && serie.length > 0 && <Tendencia serie={serie} />}
         </div>
       </div>
     </Card>
@@ -132,14 +162,14 @@ export function KpiCard({ titulo, valor, sub, badge, alerta = false, grisada = f
 }
 
 // Mosaico pequeño (KPIs y móvil).
-export function Tile({ titulo, sub, valor, extra, grisada = false }: {
-  titulo: string; sub?: ReactNode; valor: ReactNode; extra?: ReactNode; grisada?: boolean;
+export function Tile({ titulo, sub, valor, extra, grisada = false, className = "" }: {
+  titulo: string; sub?: ReactNode; valor: ReactNode; extra?: ReactNode; grisada?: boolean; className?: string;
 }) {
   return (
-    <Card className={grisada ? "opacity-60" : ""}>
-      <div className="text-[13px] font-semibold text-text">{titulo}</div>
+    <Card className={`${grisada ? "opacity-60" : ""} ${className}`}>
+      <div className="text-[14px] font-semibold text-text">{titulo}</div>
       {grisada && <span className="text-[11px] text-muted">Próximamente</span>}
-      <div className="mt-1.5 text-[24px] font-bold tabular-nums text-text">{valor}</div>
+      <div className="mt-1 text-[20px] font-bold tabular-nums text-text">{valor}</div>
       {sub && <div className="mt-1 text-[12px] text-muted">{sub}</div>}
       {extra}
     </Card>
@@ -243,8 +273,8 @@ export function BarrasAgrupadas({ meses, cobrado, pendiente, moneda }: {
           <g key={m}>
             <rect x={x0} y={y(cobrado[i])} width={bw} height={pt + ih - y(cobrado[i])} rx="3" style={{ fill: "var(--color-blue)" }} />
             <rect x={x0 + bw + gp} y={y(pendiente[i])} width={bw} height={pt + ih - y(pendiente[i])} rx="3" style={{ fill: "var(--color-pur)" }} />
-            <text x={x0 + bw / 2} y={y(cobrado[i]) - 4} textAnchor="middle" fontSize="9" style={{ fill: "var(--color-muted)" }}>{cobrado[i] ? Math.round(cobrado[i]) : ""}</text>
-            <text x={x0 + bw + gp + bw / 2} y={y(pendiente[i]) - 4} textAnchor="middle" fontSize="9" style={{ fill: "var(--color-muted)" }}>{pendiente[i] ? Math.round(pendiente[i]) : ""}</text>
+            <text x={x0 + bw / 2} y={y(cobrado[i]) - 4} textAnchor="middle" fontSize="9" style={{ fill: "var(--color-muted)" }}>{cobrado[i] ? numero(cobrado[i]) : ""}</text>
+            <text x={x0 + bw + gp + bw / 2} y={y(pendiente[i]) - 4} textAnchor="middle" fontSize="9" style={{ fill: "var(--color-muted)" }}>{pendiente[i] ? numero(pendiente[i]) : ""}</text>
             <text x={x0 + bw + gp / 2} y={vh - 6} textAnchor="middle" fontSize="10"
               style={{ fill: ultimo ? "var(--color-text)" : "var(--color-muted)" }} fontWeight={ultimo ? 700 : 400}>{m}</text>
           </g>
@@ -291,7 +321,7 @@ export function Ondas({ meses, series, moneda, formato }: {
             {pts.map(([px, py], i) => (
               <g key={i}>
                 <circle cx={px} cy={py} r="2.5" style={{ fill: s.color }} />
-                <text x={px} y={py + dy} textAnchor="middle" fontSize="9" style={{ fill: "var(--color-muted)" }}>{s.valores[i] ? Math.round(s.valores[i]) : ""}</text>
+                <text x={px} y={py + dy} textAnchor="middle" fontSize="9" style={{ fill: "var(--color-muted)" }}>{s.valores[i] ? numero(s.valores[i]) : ""}</text>
               </g>
             ))}
           </g>
