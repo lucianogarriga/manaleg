@@ -528,7 +528,9 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-[14px] font-semibold text-text">Causas nuevas este mes</div>
-                <div className="mt-0.5 text-[12px] text-muted">{textoVariacion(n.causas.nuevasMes, n.causas.nuevasMesPrev)} vs. mes anterior</div>
+                <div className="mt-0.5 text-[12px] text-muted">
+                  {n.causas.nuevasMesPrev > 0 ? `${n.causas.nuevasMesPrev} el mes anterior` : "Sin causas el mes anterior"}
+                </div>
               </div>
               <div className="text-[22px] font-bold tabular-nums text-text">{n.causas.nuevasMes}</div>
             </div>

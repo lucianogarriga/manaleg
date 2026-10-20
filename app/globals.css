@@ -55,16 +55,16 @@
 
 /* ─── CLARO (Gris cálido) ─── */
 :root[data-theme="light"] {
-  --color-bg:      #ECEAE6;
-  --color-card:    #F6F5F2;
-  --color-border:  #D8D4CC;
+  --color-bg:      #EBEBEA;
+  --color-card:    #F7F7F6;
+  --color-border:  #D6D6D3;
 
   --color-text:    #2F2E2B;
   --color-sub:     #55524B;
   --color-muted:   #69655E;
 
-  --color-blue:    #2C6683;
-  --color-blue-lt: rgba(44,102,131,.10);
+  --color-blue:    #2E6A8A;
+  --color-blue-lt: rgba(46,106,138,.10);
 
   --color-red:     #845A55;
   --color-red-lt:  rgba(132,90,85,.10);
@@ -72,28 +72,28 @@
   --color-amb:     #7C613D;
   --color-amb-lt:  rgba(124,97,61,.10);
   --color-amb-bd:  rgba(124,97,61,.28);
-  --color-grn:     #2C6683;
-  --color-grn-lt:  rgba(44,102,131,.10);
+  --color-grn:     #2E6A8A;
+  --color-grn-lt:  rgba(46,106,138,.10);
   --color-pur:     #58677B;
   --color-pur-lt:  rgba(88,103,123,.10);
   --color-cel:     #B3C6CE;
   --color-gray:    #B5B0A6;
-  --color-panel2:  #E6E3DD;
+  --color-panel2:  #E4E4E2;
 
   --cal-out:       rgba(0,0,0,.03);
   --cal-wknd:      rgba(0,0,0,.025);
   --cal-inh:       rgba(194,151,95,.16);
 
-  --sb-bg:         #F6F5F2;
+  --sb-bg:         #F7F7F6;
   --sb-fg:         #69655E;
-  --sb-accent:     #2C6683;
-  --sb-act-bg:     rgba(44,102,131,.12);
-  --sb-act-fg:     #2C6683;
+  --sb-accent:     #2E6A8A;
+  --sb-act-bg:     rgba(46,106,138,.12);
+  --sb-act-fg:     #2E6A8A;
   --sb-shadow:     0 2px 8px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.06), 0 0 0 1px rgba(0,0,0,.04);
 
-  --tb-bg:         #F6F5F2;
-  --tb-border:     #D8D4CC;
-  --hover-row:     #E6E3DD;
+  --tb-bg:         #F7F7F6;
+  --tb-border:     #D6D6D3;
+  --hover-row:     #E4E4E2;
 
   color-scheme: light;
 }
@@ -181,6 +181,12 @@
 .auth-dots::after {
   content: "";
   animation: auth-dots 1.8s steps(1) infinite;
+}
+
+/* Profundidad sutil en las tarjetas del modo claro */
+:root[data-theme="light"] .bg-card,
+:root[data-theme="light"] [style*="var(--color-card)"] {
+  box-shadow: 0 1px 1px rgba(40, 42, 46, .04), 0 2px 6px rgba(40, 42, 46, .05), inset 0 1px 0 rgba(255, 255, 255, .6);
 }
 
 /* Scrollbars finos */
