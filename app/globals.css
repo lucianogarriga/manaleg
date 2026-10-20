@@ -31,6 +31,9 @@
   --color-grn-lt:  rgba(94,156,164,.12);
   --color-pur:     #8196B9;
   --color-pur-lt:  rgba(129,150,185,.14);
+  --color-cel:     #7FA9B5;
+  --color-gray:    #6B6963;
+  --color-panel2:  #2E2E2B;
 
   --cal-out:       rgba(255,255,255,.02);
   --cal-wknd:      rgba(255,255,255,.035);
@@ -73,6 +76,9 @@
   --color-grn-lt:  rgba(71,108,106,.10);
   --color-pur:     #58677B;
   --color-pur-lt:  rgba(88,103,123,.10);
+  --color-cel:     #A3BDC0;
+  --color-gray:    #B5B0A6;
+  --color-panel2:  #E6E3DD;
 
   --cal-out:       rgba(0,0,0,.03);
   --cal-wknd:      rgba(0,0,0,.025);
@@ -112,6 +118,9 @@
   --color-grn-lt:  var(--color-grn-lt);
   --color-pur:     var(--color-pur);
   --color-pur-lt:  var(--color-pur-lt);
+  --color-cel:     var(--color-cel);
+  --color-gray:    var(--color-gray);
+  --color-panel2:  var(--color-panel2);
 
   --font-mono: "Courier New", monospace;
   --font-sans: var(--font-inter), system-ui, sans-serif;
