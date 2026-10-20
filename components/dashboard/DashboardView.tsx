@@ -326,14 +326,12 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
 
 function FilaEstado({ color, etiqueta, valor, total }: { color: string; etiqueta: string; valor: number; total: number }) {
   return (
-    <li className="flex items-center gap-2 border-b border-border py-1.5 last:border-0">
-      <span className="flex flex-1 items-center gap-2 text-text">
-        <span className="inline-block h-[9px] w-[9px] shrink-0 rounded-full" style={{ background: color }} />
-        {etiqueta}
-      </span>
-      <span className="flex items-center gap-3 tabular-nums">
-        <b className="min-w-[18px] text-center text-text">{valor}</b>
-        <span className="min-w-[30px] text-right text-[11px] text-muted">{total ? Math.round((valor / total) * 100) : 0}%</span>
+    <li className="flex items-center gap-1.5 border-b border-border py-1.5 last:border-0">
+      <span className="inline-block h-[8px] w-[8px] shrink-0 rounded-full" style={{ background: color }} />
+      <span className="flex-1 truncate text-[11.5px] text-sub">{etiqueta}</span>
+      <span className="flex shrink-0 items-center gap-2 tabular-nums">
+        <span className="min-w-[16px] text-center text-[12.5px] font-semibold text-text">{valor}</span>
+        <span className="min-w-[28px] text-right text-[11px] text-muted">{total ? Math.round((valor / total) * 100) : 0}%</span>
       </span>
     </li>
   );

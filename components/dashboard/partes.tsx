@@ -209,14 +209,13 @@ export function BarrasH({ filas, formato = (n: number) => String(n) }: {
 // Dona de estados de causas.
 export function Dona({ segmentos, sinLeyenda = false }: { segmentos: { etiqueta: string; valor: number; color: string }[]; sinLeyenda?: boolean }) {
   const total = segmentos.reduce((a, s) => a + s.valor, 0);
-  const r = 50, ri = 34, c = 60;
+  const r = 52, ri = 33, c = 60;
   let angulo = -Math.PI / 2;
   const punto = (radio: number, a: number) => [c + radio * Math.cos(a), c + radio * Math.sin(a)];
   return (
     <div className="flex flex-wrap items-center gap-5">
       <svg width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="Estado de causas" className="shrink-0">
         {total === 0 && (
-          // Sin datos: dona apagada en gris claro.
           <circle cx={c} cy={c} r={(r + ri) / 2} fill="none" strokeWidth={r - ri} style={{ stroke: "var(--color-panel2)" }} />
         )}
         {total > 0 && segmentos.map((s) => {
@@ -229,8 +228,8 @@ export function Dona({ segmentos, sinLeyenda = false }: { segmentos: { etiqueta:
           const d = `M${x0},${y0} A${r},${r} 0 ${grande} 1 ${x1},${y1} L${xi1},${yi1} A${ri},${ri} 0 ${grande} 0 ${xi0},${yi0} Z`;
           return <path key={s.etiqueta} d={d} style={{ fill: s.color }} />;
         })}
-        <text x="60" y="58" textAnchor="middle" fontSize="18" fontWeight="700" style={{ fill: "var(--color-text)" }}>{total}</text>
-        <text x="60" y="72" textAnchor="middle" fontSize="9" style={{ fill: "var(--color-muted)" }}>causas</text>
+        <text x="60" y="56" textAnchor="middle" fontSize="22" fontWeight="700" style={{ fill: "var(--color-text)" }}>{total}</text>
+        <text x="60" y="70" textAnchor="middle" fontSize="9" style={{ fill: "var(--color-muted)" }}>causas</text>
       </svg>
       {!sinLeyenda && <ul className="flex min-w-[160px] flex-1 flex-col gap-1 text-[13px]">
         {segmentos.map((s) => (
