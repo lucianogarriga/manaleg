@@ -234,14 +234,14 @@ export function Dona({ segmentos, sinLeyenda = false }: { segmentos: { etiqueta:
       </svg>
       {!sinLeyenda && <ul className="flex min-w-[160px] flex-1 flex-col gap-1 text-[13px]">
         {segmentos.map((s) => (
-          <li key={s.etiqueta} className="flex items-center justify-between gap-2 border-b border-border py-1.5 last:border-0">
-            <span className="flex items-center gap-2 text-text">
-              <span className="inline-block h-[9px] w-[9px] rounded-sm" style={{ background: s.color }} />
+          <li key={s.etiqueta} className="flex items-center gap-2 border-b border-border py-1.5 last:border-0">
+            <span className="flex flex-1 items-center gap-2 text-text">
+              <span className="inline-block h-[9px] w-[9px] shrink-0 rounded-sm" style={{ background: s.color }} />
               {s.etiqueta}
             </span>
-            <span className="tabular-nums">
-              <b className="text-text">{s.valor}</b>
-              <span className="ml-1 text-[11px] text-muted">{total ? Math.round((s.valor / total) * 100) : 0}%</span>
+            <span className="flex items-center gap-3 tabular-nums">
+              <b className="min-w-[18px] text-center text-text">{s.valor}</b>
+              <span className="min-w-[30px] text-right text-[11px] text-muted">{total ? Math.round((s.valor / total) * 100) : 0}%</span>
             </span>
           </li>
         ))}

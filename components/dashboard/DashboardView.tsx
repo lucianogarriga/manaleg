@@ -338,16 +338,28 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
 
 function FilaEstado({ color, etiqueta, valor, total }: { color: string; etiqueta: string; valor: number; total: number }) {
   return (
-    <li className="flex items-center justify-between gap-2 border-b border-border py-1.5 last:border-0">
-      <span className="flex items-center gap-2 text-text">
-        <span className="inline-block h-[9px] w-[9px] rounded-full" style={{ background: color }} />
+    <li className="flex items-center gap-2 border-b border-border py-1.5 last:border-0">
+      <span className="flex flex-1 items-center gap-2 text-text">
+        <span className="inline-block h-[9px] w-[9px] shrink-0 rounded-full" style={{ background: color }} />
         {etiqueta}
       </span>
-      <span className="tabular-nums">
-        <b className="text-text">{valor}</b>
-        <span className="ml-1 text-[11px] text-muted">{total ? Math.round((valor / total) * 100) : 0}%</span>
+      <span className="flex items-center gap-3 tabular-nums">
+        <b className="min-w-[18px] text-center text-text">{valor}</b>
+        <span className="min-w-[30px] text-right text-[11px] text-muted">{total ? Math.round((valor / total) * 100) : 0}%</span>
       </span>
     </li>
+  );
+}
+
+function RingPct({ pct, color = "var(--color-blue)" }: { pct: number; color?: string }) {
+  const r = 17, c = 22, stroke = 5, circ = 2 * Math.PI * r;
+  const dash = (Math.min(100, Math.max(0, pct)) / 100) * circ;
+  return (
+    <svg width="44" height="44" viewBox="0 0 44 44" className="shrink-0 -rotate-90" aria-hidden>
+      <circle cx={c} cy={c} r={r} fill="none" strokeWidth={stroke} style={{ stroke: "var(--color-panel2)" }} />
+      {pct > 0 && <circle cx={c} cy={c} r={r} fill="none" strokeWidth={stroke} strokeLinecap="round"
+        strokeDasharray={`${dash} ${circ}`} style={{ stroke: color }} />}
+    </svg>
   );
 }
 
@@ -372,6 +384,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
   base: "activas" | "todas";
   setBase: (b: "activas" | "todas") => void;
 }) {
+  const [monedaDeuda, setMonedaDeuda] = useState<Moneda>("ARS");
   const n = d.datos;
   const per = nombrePeriodo(periodo, n.periodo);
   const meses = n.causas.nuevasSeisMeses.map((x) => ABREV_MES[Number(x.mes.slice(5, 7)) - 1]);
@@ -465,12 +478,20 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <Card>
           <Titulo sub={`Cobrado / facturado · ${DUR_PERIODO[periodo]}`}>Tasa de cobro</Titulo>
-          <div className="flex flex-col gap-1.5 text-[24px] font-bold tabular-nums text-text">
+          <div className="flex flex-col gap-3">
             {MONEDAS.map((m) => {
               const p = cobroPct(m);
-              return p === null ? null : <span key={m}>{p}% <span className="text-[12px] font-normal text-muted">{m === "ARS" ? "en $" : "en US$"}</span></span>;
+              return p === null ? null : (
+                <div key={m} className="flex items-center gap-3">
+                  <RingPct pct={p} />
+                  <div>
+                    <div className="text-[24px] font-bold leading-none tabular-nums text-text">{p}%</div>
+                    <div className="mt-0.5 text-[12px] text-muted">{m === "ARS" ? "en $" : "en US$"}</div>
+                  </div>
+                </div>
+              );
             })}
-            {MONEDAS.every((m) => cobroPct(m) === null) && <span>—</span>}
+            {MONEDAS.every((m) => cobroPct(m) === null) && <span className="text-[24px] font-bold text-text">—</span>}
           </div>
         </Card>
         <Card>
@@ -483,20 +504,25 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
           </div>
         </Card>
         <Card>
-          <Titulo sub="Honorarios pendientes por días desde el pacto">Antigüedad de la deuda</Titulo>
-          <div className="flex flex-col gap-2 text-[12px]">
-            {MONEDAS.map((m) => {
-              const a = n.financiero.antiguedad[m];
-              if (!a) return null;
+          <Titulo
+            sub="Honorarios pendientes por días desde el pacto"
+            derecha={
+              <Segmentado titulo="Moneda" valores={["ARS", "USD"] as Moneda[]} actual={monedaDeuda} onChange={setMonedaDeuda}
+                etiquetas={{ ARS: "$", USD: "US$" }} />
+            }
+          >Antigüedad de la deuda</Titulo>
+          <div className="text-[12px]">
+            {(() => {
+              const a = n.financiero.antiguedad[monedaDeuda];
+              if (!a) return <p className="text-muted py-1">Sin datos en {monedaDeuda === "ARS" ? "$" : "US$"}.</p>;
               return (
-                <div key={m} className="grid grid-cols-[1fr_auto] gap-x-2">
-                  <span className="col-span-2 text-muted">{m === "ARS" ? "En $" : "En US$"}</span>
-                  <span className="text-muted">0–30 días</span><b className="text-right tabular-nums text-text">{formatCurrency(a.d0_30, m)}</b>
-                  <span className="text-muted">31–60 días</span><b className="text-right tabular-nums text-text">{formatCurrency(a.d31_60, m)}</b>
-                  <span className="text-muted">Más de 60 días</span><b className="text-right tabular-nums text-text">{formatCurrency(a.d60, m)}</b>
+                <div className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-2">
+                  <span className="text-muted">0–30 días</span><b className="text-right tabular-nums text-text">{formatCurrency(a.d0_30, monedaDeuda)}</b>
+                  <span className="text-muted">31–60 días</span><b className="text-right tabular-nums text-text">{formatCurrency(a.d31_60, monedaDeuda)}</b>
+                  <span className="text-muted">Más de 60 días</span><b className="text-right tabular-nums text-text">{formatCurrency(a.d60, monedaDeuda)}</b>
                 </div>
               );
-            })}
+            })()}
           </div>
         </Card>
         <Tile titulo="Clientes activos" sub="Con causas abiertas" valor={n.clientes.activos} />
@@ -552,14 +578,14 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
                   { etiqueta: "Transadas", valor: n.gestion.exito.transadas, color: "var(--color-cel)" },
                   { etiqueta: "Perdidas", valor: n.gestion.exito.perdidas, color: "var(--color-gray)" },
                 ].map((f) => (
-                  <li key={f.etiqueta} className="flex items-center justify-between gap-2 border-b border-border pb-2 last:border-0">
-                    <span className="flex items-center gap-2 text-text">
-                      <span className="inline-block h-[9px] w-[9px] rounded-full" style={{ background: f.color }} />
+                  <li key={f.etiqueta} className="flex items-center gap-2 border-b border-border pb-2 last:border-0">
+                    <span className="flex flex-1 items-center gap-2 text-text">
+                      <span className="inline-block h-[9px] w-[9px] shrink-0 rounded-full" style={{ background: f.color }} />
                       {f.etiqueta}
                     </span>
-                    <span className="tabular-nums">
-                      <b className="text-text">{f.valor}</b>
-                      <span className="ml-1 text-[11px] text-muted">{n.gestion.exito.total ? Math.round((f.valor / n.gestion.exito.total) * 100) : 0}%</span>
+                    <span className="flex items-center gap-3 tabular-nums">
+                      <b className="min-w-[18px] text-center text-text">{f.valor}</b>
+                      <span className="min-w-[30px] text-right text-[11px] text-muted">{n.gestion.exito.total ? Math.round((f.valor / n.gestion.exito.total) * 100) : 0}%</span>
                     </span>
                   </li>
                 ))}
