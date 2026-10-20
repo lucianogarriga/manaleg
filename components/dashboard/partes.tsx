@@ -59,11 +59,11 @@ export function Card({ children, className = "", warn = false, style }: {
 export function Titulo({ children, sub, derecha }: { children: ReactNode; sub?: ReactNode; derecha?: ReactNode }) {
   return (
     <div className="mb-2 flex items-start justify-between gap-2">
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <div className="text-[15px] font-semibold text-text">{children}</div>
         {sub && <div className="mt-0.5 text-[12px] text-muted">{sub}</div>}
       </div>
-      {derecha}
+      {derecha && <div className="shrink-0">{derecha}</div>}
     </div>
   );
 }
@@ -146,8 +146,8 @@ export function KpiCard({ titulo, valor, sub, badge, alerta = false, grisada = f
     <Card warn={alerta && !grisada} className={`${grisada ? "opacity-60" : "transition-colors hover:border-blue"} ${onClick ? "cursor-pointer" : ""}`}>
       <div onClick={onClick} className="flex h-full flex-col gap-3">
         <div className="flex items-start justify-between gap-2">
-          <div className="text-[16px] font-semibold leading-tight text-text">{titulo}</div>
-          {badge}
+          <div className="min-w-0 text-[16px] font-semibold leading-tight text-text">{titulo}</div>
+          {badge && <div className="shrink-0">{badge}</div>}
         </div>
         <div className="flex items-end justify-between gap-3">
           <div className="min-w-0">
@@ -194,12 +194,12 @@ export function BarrasH({ filas, formato = (n: number) => String(n) }: {
   return (
     <div className="flex flex-col gap-2">
       {filas.map((f) => (
-        <div key={f.etiqueta} className="grid grid-cols-[120px_1fr_44px] items-center gap-2 text-[12px]">
+        <div key={f.etiqueta} className="grid grid-cols-[minmax(0,120px)_1fr_auto] items-center gap-2 text-[12px]">
           <span className="truncate text-muted">{f.etiqueta}</span>
           <div className="h-[9px] overflow-hidden rounded-[5px] bg-panel2">
             <div className="h-full rounded-[5px] bg-blue" style={{ width: `${(f.valor / max) * 100}%` }} />
           </div>
-          <span className="text-right font-semibold tabular-nums text-text">{formato(f.valor)}</span>
+          <span className="whitespace-nowrap text-right font-semibold tabular-nums text-text">{formato(f.valor)}</span>
         </div>
       ))}
     </div>
