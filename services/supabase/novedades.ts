@@ -99,6 +99,8 @@ export interface Tendencias {
 export interface NovedadesCompletas {
   datos: Novedades;
   tendencias: Tendencias;
+  // Causas judiciales (sin extrajudiciales) por estado, para el detalle de Estado de causas.
+  judicialesPorEstado: Record<string, number>;
   vencimientos: VencimientoFila[];
   vencimientosLejanos: VencimientoFila[];
   audiencias: AudienciaFila[];
@@ -120,6 +122,13 @@ export async function cargarNovedades(periodo: Periodo): Promise<NovedadesComple
   const en7 = addDaysISO(hoy, 7);
   const en14 = addDaysISO(hoy, 14);
   const mes = rangoMes(hoy);
+
+  const estadosJudiciales = ["Iniciada", "En trámite", "Con resolución", "En ejecución"] as const;
+  const judicialesQ = Promise.all(
+    estadosJudiciales.map((e) =>
+      supabase.from("causas").select("id", { count: "exact", head: true })
+        .eq("estado", e).or("fuero.is.null,fuero.neq.Extrajudicial")),
+  );
 
   const [rpc, tend, venc, lejanos, aud, tar, calVenc, calAud, calTar] = await Promise.all([
     supabase.rpc("estadisticas_novedades", { p_periodo: periodo }),
@@ -193,7 +202,15 @@ export async function cargarNovedades(periodo: Periodo): Promise<NovedadesComple
   for (const a of calAud.data ?? []) dia(a.fecha).audiencias++;
   for (const t of calTar.data ?? []) if (t.fecha_limite) dia(t.fecha_limite).tareas++;
 
+  const judiciales = await judicialesQ;
+  const judicialesPorEstado: Record<string, number> = {};
+  estadosJudiciales.forEach((e, i) => {
+    if (judiciales[i].error) throw new Error("No se pudo calcular el detalle de causas judiciales.");
+    judicialesPorEstado[e] = judiciales[i].count ?? 0;
+  });
+
   return {
+    judicialesPorEstado,
     datos: rpc.data as Novedades,
     tendencias: tend.data as Tendencias,
     vencimientos: (venc.data ?? []).map((v) => ({

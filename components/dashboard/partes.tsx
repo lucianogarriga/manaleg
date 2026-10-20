@@ -207,7 +207,7 @@ export function BarrasH({ filas, formato = (n: number) => String(n) }: {
 }
 
 // Dona de estados de causas.
-export function Dona({ segmentos }: { segmentos: { etiqueta: string; valor: number; color: string }[] }) {
+export function Dona({ segmentos, sinLeyenda = false }: { segmentos: { etiqueta: string; valor: number; color: string }[]; sinLeyenda?: boolean }) {
   const total = segmentos.reduce((a, s) => a + s.valor, 0);
   const r = 50, ri = 34, c = 60;
   let angulo = -Math.PI / 2;
@@ -228,7 +228,7 @@ export function Dona({ segmentos }: { segmentos: { etiqueta: string; valor: numb
         <text x="60" y="58" textAnchor="middle" fontSize="18" fontWeight="700" style={{ fill: "var(--color-text)" }}>{total}</text>
         <text x="60" y="72" textAnchor="middle" fontSize="9" style={{ fill: "var(--color-muted)" }}>causas</text>
       </svg>
-      <ul className="flex min-w-[160px] flex-1 flex-col gap-1 text-[13px]">
+      {!sinLeyenda && <ul className="flex min-w-[160px] flex-1 flex-col gap-1 text-[13px]">
         {segmentos.map((s) => (
           <li key={s.etiqueta} className="flex items-center justify-between gap-2 border-b border-border py-1.5 last:border-0">
             <span className="flex items-center gap-2 text-text">
@@ -241,7 +241,7 @@ export function Dona({ segmentos }: { segmentos: { etiqueta: string; valor: numb
             </span>
           </li>
         ))}
-      </ul>
+      </ul>}
     </div>
   );
 }

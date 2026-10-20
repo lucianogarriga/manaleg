@@ -336,6 +336,21 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
   );
 }
 
+function FilaEstado({ color, etiqueta, valor, total }: { color: string; etiqueta: string; valor: number; total: number }) {
+  return (
+    <li className="flex items-center justify-between gap-2 border-b border-border py-1.5 last:border-0">
+      <span className="flex items-center gap-2 text-text">
+        <span className="inline-block h-[9px] w-[9px] rounded-full" style={{ background: color }} />
+        {etiqueta}
+      </span>
+      <span className="tabular-nums">
+        <b className="text-text">{valor}</b>
+        <span className="ml-1 text-[11px] text-muted">{total ? Math.round((valor / total) * 100) : 0}%</span>
+      </span>
+    </li>
+  );
+}
+
 function EtiquetaTarea({ fecha, hoy }: { fecha: string; hoy: string }) {
   if (fecha < hoy) return <span className="rounded px-1.5 py-[1px] text-[10px] font-bold tracking-wide text-red" style={{ border: "1px solid color-mix(in srgb, var(--color-red) 45%, transparent)" }}>VENCIDA</span>;
   if (fecha === hoy) return <span className="rounded px-1.5 py-[1px] text-[10px] font-bold tracking-wide text-blue" style={{ border: "1px solid color-mix(in srgb, var(--color-blue) 45%, transparent)" }}>HOY</span>;
@@ -361,7 +376,6 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
   const per = nombrePeriodo(periodo, n.periodo);
   const meses = n.causas.nuevasSeisMeses.map((x) => ABREV_MES[Number(x.mes.slice(5, 7)) - 1]);
 
-  const estadosActivas = Object.entries(n.causas.activasPorEstado);
   const segmentos = [
     { etiqueta: "Judicial", valor: n.causas.judiciales, color: "var(--color-blue)" },
     { etiqueta: "Extrajudicial", valor: n.causas.extrajudiciales, color: "var(--color-cel)" },
@@ -399,14 +413,19 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <Card>
           <Titulo sub={`${n.causas.total} causas en total`}>Estado de causas</Titulo>
-          <Dona segmentos={segmentos} />
-          {estadosActivas.length > 0 && (
-            <div className="mt-3 border-t border-border pt-2 text-[12px] text-muted">
-              {estadosActivas.map(([e, c]) => (
-                <div key={e} className="flex justify-between py-0.5"><span>{e}</span><b className="text-text">{c}</b></div>
+          <div className="grid grid-cols-2 items-center gap-4">
+            <Dona segmentos={segmentos} sinLeyenda />
+            <ul className="flex flex-col gap-1 text-[13px]">
+              <FilaEstado color="var(--color-blue)" etiqueta="Judicial" valor={n.causas.judiciales} total={n.causas.total} />
+              {Object.entries(d.judicialesPorEstado).map(([e, c]) => (
+                <li key={e} className="flex items-center justify-between pl-[17px] text-[12px] text-muted">
+                  <span>{e}</span><b className="text-text">{c}</b>
+                </li>
               ))}
-            </div>
-          )}
+              <FilaEstado color="var(--color-cel)" etiqueta="Extrajudicial" valor={n.causas.extrajudiciales} total={n.causas.total} />
+              <FilaEstado color="var(--color-gray)" etiqueta="Cerrada" valor={n.causas.cerradas} total={n.causas.total} />
+            </ul>
+          </div>
         </Card>
         <Card>
           <Titulo sub="Activas, por materia">Causas por fuero</Titulo>
@@ -419,31 +438,30 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
       </div>
 
       <SeccionEncabezado sub="Plazos, gastos y tiempos">Gestión</SeccionEncabezado>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-        <Card className="col-span-2 md:col-span-2">
-          <Titulo sub="Últimos 90 días">Plazos cumplidos a tiempo</Titulo>
-          <div className="text-[30px] font-bold tabular-nums text-text">{plazosPct === null ? "—" : `${plazosPct}%`}</div>
-          <div className="mt-1 text-[12px] text-muted">
-            {n.gestion.plazosTotal90} plazos · {n.gestion.plazosVencidosSinCumplir90} vencieron sin cumplir
-          </div>
-          {plazosPct !== null && <BarraProgreso pct={plazosPct} />}
-        </Card>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <Tile titulo="Plazos cumplidos a tiempo" sub={`${n.gestion.plazosTotal90} plazos en los últimos 90 días`}
+          valor={plazosPct === null ? "—" : `${plazosPct}%`}
+          extra={<>{plazosPct !== null && <BarraProgreso pct={plazosPct} />}<div className="mt-2 text-[12px] text-muted">{n.gestion.plazosVencidosSinCumplir90} vencieron sin cumplir</div></>} />
         <Tile titulo="Gastos sin reintegrar" valor={formatCurrency(n.gestion.gastosSinReintegrar.monto, "ARS")}
           sub={`en ${n.gestion.gastosSinReintegrar.causas} causas${n.gestion.gastosSinReintegrar.monto > 0 ? ` · ${Math.round((n.gestion.gastosSinReintegrar.peritajes / n.gestion.gastosSinReintegrar.monto) * 100)}% son peritajes` : ""}`} />
         <Tile titulo="Duración promedio" sub="Judiciales cerradas, últimos 2 años"
-          valor={n.gestion.duracionMesesJudicial.promedio === null ? "—" : `${Math.round(n.gestion.duracionMesesJudicial.promedio)} m`} />
-        <Tile titulo="Días por etapa" sub={cuello ? `Cuello de botella: ${cuello[0]}` : "Sin historial todavía"}
-          valor={cuello ? `${cuello[1]} d` : "—"} />
-        <Tile titulo="Tasa de éxito en causas" sub="Cerradas con resultado, últimos 2 años"
+          valor={n.gestion.duracionMesesJudicial.promedio === null ? "—" : `${Math.round(n.gestion.duracionMesesJudicial.promedio)} meses`}
+          extra={Object.keys(n.gestion.duracionMesesJudicial.porFuero).length > 0
+            ? <div className="mt-2 text-[12px] text-muted">{Object.entries(n.gestion.duracionMesesJudicial.porFuero).map(([f, m]) => `${f} ${Math.round(m)} m`).join(" · ")}</div>
+            : null} />
+        <Tile titulo="Días promedio por etapa" sub={cuello ? `Cuello de botella: ${cuello[0]}` : "Sin historial todavía"}
+          valor={cuello ? `${cuello[1]} d` : "—"}
+          extra={etapas.length > 0 ? <div className="mt-2 text-[12px] text-muted">{etapas.map(([e, dd]) => `${e} ${dd}`).join(" · ")}</div> : null} />
+        <Tile titulo="Tasa de éxito en causas" sub="Causas cerradas, últimos 2 años"
           valor={exitoPct === null ? "—" : `${exitoPct}%`}
           extra={n.gestion.exito.total > 0 ? <div className="mt-2 text-[12px] text-muted">Ganadas {n.gestion.exito.ganadas} · Transadas {n.gestion.exito.transadas} · Perdidas {n.gestion.exito.perdidas}</div> : null} />
+        <Tile titulo="Audiencias con suspensión" sub="Próximamente" valor="—" grisada />
       </div>
 
       <SeccionEncabezado sub="Resultados y agenda">Audiencias</SeccionEncabezado>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <Tile titulo="Tasa de éxito por tipo de audiencia" sub="Éxito = objetivo cumplido · 12 meses" valor="—" grisada />
         <Tile titulo="Audiencias del mes" sub={`${n.audiencias.semana} esta semana · ${n.audiencias.proximos14} en los próximos 14 días`} valor={n.audiencias.mes} />
-        <Tile titulo="Audiencias con suspensión" sub="Próximamente" valor="—" grisada />
       </div>
 
       <SeccionEncabezado sub="Honorarios, cartera y captación">Clientes y cobro</SeccionEncabezado>
@@ -500,7 +518,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
       </div>
 
       <SeccionEncabezado sub="Entrada de causas">Actividad</SeccionEncabezado>
-      <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <Card className="md:col-span-2">
           <Titulo derecha={<Segmentado titulo="Gráfico" valores={["barras", "ondas"] as const} actual={estilo} onChange={setEstilo}
             etiquetas={{ barras: "Barras", ondas: "Ondas" }} />} sub="Últimos 6 meses">Causas nuevas por mes</Titulo>
@@ -509,7 +527,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
             : <Ondas meses={meses} series={[{ valores: nuevasPorMes, color: "var(--color-blue)", posicion: "arriba" }]} formato={(v) => String(Math.round(v))} />}
         </Card>
         <div className="flex flex-col gap-3">
-          <Card>
+          <Card className="flex flex-1 flex-col justify-center">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-[14px] font-semibold text-text">Causas nuevas este mes</div>
@@ -518,7 +536,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
               <div className="text-[22px] font-bold tabular-nums text-text">{n.causas.nuevasMes}</div>
             </div>
           </Card>
-          <Card>
+          <Card className="flex flex-1 flex-col justify-center">
             <div className="grid grid-cols-2 gap-4">
               <div className="flex min-w-0 flex-col items-start gap-2">
                 <div className="text-[14px] font-semibold text-text">Causas cerradas con resultado</div>
