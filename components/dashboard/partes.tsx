@@ -112,13 +112,13 @@ export function BadgeHoy({ etiqueta, valor, rojo = false }: { etiqueta: string; 
 export function Tendencia({ serie }: { serie: number[] }) {
   const max = Math.max(...serie, 1);
   return (
-    <div className="flex h-[52px] shrink-0 items-end gap-[5px]" aria-hidden>
+    <div className="flex h-[52px] shrink-0 items-end gap-[6px]" aria-hidden>
       {serie.map((v, i) => {
         const ultima = i === serie.length - 1;
         return (
           <span
             key={i}
-            className="w-[7px] rounded-[3px]"
+            className="w-[12px] rounded-[4px]"
             style={{
               height: `${Math.max(10, (v / max) * 100)}%`,
               background: ultima ? "var(--color-blue)" : "var(--color-gray)",

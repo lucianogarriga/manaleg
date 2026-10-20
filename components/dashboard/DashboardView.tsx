@@ -506,7 +506,23 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
             ? <BarrasVerticales meses={meses} valores={nuevasPorMes} />
             : <Ondas meses={meses} series={[{ valores: nuevasPorMes, color: "var(--color-blue)", posicion: "arriba" }]} formato={(v) => String(Math.round(v))} />}
         </Card>
-        <Tile titulo="Causas nuevas este mes" sub={`${textoVariacion(n.causas.nuevasMes, n.causas.nuevasMesPrev)} vs. mes anterior`} valor={n.causas.nuevasMes} className="flex flex-col justify-center" />
+        <div className="flex flex-col gap-3">
+          <Tile titulo="Causas nuevas este mes" sub={`${textoVariacion(n.causas.nuevasMes, n.causas.nuevasMesPrev)} vs. mes anterior`} valor={n.causas.nuevasMes} className="flex flex-col justify-center" />
+          <Card>
+            <div className="grid grid-cols-2 items-center gap-3">
+              <div className="min-w-0">
+                <div className="text-[14px] font-semibold text-text">Causas cerradas con resultado</div>
+                <div className="mt-1 text-[20px] font-bold tabular-nums text-text">{n.gestion.exito.total}</div>
+                <div className="mt-1 text-[12px] text-muted">Últimos 2 años</div>
+              </div>
+              <Dona segmentos={[
+                { etiqueta: "Ganadas", valor: n.gestion.exito.ganadas, color: "var(--color-blue)" },
+                { etiqueta: "Transadas", valor: n.gestion.exito.transadas, color: "var(--color-cel)" },
+                { etiqueta: "Perdidas", valor: n.gestion.exito.perdidas, color: "var(--color-gray)" },
+              ]} />
+            </div>
+          </Card>
+        </div>
       </div>
       <p className="text-[12px] text-muted">
         <Link href="/causas" className="text-blue hover:underline">Ver causas →</Link>

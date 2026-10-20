@@ -63,8 +63,8 @@
   --color-sub:     #55524B;
   --color-muted:   #69655E;
 
-  --color-blue:    #476C6A;
-  --color-blue-lt: rgba(71,108,106,.10);
+  --color-blue:    #2C6683;
+  --color-blue-lt: rgba(44,102,131,.10);
 
   --color-red:     #845A55;
   --color-red-lt:  rgba(132,90,85,.10);
@@ -72,11 +72,11 @@
   --color-amb:     #7C613D;
   --color-amb-lt:  rgba(124,97,61,.10);
   --color-amb-bd:  rgba(124,97,61,.28);
-  --color-grn:     #476C6A;
-  --color-grn-lt:  rgba(71,108,106,.10);
+  --color-grn:     #2C6683;
+  --color-grn-lt:  rgba(44,102,131,.10);
   --color-pur:     #58677B;
   --color-pur-lt:  rgba(88,103,123,.10);
-  --color-cel:     #A3BDC0;
+  --color-cel:     #A9CFE2;
   --color-gray:    #B5B0A6;
   --color-panel2:  #E6E3DD;
 
@@ -86,9 +86,9 @@
 
   --sb-bg:         #F6F5F2;
   --sb-fg:         #69655E;
-  --sb-accent:     #476C6A;
-  --sb-act-bg:     rgba(71,108,106,.12);
-  --sb-act-fg:     #476C6A;
+  --sb-accent:     #2C6683;
+  --sb-act-bg:     rgba(44,102,131,.12);
+  --sb-act-fg:     #2C6683;
   --sb-shadow:     0 2px 8px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.06), 0 0 0 1px rgba(0,0,0,.04);
 
   --tb-bg:         #F6F5F2;

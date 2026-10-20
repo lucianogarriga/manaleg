@@ -56,7 +56,7 @@ export default function Topbar({ fecha, alertas, urgentes, notificaciones, sinLe
       </button>
 
       {/* Título — lado izquierdo */}
-      <h1 className="w-[160px] shrink-0 truncate text-[15px] font-bold text-text">
+      <h1 className="shrink-0 whitespace-nowrap text-[15px] font-bold text-text">
         {getPageTitle(pathname)}
       </h1>
 

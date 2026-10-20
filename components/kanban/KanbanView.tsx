@@ -3,8 +3,8 @@
 import { useGlobalLoading } from "@/hooks/useGlobalLoading";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, X } from "lucide-react";
-import { createTodo, deleteTodo, updateTodoEstado } from "@/app/(app)/causas/todoActions";
+import { Pencil, Plus, X } from "lucide-react";
+import { createTodo, deleteTodo, updateTodo, updateTodoEstado } from "@/app/(app)/causas/todoActions";
 import { useTodosGlobal } from "@/hooks/useCausaData";
 import { useUIStore } from "@/store/uiStore";
 import { formatDate, getDaysUntil } from "@/utils/formatters";
@@ -46,13 +46,68 @@ function TareaCard({
   todo,
   isDragging,
   onDelete,
+  onEdit,
   onDragStart,
 }: {
   todo: TodoConCausa;
   isDragging: boolean;
   onDelete: () => void;
+  onEdit: (texto: string, fechaLimite: string | null) => Promise<boolean>;
   onDragStart: (e: React.DragEvent) => void;
 }) {
+  const [editando, setEditando] = useState(false);
+  const [texto, setTexto] = useState(todo.texto);
+  const [fecha, setFecha] = useState(todo.fecha_limite ?? "");
+  const [guardando, setGuardando] = useState(false);
+
+  const cancelar = () => {
+    setTexto(todo.texto);
+    setFecha(todo.fecha_limite ?? "");
+    setEditando(false);
+  };
+
+  const guardar = async () => {
+    setGuardando(true);
+    const ok = await onEdit(texto, fecha || null);
+    setGuardando(false);
+    if (ok) setEditando(false);
+  };
+
+  if (editando) {
+    return (
+      <div className="rounded-lg border p-3" style={{ background: "var(--color-card)", borderColor: "var(--color-blue)" }}>
+        <textarea
+          autoFocus
+          value={texto}
+          maxLength={300}
+          rows={2}
+          onChange={(e) => setTexto(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Escape") cancelar(); }}
+          aria-label="Modificar tarea"
+          className="w-full resize-none bg-transparent text-[13px] text-text outline-none"
+        />
+        <input
+          type="date"
+          value={fecha}
+          onChange={(e) => setFecha(e.target.value)}
+          aria-label="Fecha límite"
+          className="mt-2 w-full rounded-[6px] border border-border bg-bg px-2 py-[5px] text-[12px] text-text outline-none focus:border-blue"
+        />
+        <div className="mt-2 flex justify-end gap-2">
+          <button type="button" onClick={cancelar} className="rounded-[6px] px-2.5 py-[4px] text-[12px] text-sub hover:text-text">Cancelar</button>
+          <button
+            type="button"
+            onClick={guardar}
+            disabled={guardando || !texto.trim()}
+            className="rounded-[6px] bg-blue px-2.5 py-[4px] text-[12px] font-semibold text-bg disabled:opacity-50"
+          >
+            {guardando ? "Guardando…" : "Guardar"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       draggable
@@ -66,13 +121,23 @@ function TareaCard({
     >
       <div className="flex items-start justify-between gap-2">
         <span className="flex-1 text-[13px] font-medium leading-snug text-text">{todo.texto}</span>
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          className="shrink-0 cursor-pointer rounded p-[2px] text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-red"
-        >
-          <X size={11} />
-        </button>
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setEditando(true); }}
+            aria-label="Modificar tarea"
+            className="cursor-pointer rounded p-[2px] text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-blue"
+          >
+            <Pencil size={11} />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            className="cursor-pointer rounded p-[2px] text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-red"
+          >
+            <X size={11} />
+          </button>
+        </div>
       </div>
 
       {todo.causa && (
@@ -197,6 +262,14 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
     router.refresh();
   };
 
+  const handleEdit = async (id: string, texto: string, fechaLimite: string | null): Promise<boolean> => {
+    const result = await updateTodo(id, texto, fechaLimite);
+    if (result.error) { showToast({ message: result.error }); return false; }
+    reload();
+    router.refresh();
+    return true;
+  };
+
   const handleDelete = async (id: string) => {
     const result = await deleteTodo(id);
     if (result.error) { showToast({ message: result.error }); return; }
@@ -261,6 +334,7 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
                     todo={t}
                     isDragging={dragging === t.id}
                     onDelete={() => handleDelete(t.id)}
+                    onEdit={(texto, fecha) => handleEdit(t.id, texto, fecha)}
                     onDragStart={(e) => {
                       dragId.current = t.id;
                       setDragging(t.id);
