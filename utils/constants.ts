@@ -28,6 +28,8 @@ export const FUEROS = [
   "Federal",
   "Comercial",
   "Ciberdelitos",
+  "Estafa virtual",
+  "Phishing",
   "Defensa del Consumidor",
   "Otro",
 ] as const;
