@@ -221,9 +221,17 @@ export function Dona({ segmentos, sinLeyenda = false }: { segmentos: { etiqueta:
         {total > 0 && segmentos.map((s) => {
           if (s.valor === 0) return null;
           const a0 = angulo;
-          const a1 = a0 + (s.valor / total) * 2 * Math.PI;
+          const delta = (s.valor / total) * 2 * Math.PI;
+          const a1 = a0 + delta;
           angulo = a1;
-          const grande = a1 - a0 > Math.PI ? 1 : 0;
+          // SVG can't draw a 360° arc as a single command — split into two semicircles
+          if (delta >= 2 * Math.PI - 0.001) {
+            const [x0, y0] = punto(r, a0), [xh, yh] = punto(r, a0 + Math.PI);
+            const [xi0, yi0] = punto(ri, a0), [xih, yih] = punto(ri, a0 + Math.PI);
+            const d = `M${x0},${y0} A${r},${r} 0 1 1 ${xh},${yh} A${r},${r} 0 1 1 ${x0},${y0} L${xi0},${yi0} A${ri},${ri} 0 1 0 ${xih},${yih} A${ri},${ri} 0 1 0 ${xi0},${yi0} Z`;
+            return <path key={s.etiqueta} d={d} style={{ fill: s.color }} />;
+          }
+          const grande = delta > Math.PI ? 1 : 0;
           const [x0, y0] = punto(r, a0), [x1, y1] = punto(r, a1), [xi1, yi1] = punto(ri, a1), [xi0, yi0] = punto(ri, a0);
           const d = `M${x0},${y0} A${r},${r} 0 ${grande} 1 ${x1},${y1} L${xi1},${yi1} A${ri},${ri} 0 ${grande} 0 ${xi0},${yi0} Z`;
           return <path key={s.etiqueta} d={d} style={{ fill: s.color }} />;

@@ -415,7 +415,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
           <Titulo sub={`${n.causas.total} causas en total`}>Estado de causas</Titulo>
           <div className="grid grid-cols-2 items-center gap-4">
             <Dona segmentos={segmentos} sinLeyenda />
-            <ul className="flex flex-col gap-1 text-[13px]">
+            <ul className="flex min-w-0 flex-col gap-1">
               <FilaEstado color="var(--color-blue)" etiqueta="Judicial" valor={n.causas.judiciales} total={n.causas.total} />
               <FilaEstado color="var(--color-cel)" etiqueta="Extrajudicial" valor={n.causas.extrajudiciales} total={n.causas.total} />
               <FilaEstado color="var(--color-gray)" etiqueta="Cerrada" valor={n.causas.cerradas} total={n.causas.total} />

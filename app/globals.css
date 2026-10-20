@@ -55,13 +55,13 @@
 
 /* ─── CLARO (Gris cálido) ─── */
 :root[data-theme="light"] {
-  --color-bg:      #EBEBEA;
-  --color-card:    #F7F7F6;
-  --color-border:  #D6D6D3;
+  --color-bg:      #E2E0DC;
+  --color-card:    #EFEDE9;
+  --color-border:  #CCCAC6;
 
   --color-text:    #2F2E2B;
-  --color-sub:     #55524B;
-  --color-muted:   #69655E;
+  --color-sub:     #52504A;
+  --color-muted:   #635E57;
 
   --color-blue:    #2E6A8A;
   --color-blue-lt: rgba(46,106,138,.10);
@@ -76,24 +76,24 @@
   --color-grn-lt:  rgba(46,106,138,.10);
   --color-pur:     #58677B;
   --color-pur-lt:  rgba(88,103,123,.10);
-  --color-cel:     #B3C6CE;
-  --color-gray:    #B5B0A6;
-  --color-panel2:  #E4E4E2;
+  --color-cel:     #5A8EA0;
+  --color-gray:    #78716A;
+  --color-panel2:  #D7D5D1;
 
   --cal-out:       rgba(0,0,0,.03);
   --cal-wknd:      rgba(0,0,0,.025);
   --cal-inh:       rgba(194,151,95,.16);
 
-  --sb-bg:         #F7F7F6;
-  --sb-fg:         #69655E;
+  --sb-bg:         #EFEDE9;
+  --sb-fg:         #635E57;
   --sb-accent:     #2E6A8A;
   --sb-act-bg:     rgba(46,106,138,.12);
   --sb-act-fg:     #2E6A8A;
-  --sb-shadow:     0 2px 8px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.06), 0 0 0 1px rgba(0,0,0,.04);
+  --sb-shadow:     0 2px 8px rgba(0,0,0,.10), 0 8px 24px rgba(0,0,0,.07), 0 0 0 1px rgba(0,0,0,.05);
 
-  --tb-bg:         #F7F7F6;
-  --tb-border:     #D6D6D3;
-  --hover-row:     #E4E4E2;
+  --tb-bg:         #EFEDE9;
+  --tb-border:     #CCCAC6;
+  --hover-row:     #D7D5D1;
 
   color-scheme: light;
 }
