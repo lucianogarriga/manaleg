@@ -26,18 +26,18 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         className="relative hidden flex-col justify-between overflow-hidden px-10 py-10 md:flex"
         style={{
           width: "44%",
-          background: "linear-gradient(160deg, #0a1628 0%, #0f2460 28%, #1e3a8a 62%, #0284c7 100%)",
+          background: "linear-gradient(160deg, #1E1E1C 0%, #2E2E2B 45%, #476C6A 100%)",
         }}
       >
         {/* Orbe decorativo inferior-derecha */}
         <div
           className="pointer-events-none absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(147,197,253,.12) 0%, transparent 65%)" }}
+          style={{ background: "radial-gradient(circle, rgba(94,156,164,.14) 0%, transparent 65%)" }}
         />
         {/* Orbe superior */}
         <div
           className="pointer-events-none absolute -top-20 left-1/2 h-[240px] w-[240px] -translate-x-1/2 rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(191,219,254,.07) 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, rgba(94,156,164,.08) 0%, transparent 70%)" }}
         />
 
         {/* Placeholder para mantener el justify-between */}
@@ -81,27 +81,27 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       {/* ── Panel derecho — card flotante sobre fondo claro ── */}
-      <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-8" style={{ background: "#f0f4f8" }}>
+      <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-8" style={{ background: "var(--color-bg)" }}>
         {/* Logo solo en mobile */}
         <div className="mb-6 flex flex-col items-center gap-2 md:hidden">
-          <div className="flex h-10 w-10 items-center justify-center rounded-[10px] text-[18px] font-bold text-white" style={{ background: "#0284c7" }}>
+          <div className="flex h-10 w-10 items-center justify-center rounded-[10px] text-[18px] font-bold text-bg" style={{ background: "var(--color-blue)" }}>
             M
           </div>
-          <div className="text-[17px] font-bold" style={{ color: "#0f172a" }}>MANALEG</div>
+          <div className="text-[17px] font-bold" style={{ color: "var(--color-text)" }}>MANALEG</div>
         </div>
 
         <div className="w-full max-w-[390px]">
           <div
             className="rounded-2xl p-8"
             style={{
-              background: "#ffffff",
-              border: "1px solid #e2e8f0",
+              background: "var(--color-card)",
+              border: "1px solid var(--color-border)",
               boxShadow: "0 4px 24px rgba(0,0,0,.08)",
             }}
           >
             {children}
           </div>
-          <p className="mt-5 text-center text-[11.5px]" style={{ color: "#94a3b8" }}>
+          <p className="mt-5 text-center text-[11.5px]" style={{ color: "var(--color-muted)" }}>
             Plataforma segura · Tus datos siempre protegidos
           </p>
         </div>

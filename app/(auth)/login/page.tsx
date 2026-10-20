@@ -19,7 +19,7 @@ function LoginTransition() {
   return (
     <div
       className="fixed inset-0 z-[200] flex flex-col items-center justify-center"
-      style={{ background: "#f0f4f8" }}
+      style={{ background: "var(--color-bg)" }}
     >
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
         <div
@@ -40,12 +40,12 @@ function LoginTransition() {
           M
         </div>
         <div className="flex flex-col items-center gap-1">
-          <span className="text-[18px] font-bold" style={{ color: "#0f172a" }}>Manaleg</span>
-          <span className="text-[13px]" style={{ color: "#94a3b8" }}>
+          <span className="text-[18px] font-bold" style={{ color: "var(--color-text)" }}>Manaleg</span>
+          <span className="text-[13px]" style={{ color: "var(--color-muted)" }}>
             <span className="auth-dots" />
           </span>
         </div>
-        <div className="mt-2 h-[3px] w-[160px] overflow-hidden rounded-full" style={{ background: "#e2e8f0" }}>
+        <div className="mt-2 h-[3px] w-[160px] overflow-hidden rounded-full" style={{ background: "var(--color-border)" }}>
           <div
             className="h-full rounded-full bg-blue"
             style={{ width: "40%", animation: "auth-progress 1.4s ease-in-out infinite" }}
@@ -85,8 +85,8 @@ export default function LoginPage() {
 
       <form action={action} className="space-y-5">
         <div className="mb-2">
-          <h1 className="text-[24px] font-bold" style={{ color: "#0f172a" }}>Bienvenido</h1>
-          <p className="mt-1 text-[13.5px]" style={{ color: "#94a3b8" }}>Ingresá a tu cuenta para continuar</p>
+          <h1 className="text-[24px] font-bold" style={{ color: "var(--color-text)" }}>Bienvenido</h1>
+          <p className="mt-1 text-[13.5px]" style={{ color: "var(--color-muted)" }}>Ingresá a tu cuenta para continuar</p>
         </div>
 
         {/* Error general — excepto el de credenciales, que se muestra inline */}
@@ -98,7 +98,7 @@ export default function LoginPage() {
         {esBloqueoPorRateLimit && (
           <div
             className="flex items-start gap-2 rounded-[9px] px-3 py-[10px] text-[13px]"
-            style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#b91c1c" }}
+            style={{ background: "var(--color-red-lt)", border: "1px solid var(--color-red-bd)", color: "var(--color-red)" }}
           >
             <AlertCircle size={14} className="mt-[1px] shrink-0" />
             <span>{state.error}</span>
@@ -128,7 +128,7 @@ export default function LoginPage() {
           />
           {/* Mensaje de intentos restantes */}
           {mostrarRestantes && (
-            <p className="flex items-center gap-[5px] text-[12px] font-medium" style={{ color: "#b91c1c" }}>
+            <p className="flex items-center gap-[5px] text-[12px] font-medium" style={{ color: "var(--color-red)" }}>
               <AlertCircle size={12} className="shrink-0" />
               Contraseña incorrecta.{" "}
               {restantes === 1
@@ -137,7 +137,7 @@ export default function LoginPage() {
             </p>
           )}
           <p className="text-right text-[12.5px]">
-            <Link href="/recuperar" className="font-semibold hover:underline" style={{ color: "#0284c7" }}>
+            <Link href="/recuperar" className="font-semibold hover:underline" style={{ color: "var(--color-blue)" }}>
               ¿Olvidaste tu contraseña?
             </Link>
           </p>
@@ -148,9 +148,9 @@ export default function LoginPage() {
           Ingresar
         </SubmitButton>
 
-        <p className="pt-1 text-center text-[13px]" style={{ color: "#64748b" }}>
+        <p className="pt-1 text-center text-[13px]" style={{ color: "var(--color-sub)" }}>
           ¿No tenés cuenta?{" "}
-          <Link href="/register" className="font-semibold hover:underline" style={{ color: "#0284c7" }}>
+          <Link href="/register" className="font-semibold hover:underline" style={{ color: "var(--color-blue)" }}>
             Registrate gratis
           </Link>
         </p>

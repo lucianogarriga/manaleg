@@ -15,8 +15,8 @@ export default function RecuperarPage() {
   return (
     <form action={action} className="space-y-5">
       <div className="mb-2">
-        <h1 className="text-[24px] font-bold" style={{ color: "#0f172a" }}>Recuperar contraseña</h1>
-        <p className="mt-1 text-[13.5px]" style={{ color: "#94a3b8" }}>
+        <h1 className="text-[24px] font-bold" style={{ color: "var(--color-text)" }}>Recuperar contraseña</h1>
+        <p className="mt-1 text-[13.5px]" style={{ color: "var(--color-muted)" }}>
           Ingresá el email de tu cuenta y te enviamos un enlace para cambiarla.
         </p>
       </div>
@@ -39,8 +39,8 @@ export default function RecuperarPage() {
         Enviar enlace
       </SubmitButton>
 
-      <p className="pt-1 text-center text-[13px]" style={{ color: "#64748b" }}>
-        <Link href="/login" className="font-semibold hover:underline" style={{ color: "#0284c7" }}>
+      <p className="pt-1 text-center text-[13px]" style={{ color: "var(--color-sub)" }}>
+        <Link href="/login" className="font-semibold hover:underline" style={{ color: "var(--color-blue)" }}>
           Volver a ingresar
         </Link>
       </p>
