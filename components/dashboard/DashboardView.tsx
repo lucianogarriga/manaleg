@@ -339,11 +339,11 @@ function FilaEstado({ color, etiqueta, valor, total }: { color: string; etiqueta
   );
 }
 
-function RingPct({ pct, color = "var(--color-blue)" }: { pct: number; color?: string }) {
-  const r = 17, c = 22, stroke = 5, circ = 2 * Math.PI * r;
+function RingPct({ pct, color = "var(--color-blue)", size = 44, stroke = 5 }: { pct: number; color?: string; size?: number; stroke?: number }) {
+  const c = size / 2, r = c - stroke - 1, circ = 2 * Math.PI * r;
   const dash = (Math.min(100, Math.max(0, pct)) / 100) * circ;
   return (
-    <svg width="44" height="44" viewBox="0 0 44 44" className="shrink-0 -rotate-90" aria-hidden>
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0 -rotate-90" aria-hidden>
       <circle cx={c} cy={c} r={r} fill="none" strokeWidth={stroke} style={{ stroke: "var(--color-panel2)" }} />
       {pct > 0 && <circle cx={c} cy={c} r={r} fill="none" strokeWidth={stroke} strokeLinecap="round"
         strokeDasharray={`${dash} ${circ}`} style={{ stroke: color }} />}
@@ -373,6 +373,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
   setBase: (b: "activas" | "todas") => void;
 }) {
   const [monedaDeuda, setMonedaDeuda] = useState<Moneda>("ARS");
+  const [monedaTasa, setMonedaTasa] = useState<Moneda>("ARS");
   const n = d.datos;
   const per = nombrePeriodo(periodo, n.periodo);
   const meses = n.causas.nuevasSeisMeses.map((x) => ABREV_MES[Number(x.mes.slice(5, 7)) - 1]);
@@ -465,21 +466,28 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
       <SeccionEncabezado sub="Honorarios, cartera y captación">Clientes y cobro</SeccionEncabezado>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <Card>
-          <Titulo sub={`Cobrado / facturado · ${DUR_PERIODO[periodo]}`}>Tasa de cobro</Titulo>
-          <div className="flex flex-col gap-3">
-            {MONEDAS.map((m) => {
-              const p = cobroPct(m);
-              return p === null ? null : (
-                <div key={m} className="flex items-center gap-3">
-                  <RingPct pct={p} />
-                  <div>
-                    <div className="text-[24px] font-bold leading-none tabular-nums text-text">{p}%</div>
-                    <div className="mt-0.5 text-[12px] text-muted">{m === "ARS" ? "en $" : "en US$"}</div>
-                  </div>
-                </div>
-              );
-            })}
-            {MONEDAS.every((m) => cobroPct(m) === null) && <span className="text-[24px] font-bold text-text">—</span>}
+          <Titulo
+            sub={`Cobrado / facturado · ${DUR_PERIODO[periodo]}`}
+            derecha={
+              <Segmentado titulo="Moneda tasa" valores={["ARS", "USD"] as Moneda[]} actual={monedaTasa} onChange={setMonedaTasa}
+                etiquetas={{ ARS: "$", USD: "US$" }} small />
+            }
+          >Tasa de cobro</Titulo>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              {(() => {
+                const p = cobroPct(monedaTasa);
+                return p === null ? (
+                  <span className="text-[13px] text-muted">Sin datos en {monedaTasa === "ARS" ? "$" : "US$"}.</span>
+                ) : (
+                  <>
+                    <div className="text-[32px] font-bold leading-none tabular-nums text-text">{p}%</div>
+                    <div className="mt-1 text-[12px] text-muted">cobrado sobre facturado</div>
+                  </>
+                );
+              })()}
+            </div>
+            <RingPct pct={cobroPct(monedaTasa) ?? 0} size={64} stroke={7} />
           </div>
         </Card>
         <Card>
