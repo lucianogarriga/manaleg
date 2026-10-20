@@ -156,7 +156,7 @@ export default function CalendarView({ hoy, avisos, inhabiles, userId }: Calenda
                 <span
                   className={`flex h-[24px] min-w-[24px] items-center justify-center rounded-full px-1 text-[13px] font-semibold ${
                     esHoy
-                      ? "bg-blue text-white"
+                      ? "bg-blue text-bg"
                       : !delMes
                       ? "text-muted opacity-40"
                       : finde

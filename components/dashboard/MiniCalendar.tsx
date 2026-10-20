@@ -74,7 +74,7 @@ export function MiniCalendar({ alertas, eventos }: MiniCalendarProps) {
             return (
               <div key={day} className="flex flex-col items-center py-[2px]">
                 <span
-                  className={`flex h-[24px] w-[24px] items-center justify-center rounded-full text-[12px] font-medium leading-none transition-colors ${isToday ? "bg-blue text-white" : "text-text"}`}
+                  className={`flex h-[24px] w-[24px] items-center justify-center rounded-full text-[12px] font-medium leading-none transition-colors ${isToday ? "bg-blue text-bg" : "text-text"}`}
                   onMouseEnter={e => { if (!isToday) (e.currentTarget as HTMLElement).style.background = "var(--hover-row)"; }}
                   onMouseLeave={e => { if (!isToday) (e.currentTarget as HTMLElement).style.background = ""; }}
                 >{day}</span>

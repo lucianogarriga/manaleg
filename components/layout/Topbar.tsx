@@ -23,11 +23,12 @@ export default function Topbar({ fecha, alertas, urgentes, notificaciones, sinLe
   const search = useCausasStore((s) => s.search);
   const setSearch = useCausasStore((s) => s.setSearch);
 
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  // Por defecto oscuro. Si el usuario eligió otro tema, se respeta ese.
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
 
   useEffect(() => {
     const saved = localStorage.getItem("theme") as "light" | "dark" | null;
-    const initial = saved ?? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const initial = saved ?? "dark";
     setTheme(initial);
     document.documentElement.setAttribute("data-theme", initial);
   }, []);

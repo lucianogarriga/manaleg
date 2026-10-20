@@ -82,7 +82,7 @@ function ClienteDetailModal({
             <button
               type="button"
               onClick={onEdit}
-              className="flex cursor-pointer items-center gap-[6px] rounded-[6px] bg-blue px-3 py-[6px] text-[13px] font-semibold text-white hover:opacity-90"
+              className="flex cursor-pointer items-center gap-[6px] rounded-[6px] bg-blue px-3 py-[6px] text-[13px] font-semibold text-bg hover:opacity-90"
             >
               <Pencil size={13} /> Editar
             </button>
@@ -129,7 +129,7 @@ export default function ClientesView({ clientes }: ClientesViewProps) {
           <button
             type="button"
             onClick={openCreate}
-            className="cursor-pointer rounded-[6px] bg-blue px-4 py-[7px] text-[14px] font-semibold text-white hover:opacity-90"
+            className="cursor-pointer rounded-[6px] bg-blue px-4 py-[7px] text-[14px] font-semibold text-bg hover:opacity-90"
           >
             + Nuevo cliente
           </button>

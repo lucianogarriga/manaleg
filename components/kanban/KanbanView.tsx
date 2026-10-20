@@ -151,7 +151,7 @@ function NuevaTareaForm({
           Cancelar
         </button>
         <button type="submit" disabled={pending}
-          className="cursor-pointer rounded-[5px] bg-blue px-3 py-[4px] text-[12px] font-semibold text-white hover:opacity-90 disabled:opacity-60">
+          className="cursor-pointer rounded-[5px] bg-blue px-3 py-[4px] text-[12px] font-semibold text-bg hover:opacity-90 disabled:opacity-60">
           {pending ? "…" : "Agregar"}
         </button>
       </div>
@@ -214,7 +214,7 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
             type="button"
             onClick={() => setFiltro(f)}
             className={`inline-flex cursor-pointer items-center rounded-[20px] border px-3 py-[3px] text-[12px] font-medium transition-colors ${
-              filtro === f ? "border-blue bg-blue text-white" : "border-border text-sub hover:bg-bg"
+              filtro === f ? "border-blue bg-blue text-bg" : "border-border text-sub hover:bg-bg"
             }`}
           >
             {f === "todas" ? "Todas las tareas" : "Mis tareas"}

@@ -27,7 +27,7 @@ export default function ModalFooter({
         type="submit"
         form={formId}
         disabled={pending}
-        className="cursor-pointer rounded-[6px] bg-blue px-4 py-[6px] text-[14px] font-semibold text-white hover:opacity-90 disabled:opacity-60"
+        className="cursor-pointer rounded-[6px] bg-blue px-4 py-[6px] text-[14px] font-semibold text-bg hover:opacity-90 disabled:opacity-60"
       >
         {pending ? pendingLabel : submitLabel}
       </button>
