@@ -215,6 +215,10 @@ export function Dona({ segmentos, sinLeyenda = false }: { segmentos: { etiqueta:
   return (
     <div className="flex flex-wrap items-center gap-5">
       <svg width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="Estado de causas" className="shrink-0">
+        {total === 0 && (
+          // Sin datos: dona apagada en gris claro.
+          <circle cx={c} cy={c} r={(r + ri) / 2} fill="none" strokeWidth={r - ri} style={{ stroke: "var(--color-panel2)" }} />
+        )}
         {total > 0 && segmentos.map((s) => {
           if (s.valor === 0) return null;
           const a0 = angulo;

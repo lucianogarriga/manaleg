@@ -139,6 +139,14 @@ function VencimientoFormRow({ causaId, editTarget, onClose, onDone }: FormRowPro
               className={inputCls}
             />
           </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-semibold text-sub">Estado</label>
+            <select name="estado_audiencia" defaultValue={editTarget?.estado_audiencia ?? "Programada"} className={inputCls}>
+              {["Programada", "Celebrada", "Suspendida", "Reprogramada"].map((e) => (
+                <option key={e} value={e}>{e}</option>
+              ))}
+            </select>
+          </div>
           <div className="col-span-2 flex flex-col gap-1 sm:col-span-1">
             <label className="text-[11px] font-semibold text-sub">Notas</label>
             <input

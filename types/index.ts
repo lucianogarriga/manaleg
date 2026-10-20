@@ -224,6 +224,7 @@ export interface Vencimiento {
   motivo: string | null;
   anticipacion: string;
   completado: boolean;
+  estado_audiencia: "Programada" | "Celebrada" | "Suspendida" | "Reprogramada" | null;
   // Campos de agenda (opcionales según tipo)
   hora: string | null;         // Audiencia: "HH:MM:SS"
   lugar: string | null;        // Audiencia

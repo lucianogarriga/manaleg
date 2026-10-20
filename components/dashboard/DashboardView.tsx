@@ -417,11 +417,6 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
             <Dona segmentos={segmentos} sinLeyenda />
             <ul className="flex flex-col gap-1 text-[13px]">
               <FilaEstado color="var(--color-blue)" etiqueta="Judicial" valor={n.causas.judiciales} total={n.causas.total} />
-              {Object.entries(d.judicialesPorEstado).map(([e, c]) => (
-                <li key={e} className="flex items-center justify-between pl-[17px] text-[12px] text-muted">
-                  <span>{e}</span><b className="text-text">{c}</b>
-                </li>
-              ))}
               <FilaEstado color="var(--color-cel)" etiqueta="Extrajudicial" valor={n.causas.extrajudiciales} total={n.causas.total} />
               <FilaEstado color="var(--color-gray)" etiqueta="Cerrada" valor={n.causas.cerradas} total={n.causas.total} />
             </ul>
@@ -455,7 +450,9 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
         <Tile titulo="Tasa de éxito en causas" sub="Causas cerradas, últimos 2 años"
           valor={exitoPct === null ? "—" : `${exitoPct}%`}
           extra={n.gestion.exito.total > 0 ? <div className="mt-2 text-[12px] text-muted">Ganadas {n.gestion.exito.ganadas} · Transadas {n.gestion.exito.transadas} · Perdidas {n.gestion.exito.perdidas}</div> : null} />
-        <Tile titulo="Audiencias con suspensión" sub="Próximamente" valor="—" grisada />
+        <Tile titulo="Audiencias con suspensión" sub={`${n.audiencias.suspendidasMes} de ${n.audiencias.mes} audiencias del mes`}
+          valor={n.audiencias.mes > 0 ? `${Math.round((n.audiencias.suspendidasMes / n.audiencias.mes) * 100)}%` : "—"}
+          extra={<div className="mt-2 text-[12px] text-muted">Suspendidas o reprogramadas</div>} />
       </div>
 
       <SeccionEncabezado sub="Resultados y agenda">Audiencias</SeccionEncabezado>
@@ -541,7 +538,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
               <div className="flex min-w-0 flex-col items-start gap-2">
                 <div className="text-[14px] font-semibold text-text">Causas cerradas con resultado</div>
                 <div className="text-[12px] text-muted">{n.gestion.exito.total} causas · últimos 2 años</div>
-                <Dona segmentos={[
+                <Dona sinLeyenda segmentos={[
                   { etiqueta: "Ganadas", valor: n.gestion.exito.ganadas, color: "var(--color-blue)" },
                   { etiqueta: "Transadas", valor: n.gestion.exito.transadas, color: "var(--color-cel)" },
                   { etiqueta: "Perdidas", valor: n.gestion.exito.perdidas, color: "var(--color-gray)" },

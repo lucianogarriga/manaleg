@@ -26,7 +26,7 @@ export interface Novedades {
     nuevasSeisMeses: { mes: string; n: number }[];
   };
   vencimientos: { vencidos: number; urgentes: number; proximos: number; hoy: number };
-  audiencias: { hoy: number; semana: number; proximos14: number; mes: number };
+  audiencias: { hoy: number; semana: number; proximos14: number; mes: number; suspendidasMes: number };
   tareas: { hoy: number; vencidas: number };
   financiero: {
     cobrado: Dinero;
@@ -136,6 +136,7 @@ export async function cargarNovedades(periodo: Periodo): Promise<NovedadesComple
     supabase
       .from("vencimientos")
       .select("id, fecha, tipo, motivo, causa:causas(caratula)")
+      .neq("tipo", "Audiencia")
       .eq("completado", false)
       .lte("fecha", en7)
       .order("fecha", { ascending: true })
@@ -143,13 +144,14 @@ export async function cargarNovedades(periodo: Periodo): Promise<NovedadesComple
     supabase
       .from("vencimientos")
       .select("id, fecha, tipo, motivo, causa:causas(caratula)")
+      .neq("tipo", "Audiencia")
       .eq("completado", false)
       .gt("fecha", en7)
       .order("fecha", { ascending: true })
       .limit(1),
     supabase
-      .from("eventos")
-      .select("id, fecha, hora, titulo, lugar, causa:causas(caratula)")
+      .from("vencimientos")
+      .select("id, fecha, hora, motivo, lugar, causa:causas(caratula)")
       .eq("tipo", "Audiencia")
       .gte("fecha", hoy)
       .lte("fecha", en14)
@@ -164,11 +166,12 @@ export async function cargarNovedades(periodo: Periodo): Promise<NovedadesComple
       .limit(20),
     supabase
       .from("vencimientos")
-      .select("fecha, completado")
+      .select("fecha, completado, tipo")
+      .neq("tipo", "Audiencia")
       .gte("fecha", mes.desde)
       .lte("fecha", mes.hasta),
     supabase
-      .from("eventos")
+      .from("vencimientos")
       .select("fecha")
       .eq("tipo", "Audiencia")
       .gte("fecha", mes.desde)
@@ -220,7 +223,7 @@ export async function cargarNovedades(periodo: Periodo): Promise<NovedadesComple
       id: v.id, fecha: v.fecha, tipo: v.tipo, motivo: v.motivo, causa: etiquetaCausa(v.causa),
     })),
     audiencias: (aud.data ?? []).map((a) => ({
-      id: a.id, fecha: a.fecha, hora: a.hora, titulo: a.titulo, lugar: a.lugar, causa: etiquetaCausa(a.causa),
+      id: a.id, fecha: a.fecha, hora: a.hora, titulo: a.motivo || "Audiencia", lugar: a.lugar, causa: etiquetaCausa(a.causa),
     })),
     tareas: (tar.data ?? []).map((t) => ({
       id: t.id, texto: t.texto, completado: t.completado === "Completado", fecha_limite: t.fecha_limite,
