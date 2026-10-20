@@ -42,18 +42,17 @@ function fechaCorta(iso: string): string {
   return `${d} ${ABREV_MES[m - 1].toLowerCase()}`;
 }
 
-// Badges de variación por moneda, cada una con su signo.
-function badgesVariacion(actual: Partial<Record<Moneda, number>>, previo: Partial<Record<Moneda, number>>) {
+// Badges de variación por moneda. soloPorc=true muestra solo el % (evita overflow en cards angostas).
+function badgesVariacion(actual: Partial<Record<Moneda, number>>, previo: Partial<Record<Moneda, number>>, soloPorc = false) {
   return MONEDAS.filter((m) => (actual[m] ?? 0) > 0 || (previo[m] ?? 0) > 0).map((m) => {
     const a = actual[m] ?? 0, p = previo[m] ?? 0;
     const v = variacion(a, p);
     const tono: Tono = v === null ? "nil" : a >= p ? "up" : "warn";
     const flecha = a >= p ? "↑" : "▼";
-    return (
-      <Badge key={m} tono={tono}>
-        {m} {v === null ? "sin base previa" : `${flecha} ${a - p >= 0 ? "+" : ""}${formatCurrency(a - p, m)} · ${v > 0 ? "+" : ""}${v}%`}
-      </Badge>
-    );
+    const texto = v === null ? "sin base previa"
+      : soloPorc ? `${m} ${flecha} ${v > 0 ? "+" : ""}${v}%`
+      : `${m} ${flecha} ${a - p >= 0 ? "+" : ""}${formatCurrency(a - p, m)} · ${v > 0 ? "+" : ""}${v}%`;
+    return <Badge key={m} tono={tono}>{texto}</Badge>;
   });
 }
 
@@ -223,7 +222,7 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
           valor={<Montos valores={n.financiero.cobrado} />}
           sub={`${per.nombre} · ${per.comparacion}`}
           serie={d.tendencias.cobrado}
-          badge={<div className="flex flex-col items-end gap-1">{badgesVariacion(n.financiero.cobrado, n.financiero.cobradoPrev)}</div>}
+          badge={<div className="flex flex-col items-end gap-1">{badgesVariacion(n.financiero.cobrado, n.financiero.cobradoPrev, true)}</div>}
         />
         <KpiCard
           titulo={`Pendiente del ${DUR_PERIODO[periodo].toLowerCase()}`}
