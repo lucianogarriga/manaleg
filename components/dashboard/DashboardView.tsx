@@ -60,9 +60,12 @@ function badgesVariacion(actual: Partial<Record<Moneda, number>>, previo: Partia
 interface Props {
   inicial: NovedadesCompletas | null;
   preferencia: "barras" | "ondas";
+  nombre: string;
 }
 
-export default function DashboardView({ inicial, preferencia }: Props) {
+export default function DashboardView({ inicial, preferencia, nombre }: Props) {
+  // Solo el primer nombre, nunca el apellido.
+  const primerNombre = nombre.trim().split(/\s+/)[0] ?? "";
   const [tab, setTab] = useState<"novedades" | "kpis">("novedades");
   const [periodo, setPeriodo] = useState<Periodo>("mes");
   const [datos, setDatos] = useState<NovedadesCompletas | null>(inicial);
@@ -102,7 +105,7 @@ export default function DashboardView({ inicial, preferencia }: Props) {
       {/* ── Encabezado ── */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="mt-0.5 text-[26px] font-semibold text-text">{tab === "kpis" ? "KPIs" : "Novedades"}</div>
+          <div className="mt-0.5 text-[26px] font-semibold text-text">{primerNombre ? `Hola, ${primerNombre}` : "Hola"}</div>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
           <Segmentado
@@ -497,7 +500,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
       </div>
 
       <SeccionEncabezado sub="Entrada de causas">Actividad</SeccionEncabezado>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+      <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-3">
         <Card className="md:col-span-2">
           <Titulo derecha={<Segmentado titulo="Gráfico" valores={["barras", "ondas"] as const} actual={estilo} onChange={setEstilo}
             etiquetas={{ barras: "Barras", ondas: "Ondas" }} />} sub="Últimos 6 meses">Causas nuevas por mes</Titulo>
@@ -506,19 +509,44 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
             : <Ondas meses={meses} series={[{ valores: nuevasPorMes, color: "var(--color-blue)", posicion: "arriba" }]} formato={(v) => String(Math.round(v))} />}
         </Card>
         <div className="flex flex-col gap-3">
-          <Tile titulo="Causas nuevas este mes" sub={`${textoVariacion(n.causas.nuevasMes, n.causas.nuevasMesPrev)} vs. mes anterior`} valor={n.causas.nuevasMes} className="flex flex-col justify-center" />
           <Card>
-            <div className="grid grid-cols-2 items-center gap-3">
+            <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-[14px] font-semibold text-text">Causas cerradas con resultado</div>
-                <div className="mt-1 text-[20px] font-bold tabular-nums text-text">{n.gestion.exito.total}</div>
-                <div className="mt-1 text-[12px] text-muted">Últimos 2 años</div>
+                <div className="text-[14px] font-semibold text-text">Causas nuevas este mes</div>
+                <div className="mt-0.5 text-[12px] text-muted">{textoVariacion(n.causas.nuevasMes, n.causas.nuevasMesPrev)} vs. mes anterior</div>
               </div>
-              <Dona segmentos={[
-                { etiqueta: "Ganadas", valor: n.gestion.exito.ganadas, color: "var(--color-blue)" },
-                { etiqueta: "Transadas", valor: n.gestion.exito.transadas, color: "var(--color-cel)" },
-                { etiqueta: "Perdidas", valor: n.gestion.exito.perdidas, color: "var(--color-gray)" },
-              ]} />
+              <div className="text-[22px] font-bold tabular-nums text-text">{n.causas.nuevasMes}</div>
+            </div>
+          </Card>
+          <Card>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex min-w-0 flex-col items-start gap-2">
+                <div className="text-[14px] font-semibold text-text">Causas cerradas con resultado</div>
+                <div className="text-[12px] text-muted">{n.gestion.exito.total} causas · últimos 2 años</div>
+                <Dona segmentos={[
+                  { etiqueta: "Ganadas", valor: n.gestion.exito.ganadas, color: "var(--color-blue)" },
+                  { etiqueta: "Transadas", valor: n.gestion.exito.transadas, color: "var(--color-cel)" },
+                  { etiqueta: "Perdidas", valor: n.gestion.exito.perdidas, color: "var(--color-gray)" },
+                ]} />
+              </div>
+              <ul className="flex flex-col justify-center gap-3 text-[13px]">
+                {[
+                  { etiqueta: "Ganadas", valor: n.gestion.exito.ganadas, color: "var(--color-blue)" },
+                  { etiqueta: "Transadas", valor: n.gestion.exito.transadas, color: "var(--color-cel)" },
+                  { etiqueta: "Perdidas", valor: n.gestion.exito.perdidas, color: "var(--color-gray)" },
+                ].map((f) => (
+                  <li key={f.etiqueta} className="flex items-center justify-between gap-2 border-b border-border pb-2 last:border-0">
+                    <span className="flex items-center gap-2 text-text">
+                      <span className="inline-block h-[9px] w-[9px] rounded-full" style={{ background: f.color }} />
+                      {f.etiqueta}
+                    </span>
+                    <span className="tabular-nums">
+                      <b className="text-text">{f.valor}</b>
+                      <span className="ml-1 text-[11px] text-muted">{n.gestion.exito.total ? Math.round((f.valor / n.gestion.exito.total) * 100) : 0}%</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </Card>
         </div>

@@ -10,5 +10,5 @@ export default async function DashboardPage() {
     return null;
   });
 
-  return <DashboardView inicial={inicial} preferencia={profile.preferencia_graficos} />;
+  return <DashboardView inicial={inicial} preferencia={profile.preferencia_graficos} nombre={profile.nombre_completo ?? ""} />;
 }

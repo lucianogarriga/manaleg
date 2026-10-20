@@ -10,9 +10,9 @@
 /* ─── OSCURO (por defecto) ─── */
 :root,
 :root[data-theme="dark"] {
-  --color-bg:      #1E1E1C;
-  --color-card:    #262624;
-  --color-border:  #3A3935;
+  --color-bg:      #1A1A18;
+  --color-card:    #222220;
+  --color-border:  #343430;
 
   --color-text:    #ECEAE4;
   --color-sub:     #BDBAB2;
@@ -39,7 +39,7 @@
   --cal-wknd:      rgba(255,255,255,.035);
   --cal-inh:       rgba(217,161,84,.13);
 
-  --sb-bg:         #262624;
+  --sb-bg:         #222220;
   --sb-fg:         #9A9790;
   --sb-accent:     #5E9CA4;
   --sb-act-bg:     rgba(94,156,164,.16);
@@ -47,7 +47,7 @@
   --sb-shadow:     0 0 0 1px rgba(255,255,255,.06), 0 4px 16px rgba(0,0,0,.4);
 
   --tb-bg:         transparent;
-  --tb-border:     #3A3935;
+  --tb-border:     #343430;
   --hover-row:     rgba(255,255,255,.06);
 
   color-scheme: dark;
@@ -76,7 +76,7 @@
   --color-grn-lt:  rgba(44,102,131,.10);
   --color-pur:     #58677B;
   --color-pur-lt:  rgba(88,103,123,.10);
-  --color-cel:     #A9CFE2;
+  --color-cel:     #B3C6CE;
   --color-gray:    #B5B0A6;
   --color-panel2:  #E6E3DD;
 
