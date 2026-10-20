@@ -108,33 +108,11 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
           <div className="mt-0.5 text-[26px] font-semibold text-text">{primerNombre ? `Hola, ${primerNombre}` : "Hola"}</div>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
-          <Segmentado
-            titulo="Alcance"
-            valores={["mis", "equipo", "todas"] as const}
-            actual="mis"
-            onChange={() => undefined}
-            etiquetas={{ mis: "Mis causas", equipo: "Equipo", todas: "Todas" }}
-            deshabilitados={["equipo", "todas"]}
-          />
-          <Segmentado
-            titulo="Período"
-            valores={["mes", "trim", "anio"] as Periodo[]}
-            actual={periodo}
-            onChange={cambiarPeriodo}
-            etiquetas={ETIQUETA_PERIODO}
-          />
-          <button
-            type="button"
-            onClick={abrirAltaCausa}
-            className="whitespace-nowrap rounded-[10px] bg-blue px-3.5 py-[7px] text-[13px] font-semibold text-bg transition-opacity hover:opacity-90"
-          >
-            + Nueva causa
-          </button>
         </div>
       </div>
 
-      {/* ── Pestañas ── */}
-      <div className="flex gap-[18px] border-b border-border">
+      {/* ── Pestañas + período ── */}
+      <div className="flex items-center gap-[18px] border-b border-border">
         {(["novedades", "kpis"] as const).map((t) => (
           <button
             key={t}
@@ -147,6 +125,16 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
             {t === "novedades" ? "Novedades" : "KPIs"}
           </button>
         ))}
+        <div className="ml-auto pb-[6px]">
+          <Segmentado
+            titulo="Período"
+            valores={["mes", "trim", "anio"] as Periodo[]}
+            actual={periodo}
+            onChange={cambiarPeriodo}
+            etiquetas={{ mes: "Mes", trim: "Trim.", anio: "Año" }}
+            small
+          />
+        </div>
       </div>
 
       {error && (

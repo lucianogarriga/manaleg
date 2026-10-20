@@ -52,7 +52,7 @@ export default function CausaRow({ causa, active, onSelect, wide = false, enLine
       >
         {/* Carátula + badges debajo */}
         <div className="min-w-0 flex-1">
-          <div className="truncate text-[11.5px] font-semibold text-text sm:text-[12.5px]">
+          <div className="truncate text-[12.5px] font-semibold text-text sm:text-[13.5px]">
             <span className="mr-[5px] text-[12px] font-semibold text-sub">
               {causa.nro_expediente ? `${causa.nro_expediente} ·` : <span className="font-normal italic text-muted">Sin nro. ·</span>}
             </span>
@@ -112,7 +112,7 @@ export default function CausaRow({ causa, active, onSelect, wide = false, enLine
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div className="mb-[3px] truncate text-[12px] font-semibold text-text sm:text-[13.5px]">{causa.caratula}</div>
+      <div className="mb-[3px] truncate text-[13px] font-semibold text-text sm:text-[14px]">{causa.caratula}</div>
       <div className="mb-[3px] flex flex-wrap items-center gap-[4px]">
         {causa.nro_expediente && (
           <span className="font-mono text-[11px] text-muted">{causa.nro_expediente}</span>

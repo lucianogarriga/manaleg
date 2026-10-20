@@ -109,7 +109,7 @@ export default function Topbar({ fecha, alertas, urgentes, notificaciones, sinLe
           {/* Pill track */}
           <span
             className="relative flex h-[14px] w-[24px] items-center rounded-full transition-colors duration-200"
-            style={{ background: theme === "dark" ? "#6366f1" : "#cbd5e1" }}
+            style={{ background: theme === "dark" ? "var(--color-blue)" : "var(--color-blue)" }}
           >
             {/* Thumb */}
             <span
@@ -121,7 +121,7 @@ export default function Topbar({ fecha, alertas, urgentes, notificaciones, sinLe
           <Moon
             size={12}
             style={{
-              color: theme === "dark" ? "#818cf8" : "var(--color-muted)",
+              color: theme === "dark" ? "var(--color-blue)" : "var(--color-muted)",
               transition: "color .2s",
             }}
           />

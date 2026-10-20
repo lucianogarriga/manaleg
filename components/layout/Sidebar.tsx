@@ -137,7 +137,7 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
       <aside
         className={`fixed inset-y-0 left-0 z-40 flex shrink-0 flex-col p-0 md:static md:translate-x-0 md:p-2 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } ${exp ? "md:w-[228px]" : "md:w-[56px]"} w-full`}
+        } ${exp ? "md:w-[228px]" : "md:w-[56px]"} w-[82vw] max-w-[320px] md:w-auto`}
         style={{ transition: `width ${DUR}` }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}

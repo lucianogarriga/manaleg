@@ -368,16 +368,17 @@ export function BarrasVerticales({ meses, valores }: { meses: string[]; valores:
 }
 
 // Interruptor de dos o tres opciones.
-export function Segmentado<T extends string>({ valores, actual, onChange, etiquetas, deshabilitados = [], titulo }: {
+export function Segmentado<T extends string>({ valores, actual, onChange, etiquetas, deshabilitados = [], titulo, small = false }: {
   valores: readonly T[];
   actual: T;
   onChange: (v: T) => void;
   etiquetas: Record<T, string>;
   deshabilitados?: readonly T[];
   titulo?: string;
+  small?: boolean;
 }) {
   return (
-    <div role="group" aria-label={titulo} className="inline-flex overflow-hidden rounded-[10px] border border-border bg-card">
+    <div role="group" aria-label={titulo} className={`inline-flex overflow-hidden border border-border bg-card ${small ? "rounded-[8px]" : "rounded-[10px]"}`}>
       {valores.map((v) => {
         const activo = v === actual;
         const off = deshabilitados.includes(v);
@@ -389,7 +390,7 @@ export function Segmentado<T extends string>({ valores, actual, onChange, etique
             aria-pressed={activo}
             title={off ? "Próximamente" : undefined}
             onClick={() => onChange(v)}
-            className={`whitespace-nowrap px-3 py-[7px] text-[13px] transition-colors ${
+            className={`whitespace-nowrap transition-colors ${small ? "px-2.5 py-[5px] text-[11.5px]" : "px-3 py-[7px] text-[13px]"} ${
               activo ? "bg-blue font-semibold text-bg" : off ? "cursor-not-allowed text-muted opacity-50" : "text-sub hover:text-text"
             }`}
           >
