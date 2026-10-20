@@ -11,7 +11,7 @@ import AutocompleteField from "@/components/ui/AutocompleteField";
 import { FormSection, SelectField, TextAreaField, TextField } from "@/components/ui/FormControls";
 import { useCausasStore } from "@/store/causasStore";
 import { useUIStore } from "@/store/uiStore";
-import { ANTICIPACION_ALERTA, ESTADOS_CAUSA, FUEROS, TIPOS_AVISO, TIPOS_JUICIO_POR_FUERO, VIAS_PROCESO } from "@/utils/constants";
+import { ANTICIPACION_ALERTA, ESTADOS_CAUSA, ETAPAS_PROCESALES, FUEROS, RESULTADOS_CAUSA, TIPOS_AVISO, TIPOS_JUICIO_POR_FUERO, VIAS_PROCESO } from "@/utils/constants";
 import type { ClienteOption } from "@/services/supabase/clientes";
 import type { CaracterAbogado, CausaConRelaciones, CausaParte, RolParte, TipoPersona } from "@/types";
 
@@ -355,6 +355,9 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
           />
           <TextField label="Juzgado / Cámara" name="juzgado_camara" defaultValue={v?.juzgado_camara ?? ""} placeholder="Cámara 6°" />
           <TextField label="Fecha de inicio" name="fecha_inicio" type="date" defaultValue={v?.fecha_inicio ?? ""} />
+          <SelectField label="Etapa procesal" name="etapa_procesal" options={ETAPAS_PROCESALES} placeholder="Sin definir" defaultValue={v?.etapa_procesal ?? ""} />
+          <SelectField label="Resultado" name="resultado" options={RESULTADOS_CAUSA} placeholder="Sin resultado" defaultValue={v?.resultado ?? ""} />
+          <TextField label="Fecha del resultado" name="resultado_fecha" type="date" defaultValue={v?.resultado_fecha ?? ""} />
         </FormSection>
 
         {/* ── 4. Cliente y monto ── */}

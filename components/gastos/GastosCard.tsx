@@ -105,6 +105,12 @@ function GastoForm({
               placeholder="https://drive.google.com/…"
               className="w-full rounded-[6px] border border-border bg-bg px-3 py-[7px] text-[13px] text-text placeholder:text-muted outline-none focus:border-blue" />
           </div>
+
+          <label className="flex items-center gap-2 text-[13px] text-text">
+            <input name="reintegrado" type="checkbox" defaultChecked={gasto?.reintegrado ?? false}
+              className="h-[14px] w-[14px] accent-blue" />
+            Reintegrado por el cliente
+          </label>
         </div>
       </form>
     </Modal>

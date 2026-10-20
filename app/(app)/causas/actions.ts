@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createCausa, deleteCausa as deleteCausaService, saveCausaPartes, updateCausa } from "@/services/supabase/causas";
 import { createClient } from "@/services/supabase/server";
-import { ANTICIPACION_ALERTA, ESTADOS_CAUSA, FUEROS, TIPOS_AVISO, VIAS_PROCESO } from "@/utils/constants";
-import { oneOf, parseMonto, text } from "@/utils/formData";
+import { ANTICIPACION_ALERTA, ESTADOS_CAUSA, ETAPAS_PROCESALES, FUEROS, RESULTADOS_CAUSA, TIPOS_AVISO, VIAS_PROCESO } from "@/utils/constants";
+import { isISODate, oneOf, parseMonto, text } from "@/utils/formData";
 import type { CaracterAbogado, CausaInput, FormState, RolParte, TipoPersona } from "@/types";
 
 async function requireUser() {
@@ -84,6 +84,9 @@ function parseCausa(formData: FormData): { input?: CausaInput; error?: string } 
   if (link && !/^https?:\/\//i.test(link))
     return { error: "El link de Drive debe empezar con https://" };
 
+  const resultadoFecha = text(formData, "resultado_fecha");
+  if (resultadoFecha && !isISODate(resultadoFecha)) return { error: "La fecha del resultado no es válida." };
+
   return {
     input: {
       caratula,
@@ -93,6 +96,9 @@ function parseCausa(formData: FormData): { input?: CausaInput; error?: string } 
       juzgado_camara: juzgadoCamara,
       cliente_id: text(formData, "cliente_id"),
       estado: oneOf(text(formData, "estado"), ESTADOS_CAUSA) ?? "Iniciada",
+      etapa_procesal: oneOf(text(formData, "etapa_procesal"), ETAPAS_PROCESALES) ?? null,
+      resultado: oneOf(text(formData, "resultado"), RESULTADOS_CAUSA) ?? null,
+      resultado_fecha: resultadoFecha || null,
       via_proceso: oneOf(text(formData, "via_proceso"), VIAS_PROCESO),
       fecha_inicio: text(formData, "fecha_inicio"),
       proximo_vencimiento: proximoVencimiento,
