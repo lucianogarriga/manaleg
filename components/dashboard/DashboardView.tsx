@@ -102,7 +102,6 @@ export default function DashboardView({ inicial, preferencia }: Props) {
       {/* ── Encabezado ── */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[.14em] text-blue">MANALEG</div>
           <div className="mt-0.5 text-[26px] font-semibold text-text">{tab === "kpis" ? "KPIs" : "Novedades"}</div>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">

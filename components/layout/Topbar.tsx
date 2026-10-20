@@ -19,6 +19,8 @@ interface TopbarProps {
 
 export default function Topbar({ fecha, alertas, urgentes, notificaciones, sinLeer }: TopbarProps) {
   const pathname = usePathname();
+  // En el inicio el dashboard tiene su propia cabecera: no se repite el título ni la línea.
+  const esInicio = pathname === "/";
   const openSidebar = useUIStore((s) => s.openSidebar);
   const search = useCausasStore((s) => s.search);
   const setSearch = useCausasStore((s) => s.setSearch);
@@ -42,7 +44,7 @@ export default function Topbar({ fecha, alertas, urgentes, notificaciones, sinLe
 
   return (
     <header
-      className="flex shrink-0 items-center gap-3 border-b px-4 py-3"
+      className={`flex shrink-0 items-center gap-3 px-4 py-3 ${esInicio ? "" : "border-b"}`}
       style={{ borderColor: "var(--color-border)" }}
     >
       {/* Hamburger mobile */}
@@ -56,9 +58,11 @@ export default function Topbar({ fecha, alertas, urgentes, notificaciones, sinLe
       </button>
 
       {/* Título — lado izquierdo */}
-      <h1 className="shrink-0 whitespace-nowrap text-[15px] font-bold text-text">
-        {getPageTitle(pathname)}
-      </h1>
+      {!esInicio && (
+        <h1 className="shrink-0 whitespace-nowrap text-[15px] font-bold text-text">
+          {getPageTitle(pathname)}
+        </h1>
+      )}
 
       {/* Buscador centrado — solo visible en /causas */}
       <div className="flex flex-1 justify-center">
