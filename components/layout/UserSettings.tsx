@@ -45,7 +45,9 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
   const [emailEnabled, setEmailEnabled] = useState(profile.notificaciones_email ?? true);
   const [paleta, setPaleta] = useState<PaletaId>(profile.paleta ?? "opcion1");
   const [paletaOpen, setPaletaOpen] = useState(false);
+  const [paletaTop, setPaletaTop] = useState(0);
   const paletaRef = useRef<HTMLDivElement>(null);
+  const paletaRowRef = useRef<HTMLButtonElement>(null);
   const [isPending, startTransition] = useTransition();
   useGlobalLoading(isPending);
   const [pos, setPos] = useState<DropdownPos | null>(null);
@@ -160,7 +162,13 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
         </button>
 
         {/* Paleta de colores por usuario: submenú a la derecha */}
-        <button type="button" onClick={() => { setMasInfoOpen(false); setPaletaOpen((v) => !v); }}
+        <button type="button" ref={paletaRowRef}
+          onClick={() => {
+            const r = paletaRowRef.current?.getBoundingClientRect();
+            if (r) setPaletaTop(Math.max(8, Math.min(r.top - 6, window.innerHeight - 240)));
+            setMasInfoOpen(false);
+            setPaletaOpen((v) => !v);
+          }}
           className={rowCls} {...rowStyle} aria-expanded={paletaOpen}>
           <Palette size={13} strokeWidth={1.8} className={`shrink-0 text-muted ${ico}`} />
           <span className={`flex-1 text-sub ${txt}`}>Paleta</span>
@@ -275,7 +283,7 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
         ...(esMobile
           ? { left: 8, right: 8 }
           : { left: pos.left + DROPDOWN_WIDTH + 8, width: 180 }),
-        ...anclaje,
+        top: paletaTop,
         background: "var(--color-card)",
         border: "1px solid var(--color-border)",
         borderRadius: 12,
