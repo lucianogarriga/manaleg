@@ -553,34 +553,36 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
             </div>
           </Card>
           <Card className="flex flex-1 flex-col justify-center">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex min-w-0 flex-col items-start gap-2">
-                <div className="text-[14px] font-semibold text-text">Causas cerradas con resultado</div>
-                <div className="text-[12px] text-muted">{n.gestion.exito.total} causas · últimos 2 años</div>
-                <Dona sinLeyenda segmentos={[
-                  { etiqueta: "Ganadas", valor: n.gestion.exito.ganadas, color: "var(--color-series-1)" },
-                  { etiqueta: "Transadas", valor: n.gestion.exito.transadas, color: "var(--color-series-2)" },
-                  { etiqueta: "Perdidas", valor: n.gestion.exito.perdidas, color: "var(--color-donut-3)" },
-                ]} />
-              </div>
-              <ul className="flex flex-col justify-center gap-3 text-[13px]">
+            <div className="mb-3">
+              <div className="text-[14px] font-semibold text-text">Causas cerradas</div>
+              <div className="text-[12px] text-muted">Últimos 2 años</div>
+            </div>
+            <div className="grid grid-cols-2 items-center gap-3">
+              <ul className="flex min-w-0 flex-col justify-center gap-3 text-[13px]">
                 {[
                   { etiqueta: "Ganadas", valor: n.gestion.exito.ganadas, color: "var(--color-series-1)" },
                   { etiqueta: "Transadas", valor: n.gestion.exito.transadas, color: "var(--color-series-2)" },
                   { etiqueta: "Perdidas", valor: n.gestion.exito.perdidas, color: "var(--color-donut-3)" },
                 ].map((f) => (
                   <li key={f.etiqueta} className="flex items-center gap-2 border-b border-border pb-2 last:border-0">
-                    <span className="flex flex-1 items-center gap-2 text-text">
+                    <span className="flex min-w-0 flex-1 items-center gap-2 truncate text-text">
                       <span className="inline-block h-[9px] w-[9px] shrink-0 rounded-full" style={{ background: f.color }} />
                       {f.etiqueta}
                     </span>
-                    <span className="flex items-center gap-3 tabular-nums">
+                    <span className="flex shrink-0 items-center gap-2 tabular-nums">
                       <b className="min-w-[18px] text-center text-text">{f.valor}</b>
                       <span className="min-w-[30px] text-right text-[11px] text-muted">{n.gestion.exito.total ? Math.round((f.valor / n.gestion.exito.total) * 100) : 0}%</span>
                     </span>
                   </li>
                 ))}
               </ul>
+              <div className="flex justify-center">
+                <Dona sinLeyenda segmentos={[
+                  { etiqueta: "Ganadas", valor: n.gestion.exito.ganadas, color: "var(--color-series-1)" },
+                  { etiqueta: "Transadas", valor: n.gestion.exito.transadas, color: "var(--color-series-2)" },
+                  { etiqueta: "Perdidas", valor: n.gestion.exito.perdidas, color: "var(--color-donut-3)" },
+                ]} />
+              </div>
             </div>
           </Card>
         </div>
