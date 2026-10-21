@@ -554,7 +554,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
           </Card>
           <Card className="flex flex-1 flex-col justify-center">
             <div className="mb-3">
-              <div className="text-[14px] font-semibold text-text">Causas cerradas</div>
+              <div className="text-[14px] font-semibold text-text">Causas cerradas con resultado</div>
               <div className="text-[12px] text-muted">Últimos 2 años</div>
             </div>
             <div className="grid grid-cols-2 items-center gap-3">
