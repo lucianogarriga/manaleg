@@ -1,6 +1,5 @@
 "use client";
 
-import { useGlobalLoading } from "@/hooks/useGlobalLoading";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Pencil, Plus, X } from "lucide-react";
 import { createTodo, deleteTodo, updateTodo, updateTodoEstado } from "@/app/(app)/causas/todoActions";
@@ -241,7 +240,6 @@ function NuevaTareaForm({
   onSaved: () => void;
 }) {
   const [pending, setPending] = useState(false);
-  useGlobalLoading(pending);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -340,9 +338,7 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
     if (result.error) {
       patch(id, { estado: todo.estado, completado: todo.completado });
       showToast({ message: result.error });
-      return;
     }
-    reload();
   };
 
   const handleEdit = useCallback(async (id: string, texto: string, fechaLimite: string | null): Promise<boolean> => {

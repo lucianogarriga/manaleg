@@ -17,7 +17,6 @@ export async function toggleNotificacionesEmail(enabled: boolean): Promise<{ err
     .eq("id", user.id);
 
   if (error) return { error: error.message };
-  revalidatePath("/", "layout");
   return {};
 }
 
@@ -34,7 +33,6 @@ export async function guardarPaleta(paleta: string): Promise<{ error?: string }>
     .eq("id", user.id);
 
   if (error) return { error: error.message };
-  revalidatePath("/", "layout");
   return {};
 }
 

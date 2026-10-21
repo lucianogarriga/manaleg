@@ -4,13 +4,13 @@ import { contarCausasPropias, getCausas } from "@/services/supabase/causas";
 import { getClienteOptions } from "@/services/supabase/clientes";
 
 export default async function CausasPage() {
-  const [profile, { causas, totalEnBD }, clientes] = await Promise.all([
-    getCurrentProfile(),
+  const profile = await getCurrentProfile();
+  // El conteo real de causas propias (la lista se limita a 60 filas) va en paralelo
+  const [{ causas, totalEnBD }, clientes, causasPropias] = await Promise.all([
     getCausas(),
     getClienteOptions(),
+    contarCausasPropias(profile.id),
   ]);
-  // Conteo real de causas propias (la lista se limita a 60 filas, el conteo no)
-  const causasPropias = await contarCausasPropias(profile.id);
 
   return (
     <CausasView

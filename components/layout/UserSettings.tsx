@@ -1,6 +1,5 @@
 "use client";
 
-import { useGlobalLoading } from "@/hooks/useGlobalLoading";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
@@ -49,7 +48,6 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
   const paletaRef = useRef<HTMLDivElement>(null);
   const paletaRowRef = useRef<HTMLButtonElement>(null);
   const [isPending, startTransition] = useTransition();
-  useGlobalLoading(isPending);
   const [pos, setPos] = useState<DropdownPos | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);

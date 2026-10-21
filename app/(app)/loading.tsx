@@ -4,15 +4,15 @@ export default function DashboardLoading() {
       {/* Stats row */}
       <div className="grid grid-cols-2 gap-[10px] sm:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-[80px] rounded-[10px] bg-(--color-sidebar)" />
+          <div key={i} className="h-[80px] rounded-[10px] bg-panel2" />
         ))}
       </div>
       {/* Content blocks */}
       <div className="grid gap-[14px] sm:grid-cols-2">
-        <div className="h-[220px] rounded-[10px] bg-(--color-sidebar)" />
-        <div className="h-[220px] rounded-[10px] bg-(--color-sidebar)" />
+        <div className="h-[220px] rounded-[10px] bg-panel2" />
+        <div className="h-[220px] rounded-[10px] bg-panel2" />
       </div>
-      <div className="h-[160px] rounded-[10px] bg-(--color-sidebar)" />
+      <div className="h-[160px] rounded-[10px] bg-panel2" />
     </div>
   );
 }
