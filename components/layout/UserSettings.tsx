@@ -10,6 +10,7 @@ import {
 import { logout } from "@/app/(auth)/actions";
 import { guardarPaleta, toggleNotificacionesEmail } from "@/app/(app)/ajustes/actions";
 import { PALETAS, type PaletaId } from "@/utils/paletas";
+import { useUIStore } from "@/store/uiStore";
 import { getInitials } from "@/utils/formatters";
 import FeedbackModal from "./FeedbackModal";
 import ContactModal from "./ContactModal";
@@ -85,10 +86,17 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
   };
 
   const elegirPaleta = (next: PaletaId) => {
+    const anterior = paleta;
     setPaleta(next);
     setPaletaOpen(false);
     document.documentElement.setAttribute("data-palette", next);
-    startTransition(async () => { await guardarPaleta(next); });
+    startTransition(async () => {
+      const r = await guardarPaleta(next);
+      if (!r.error) return;
+      setPaleta(anterior);
+      document.documentElement.setAttribute("data-palette", anterior);
+      useUIStore.getState().showToast({ message: r.error });
+    });
   };
 
   const initials = getInitials(profile.nombre_completo, profile.email[0]?.toUpperCase());

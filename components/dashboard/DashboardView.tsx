@@ -182,8 +182,7 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
 
   return (
     <>
-      <SeccionEncabezado>Operativo</SeccionEncabezado>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <KpiCard
           titulo="Causas activas"
           valor={n.causas.activas}
@@ -209,14 +208,13 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
         />
       </div>
 
-      <SeccionEncabezado sub={per.nombre}>Financiero · {DUR_PERIODO[periodo]}</SeccionEncabezado>
       <div className="mb-1 flex flex-wrap gap-2">
         <BadgeHoy etiqueta="Plazos vencidos" valor={n.vencimientos.vencidos} rojo />
         <BadgeHoy etiqueta="Plazos que vencen hoy" valor={n.vencimientos.hoy} />
         <BadgeHoy etiqueta="Audiencias hoy" valor={n.audiencias.hoy} />
         <BadgeHoy etiqueta="Tareas hoy" valor={n.tareas.hoy} />
       </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <KpiCard
           titulo="Honorarios cobrados"
           valor={<Montos valores={n.financiero.cobrado} />}
@@ -432,7 +430,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
       </div>
 
       <SeccionEncabezado sub="Plazos, gastos y tiempos">Gestión</SeccionEncabezado>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
         <Tile titulo="Plazos cumplidos a tiempo" sub={`${n.gestion.plazosTotal90} plazos en los últimos 90 días`}
           valor={plazosPct === null ? "—" : `${plazosPct}%`}
           extra={<>{plazosPct !== null && <BarraProgreso pct={plazosPct} />}<div className="mt-2 text-[12px] text-muted">{n.gestion.plazosVencidosSinCumplir90} vencieron sin cumplir</div></>} />
