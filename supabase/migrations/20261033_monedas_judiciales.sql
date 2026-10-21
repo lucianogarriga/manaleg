@@ -33,8 +33,8 @@ ALTER TABLE public.profiles
   DROP COLUMN IF EXISTS jus_valor_fecha;
 
 -- Honorarios: nombre de la moneda judicial usada (moneda = 'JUS' para cualquier moneda judicial).
+-- Los honorarios JUS anteriores quedan sin nombre y se muestran como JUS: no se modifican filas de honorarios aquí.
 ALTER TABLE public.honorarios ADD COLUMN IF NOT EXISTS moneda_judicial_nombre TEXT;
-UPDATE public.honorarios SET moneda_judicial_nombre = 'JUS' WHERE moneda = 'JUS' AND moneda_judicial_nombre IS NULL;
 
 -- Totales por moneda: las judiciales se separan por su nombre (JUS, UMA, etc.).
 CREATE OR REPLACE FUNCTION public.totales_honorarios()
