@@ -6,9 +6,16 @@ export async function leerValorJusCordoba(): Promise<{ valor: number } | { error
   try {
     const res = await fetch(URL_VALOR_JUS, {
       cache: "no-store",
-      headers: { "User-Agent": "Manaleg/1.0" },
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "es-AR,es;q=0.9",
+      },
       signal: AbortSignal.timeout(8000),
     });
+    if (res.status === 403 || res.status === 429) {
+      return { error: "El Colegio bloqueó la consulta automática. Cargá el valor a mano desde la página del Colegio." };
+    }
     if (!res.ok) return { error: `El Colegio de Abogados no respondió (HTTP ${res.status}).` };
     html = await res.text();
   } catch {
