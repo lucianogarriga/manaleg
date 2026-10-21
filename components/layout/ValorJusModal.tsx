@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Modal from "@/components/ui/Modal";
 import { TextField } from "@/components/ui/FormControls";
-import { actualizarValorJusCordoba, guardarValorJus } from "@/app/(app)/ajustes/actions";
+import { guardarValorJus } from "@/app/(app)/ajustes/actions";
 import { useAuthStore } from "@/store/authStore";
 import { useUIStore } from "@/store/uiStore";
 
@@ -21,22 +21,6 @@ export default function ValorJusModal({ onClose }: { onClose: () => void }) {
   const [valor, setValor] = useState(profile?.jus_valor != null ? String(profile.jus_valor) : "");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-
-  const traerDelColegio = () => {
-    setError(null);
-    startTransition(async () => {
-      const r = await actualizarValorJusCordoba();
-      if (r.error || r.valor === undefined) {
-        setError(r.error ?? "No se pudo actualizar el valor.");
-        return;
-      }
-      if (profile) {
-        setProfile({ ...profile, jus_referencia: "Córdoba", jus_valor: r.valor, jus_valor_fecha: r.fecha ?? null });
-      }
-      showToast({ message: "Valor del JUS actualizado desde el Colegio de Abogados de Córdoba." });
-      onClose();
-    });
-  };
 
   const guardar = () => {
     const n = parseValor(valor);
@@ -62,14 +46,10 @@ export default function ValorJusModal({ onClose }: { onClose: () => void }) {
   return (
     <Modal
       open
-      title="Valor del JUS"
+      title="Moneda judicial"
       onClose={onClose}
       footer={
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <button type="button" onClick={traerDelColegio} disabled={pending}
-            className="cursor-pointer rounded-[6px] border border-blue px-3 py-[6px] text-[12.5px] font-semibold text-blue hover:bg-blue-lt disabled:opacity-50">
-            Actualizar desde el Colegio (Córdoba)
-          </button>
+        <div className="flex items-center justify-end gap-2">
           <div className="flex items-center gap-2">
           <button type="button" onClick={onClose} className="cursor-pointer rounded-[6px] px-3 py-[6px] text-[13px] text-sub hover:text-text">
             Cancelar
@@ -84,10 +64,10 @@ export default function ValorJusModal({ onClose }: { onClose: () => void }) {
     >
       <div className="flex flex-col gap-3 p-4">
         <p className="text-[13px] text-sub">
-          Se muestra en la parte superior del dashboard y se sugiere al cargar honorarios en JUS. Actualizalo a mano cada 30 o 60 días.
+          Valor de referencia de uso judicial. Se usa para convertir los honorarios en JUS a pesos. Actualizalo a mano cada 30 o 60 días.
         </p>
-        <TextField label="Jurisdicción" value={referencia} onChange={(e) => setReferencia(e.target.value)} placeholder="Córdoba" maxLength={60} />
-        <TextField label="Valor en pesos" value={valor} onChange={(e) => setValor(e.target.value)} inputMode="decimal" placeholder="45000" />
+        <TextField label="Nombre" value={referencia} onChange={(e) => setReferencia(e.target.value)} placeholder="JUS Córdoba" maxLength={60} />
+        <TextField label="Valor en pesos" value={valor} onChange={(e) => setValor(e.target.value)} inputMode="decimal" placeholder="51345,90" />
         {error && <p className="text-[12.5px] text-red">{error}</p>}
       </div>
     </Modal>

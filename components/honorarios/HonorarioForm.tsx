@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAuthStore } from "@/store/authStore";
+import { formatCurrency } from "@/utils/formatters";
 import { saveHonorario } from "@/app/(app)/causas/detailActions";
 import FormAlert from "@/components/auth/FormAlert";
 import { FormSection, TextField } from "@/components/ui/FormControls";
@@ -145,16 +146,12 @@ export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: 
             placeholder={moneda === "ARS" ? "840000" : moneda === "USD" ? "5000" : "1000"}
           />
           {moneda === "JUS" && (
-            <div className="sm:col-span-2">
-              <TextField
-                label="Cotización del JUS (ARS por JUS)"
-                name="cotizacion_ars"
-                inputMode="decimal"
-                required
-                defaultValue={honorario?.cotizacion_ars ?? valorJusPerfil ?? ""}
-                placeholder="45000"
-              />
-              <p className="mt-1 text-[11px] text-muted">Se carga a mano. Los pesos de este honorario suman en los indicadores del dashboard.</p>
+            <div className="sm:col-span-2 rounded-[6px] border border-border bg-bg px-3 py-2 text-[12px] text-sub">
+              {valorJusPerfil != null ? (
+                <>Se convierte con la moneda judicial del dashboard: <b className="text-text">{formatCurrency(valorJusPerfil, "ARS")}</b> por JUS.</>
+              ) : (
+                <span className="text-amb">Para cargar honorarios en JUS, primero cargá la moneda judicial en la parte superior del dashboard.</span>
+              )}
             </div>
           )}
           {periodicidad === "unico" && (

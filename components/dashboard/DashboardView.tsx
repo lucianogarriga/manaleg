@@ -6,9 +6,7 @@ import { recargarNovedades, guardarPreferenciaGraficos } from "@/app/(app)/noved
 import { toggleTodo } from "@/app/(app)/causas/todoActions";
 import { formatCurrency, formatDate, todayISO } from "@/utils/formatters";
 import { useAuthStore } from "@/store/authStore";
-import { useUIStore } from "@/store/uiStore";
 import ValorJusModal from "@/components/layout/ValorJusModal";
-import { actualizarValorJusCordoba } from "@/app/(app)/ajustes/actions";
 import type { Moneda, NovedadesCompletas, Periodo, Novedades } from "@/services/supabase/novedades";
 import {
   Badge, BadgeHoy, BarraProgreso, BarrasAgrupadas, BarrasH, BarrasVerticales, Calendario, Card, Dona,
@@ -101,18 +99,8 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
   const jusValor = useAuthStore((s) => s.profile?.jus_valor ?? null);
   const jusRef = useAuthStore((s) => s.profile?.jus_referencia ?? null);
   const jusFecha = useAuthStore((s) => s.profile?.jus_valor_fecha ?? null);
-  const [actualizandoJus, startActualizarJus] = useTransition();
   const [valorJusOpen, setValorJusOpen] = useState(false);
-  const actualizarJus = () => startActualizarJus(async () => {
-    const r = await actualizarValorJusCordoba();
-    if (r.error || r.valor === undefined) {
-      useUIStore.getState().showToast({ message: r.error ?? "No se pudo actualizar el valor." });
-      return;
-    }
-    const perfil = useAuthStore.getState().profile;
-    if (perfil) useAuthStore.getState().setProfile({ ...perfil, jus_referencia: "Córdoba", jus_valor: r.valor, jus_valor_fecha: r.fecha ?? null });
-    useUIStore.getState().showToast({ message: "Valor del JUS actualizado." });
-  });
+  const [infoJusOpen, setInfoJusOpen] = useState(false);
   const jusDias = jusFecha ? Math.floor((Date.parse(hoy) - Date.parse(jusFecha)) / 86400000) : null;
 
   return (
@@ -125,28 +113,6 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
         <div className="flex flex-wrap items-center gap-2.5">
         </div>
       </div>
-
-      <div className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border px-4 py-2 text-[13px] ${
-        jusDias !== null && jusDias > 60 ? "border-amb-bd bg-amb-lt text-amb" : "border-border bg-card text-sub"
-      }`}>
-        {jusValor != null ? (
-          <span>Valor del JUS{jusRef ? ` en ${jusRef}` : ""}: <b className="tabular-nums text-text">{formatCurrency(jusValor, "ARS")}</b></span>
-        ) : (
-          <span>Valor del JUS: <span className="text-muted">sin cargar</span></span>
-        )}
-        <span className="flex flex-wrap items-center gap-3 text-[12px] text-muted">
-          {jusFecha ? `Actualizado ${formatDate(jusFecha)}` : ""}{jusDias !== null && jusDias > 60 ? " · conviene actualizarlo" : ""}
-          <button type="button" onClick={() => setValorJusOpen(true)}
-            className="cursor-pointer rounded-[6px] px-2.5 py-[3px] text-[12px] font-semibold text-blue hover:underline">
-            {jusValor != null ? "Editar" : "Cargar valor del JUS"}
-          </button>
-          <button type="button" onClick={actualizarJus} disabled={actualizandoJus}
-            className="cursor-pointer rounded-[6px] border border-blue px-2.5 py-[3px] text-[12px] font-semibold text-blue hover:bg-blue-lt disabled:opacity-50">
-            {actualizandoJus ? "Actualizando…" : "Actualizar desde el Colegio"}
-          </button>
-        </span>
-      </div>
-      {valorJusOpen && <ValorJusModal onClose={() => setValorJusOpen(false)} />}
 
       {/* ── Pestañas + período ── */}
       <div className="flex items-center gap-[18px] border-b border-border">
@@ -162,7 +128,34 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
             {t === "novedades" ? "Novedades" : "KPIs"}
           </button>
         ))}
-        <div className="ml-auto pb-[6px]">
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2 pb-[6px]">
+          <div className="relative">
+            <div className={`flex items-center gap-2 rounded-[8px] border px-2.5 py-[5px] text-[12px] ${
+              jusDias !== null && jusDias > 60 ? "border-amb-bd bg-amb-lt text-amb" : "border-border bg-card text-sub"
+            }`}>
+              <button type="button" onClick={() => setInfoJusOpen((v) => !v)} aria-label="¿Qué es la moneda judicial?"
+                className="flex h-[16px] w-[16px] cursor-pointer items-center justify-center rounded-full border border-muted text-[10px] font-bold text-muted">
+                i
+              </button>
+              <span className="font-semibold text-text">Moneda judicial</span>
+              {jusValor != null ? (
+                <span className="tabular-nums text-text">{jusRef ? `${jusRef}: ` : ""}{formatCurrency(jusValor, "ARS")}</span>
+              ) : (
+                <span className="text-muted">sin cargar</span>
+              )}
+              <button type="button" onClick={() => setValorJusOpen(true)}
+                className="cursor-pointer font-semibold text-blue hover:underline">
+                {jusValor != null ? "Modificar" : "Cargar"}
+              </button>
+            </div>
+            {infoJusOpen && (
+              <div className="absolute right-0 top-full z-20 mt-1 w-[260px] rounded-[8px] border border-border bg-card p-3 text-[12px] text-sub shadow-[0_8px_24px_rgba(0,0,0,.18)]">
+                <p>Valor de referencia de uso judicial, con el que se expresan honorarios y montos.</p>
+                <p className="mt-1.5 text-muted">Ejemplos: JUS de Córdoba, UMA de Buenos Aires.</p>
+                {jusFecha && <p className="mt-1.5 text-muted">Actualizado {formatDate(jusFecha)}{jusDias !== null && jusDias > 60 ? " · conviene actualizarlo (más de 60 días)" : ""}</p>}
+              </div>
+            )}
+          </div>
           <Segmentado
             titulo="Período"
             valores={["mes", "trim", "anio"] as Periodo[]}
@@ -173,6 +166,8 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
           />
         </div>
       </div>
+
+      {valorJusOpen && <ValorJusModal onClose={() => setValorJusOpen(false)} />}
 
       {error && (
         <div className="flex items-center justify-between gap-3 rounded-xl border border-amb-bd bg-amb-lt px-4 py-3 text-[13px] text-amb">

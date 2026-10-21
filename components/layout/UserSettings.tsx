@@ -169,10 +169,10 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
           </span>
         </button>
 
-        {/* Valor del JUS (referencia para honorarios en JUS y el dashboard) */}
+        {/* Moneda judicial (valor de referencia para honorarios en JUS) */}
         <button type="button" onClick={() => { setOpen(false); setValorJusOpen(true); }} className={rowCls} {...rowStyle}>
           <Coins size={13} strokeWidth={1.8} className={`shrink-0 text-muted ${ico}`} />
-          <span className={`flex-1 text-sub ${txt}`}>Valor del JUS</span>
+          <span className={`flex-1 text-sub ${txt}`}>Moneda judicial</span>
           <span className="text-[11px] text-muted">{profile.jus_valor != null ? `$${Math.round(profile.jus_valor).toLocaleString("es-AR")}` : "Sin cargar"}</span>
         </button>
 

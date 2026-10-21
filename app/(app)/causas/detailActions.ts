@@ -137,15 +137,24 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
     monto_adicional = v;
   }
 
-  let cotizacion_ars: number | null = null;
+  const supabase = await createClient();
+  // La cotización es la moneda judicial cargada en el perfil. Al editar un honorario JUS ya cotizado se conserva.
+  let cotizacion_ars: number | null | undefined = null;
   if (moneda === "JUS") {
-    const c = parseMonto(text(formData, "cotizacion_ars"));
-    if (c === null || c === "invalid" || c <= 0) return { error: "Ingresá la cotización del JUS en pesos." };
-    cotizacion_ars = c;
+    cotizacion_ars = undefined;
+    const previo = id
+      ? await supabase.from("honorarios").select("moneda, cotizacion_ars").eq("id", id).maybeSingle<{ moneda: string; cotizacion_ars: number | null }>()
+      : null;
+    if (!(previo?.data?.moneda === "JUS" && previo.data.cotizacion_ars)) {
+      const perfil = await supabase.from("profiles").select("jus_valor").single<{ jus_valor: number | null }>();
+      const valor = perfil.data?.jus_valor;
+      if (!valor) return { error: "Primero cargá la moneda judicial (JUS) en el dashboard, arriba a la derecha." };
+      cotizacion_ars = valor;
+    }
   }
 
   const values = {
-    cotizacion_ars,
+    ...(cotizacion_ars !== undefined ? { cotizacion_ars } : {}),
     concepto,
     periodicidad,
     cuotas_mensuales: periodicidad === "mensual" ? cuotasMensuales : null,
@@ -156,7 +165,6 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
     monto_adicional,
     notas_honorarios: notasHonorarios,
   };
-  const supabase = await createClient();
   if (id) {
     const { data, error } = await supabase.from("honorarios").update(values).eq("id", id).select("id");
     if (error) return { error: `No se pudieron guardar los honorarios: ${error.message}` };
