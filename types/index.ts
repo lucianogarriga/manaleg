@@ -73,7 +73,7 @@ export interface Profile {
   causas_max: number;
   es_admin: boolean;
   preferencia_graficos: "barras" | "ondas";
-  paleta: "opcion1" | "opcion2";
+  paleta: "opcion1" | "opcion2" | "claude" | "pastel";
   notificaciones_email: boolean;
   tyc_accepted_at: string | null;
   tyc_version: string | null;

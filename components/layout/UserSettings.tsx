@@ -156,10 +156,12 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
         </button>
 
         {/* Paleta de colores por usuario */}
-        <div className="flex items-center gap-[9px] px-[9px] py-[7px]">
-          <Palette size={13} strokeWidth={1.8} className={`shrink-0 text-muted ${ico}`} />
-          <span className={`flex-1 text-sub ${txt}`}>Paleta</span>
-          <div role="group" aria-label="Paleta de colores" className="flex overflow-hidden rounded-[6px] border border-border">
+        <div className="px-[9px] py-[7px]">
+          <div className="mb-[6px] flex items-center gap-[9px]">
+            <Palette size={13} strokeWidth={1.8} className={`shrink-0 text-muted ${ico}`} />
+            <span className={`text-sub ${txt}`}>Paleta</span>
+          </div>
+          <div role="group" aria-label="Paleta de colores" className="grid grid-cols-2 gap-[4px]">
             {PALETAS.map((p) => (
               <button
                 key={p.id}
@@ -167,8 +169,10 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
                 onClick={() => elegirPaleta(p.id)}
                 disabled={isPending}
                 aria-pressed={paleta === p.id}
-                className={`cursor-pointer px-[7px] py-[2px] text-[11px] transition-colors ${
-                  paleta === p.id ? "bg-blue font-semibold text-on-primary" : "text-sub hover:text-text"
+                className={`cursor-pointer truncate rounded-[6px] border px-[6px] py-[4px] text-[11px] transition-colors ${
+                  paleta === p.id
+                    ? "border-blue bg-blue font-semibold text-on-primary"
+                    : "border-border text-sub hover:text-text"
                 }`}
               >
                 {p.label}
