@@ -1,8 +1,7 @@
 "use client";
 
 import { useGlobalLoading } from "@/hooks/useGlobalLoading";
-import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { Pencil, Plus, X } from "lucide-react";
 import { createTodo, deleteTodo, updateTodo, updateTodoEstado } from "@/app/(app)/causas/todoActions";
 import { useTodosGlobal } from "@/hooks/useCausaData";
@@ -18,6 +17,8 @@ const COLUMNS: { estado: EstadoTarea; label: string; color: string; light: strin
   { estado: "Esperando respuesta",  label: "Esperando respuesta",   color: "var(--color-amb)", light: "var(--color-amb-lt)"  },
   { estado: "Completado",           label: "Completado",            color: "var(--color-grn)", light: "var(--color-grn-lt)"  },
 ];
+
+const ALTO_MIN = 72;
 
 // ── Filtros ──────────────────────────────────────────────────────────────────
 
@@ -59,6 +60,49 @@ function TareaCard({
   const [texto, setTexto] = useState(todo.texto);
   const [fecha, setFecha] = useState(todo.fecha_limite ?? "");
   const [guardando, setGuardando] = useState(false);
+  const [alto, setAlto] = useState<number | null>(null);
+  const redimensionando = useRef(false);
+  const altoRef = useRef<number | null>(null);
+  const claveAlto = `kanban-alto:${todo.id}`;
+
+  useEffect(() => {
+    try {
+      const guardado = Number(localStorage.getItem(claveAlto));
+      if (guardado >= ALTO_MIN) setAlto(guardado);
+    } catch {
+      // Sin localStorage (modo privado): la card usa el alto automático.
+    }
+  }, [claveAlto]);
+
+  const moverResize = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!redimensionando.current) return;
+    const base = e.currentTarget.parentElement?.getBoundingClientRect().top ?? 0;
+    const nuevo = Math.max(ALTO_MIN, Math.round(e.clientY - base));
+    altoRef.current = nuevo;
+    setAlto(nuevo);
+  };
+
+  const terminarResize = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!redimensionando.current) return;
+    redimensionando.current = false;
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    if (altoRef.current === null) return;
+    try {
+      localStorage.setItem(claveAlto, String(altoRef.current));
+    } catch {
+      // Sin localStorage: el alto dura solo mientras la página esté abierta.
+    }
+  };
+
+  const restablecerAlto = () => {
+    setAlto(null);
+    altoRef.current = null;
+    try {
+      localStorage.removeItem(claveAlto);
+    } catch {
+      // Sin localStorage: nada que limpiar.
+    }
+  };
 
   const cancelar = () => {
     setTexto(todo.texto);
@@ -111,12 +155,16 @@ function TareaCard({
   return (
     <div
       draggable
-      onDragStart={onDragStart}
-      className={`group cursor-grab rounded-lg border p-3 transition-all active:cursor-grabbing ${isDragging ? "opacity-40 scale-95" : ""}`}
+      onDragStart={(e) => {
+        if (redimensionando.current) { e.preventDefault(); return; }
+        onDragStart(e);
+      }}
+      className={`group relative cursor-grab overflow-hidden rounded-lg border p-3 transition-[opacity,transform] duration-150 active:cursor-grabbing ${isDragging ? "opacity-40 scale-95" : ""}`}
       style={{
         background: "var(--color-card)",
         borderColor: "var(--color-border)",
         boxShadow: "0 1px 3px rgba(0,0,0,.07)",
+        height: alto ?? undefined,
       }}
     >
       <div className="flex items-start justify-between gap-2">
@@ -151,6 +199,26 @@ function TareaCard({
           <FechaLimiteBadge fecha={todo.fecha_limite} />
         </div>
       )}
+      <div
+        role="separator"
+        aria-label="Arrastrar para cambiar el alto de la tarea (doble clic para restablecer)"
+        title="Arrastrá para cambiar el alto · doble clic para restablecer"
+        onPointerDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          redimensionando.current = true;
+          altoRef.current = alto;
+          e.currentTarget.setPointerCapture(e.pointerId);
+        }}
+        onPointerMove={moverResize}
+        onPointerUp={terminarResize}
+        onPointerCancel={terminarResize}
+        onDoubleClick={(e) => { e.stopPropagation(); restablecerAlto(); }}
+        className="absolute bottom-0 right-0 h-[14px] w-[14px] cursor-nwse-resize opacity-0 transition-opacity group-hover:opacity-100"
+        style={{
+          background: "linear-gradient(135deg, transparent 50%, var(--color-muted) 50%)",
+        }}
+      />
     </div>
   );
 }
@@ -232,9 +300,8 @@ interface KanbanViewProps {
 }
 
 export default function KanbanView({ causas, userId }: KanbanViewProps) {
-  const router = useRouter();
   const showToast = useUIStore((s) => s.showToast);
-  const { data: todos, loading, reload } = useTodosGlobal();
+  const { data: todos, loading, reload, patch } = useTodosGlobal();
   const [filtro, setFiltro] = useState<Filtro>("todas");
   const [addingIn, setAddingIn] = useState<EstadoTarea | null>(null);
   const [dragging, setDragging] = useState<string | null>(null);
@@ -254,19 +321,21 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
 
     setDragging(null);
     setDragOver(null);
+    patch(id, { estado: targetEstado, completado: targetEstado === "Completado" });
 
     const result = await updateTodoEstado(id, targetEstado);
-    if (result.error) { showToast({ message: result.error }); return; }
-    showToast({ message: `Tarea movida a "${targetEstado}"` });
+    if (result.error) {
+      patch(id, { estado: todo.estado, completado: todo.completado });
+      showToast({ message: result.error });
+      return;
+    }
     reload();
-    router.refresh();
   };
 
   const handleEdit = async (id: string, texto: string, fechaLimite: string | null): Promise<boolean> => {
     const result = await updateTodo(id, texto, fechaLimite);
     if (result.error) { showToast({ message: result.error }); return false; }
-    reload();
-    router.refresh();
+    patch(id, { texto: texto.trim(), fecha_limite: fechaLimite || null });
     return true;
   };
 
@@ -274,7 +343,6 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
     const result = await deleteTodo(id);
     if (result.error) { showToast({ message: result.error }); return; }
     reload();
-    router.refresh();
   };
 
   return (
@@ -324,6 +392,16 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
                 >
                   {items.length}
                 </span>
+                <button
+                  type="button"
+                  onClick={() => setAddingIn(estado)}
+                  aria-label={`Nueva tarea en ${label}`}
+                  title={`Nueva tarea en ${label}`}
+                  className="flex h-[22px] w-[22px] cursor-pointer items-center justify-center rounded-[6px] transition-colors hover:opacity-80"
+                  style={{ background: light, color }}
+                >
+                  <Plus size={14} strokeWidth={2.4} />
+                </button>
               </div>
 
               {/* Cards */}
@@ -359,15 +437,16 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
                     estado={estado}
                     causas={causas}
                     onClose={() => setAddingIn(null)}
-                    onSaved={() => { reload(); router.refresh(); }}
+                    onSaved={reload}
                   />
                 ) : (
                   <button
                     type="button"
                     onClick={() => setAddingIn(estado)}
-                    className="mt-auto flex cursor-pointer items-center gap-1 rounded-[6px] px-2 py-[5px] text-[12px] text-muted transition-colors hover:bg-border/60 hover:text-sub"
+                    className="mt-auto flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed px-2 py-[7px] text-[12.5px] font-semibold transition-colors hover:opacity-80"
+                    style={{ borderColor: color, color }}
                   >
-                    <Plus size={13} /> Nueva tarea
+                    <Plus size={14} strokeWidth={2.4} /> Nueva tarea
                   </button>
                 )}
               </div>
