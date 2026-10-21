@@ -47,6 +47,19 @@ export async function previsualizarCausas(formData: FormData): Promise<VistaPrev
   const r = await analizarArchivo(formData);
   if ("error" in r) return { error: r.error, columnasDesconocidas: [], filas: [] };
   if (r.analisis.errorGlobal) return { ...r.analisis, error: r.analisis.errorGlobal, causasMax: r.causasMax, causasPropias: r.causasPropias };
+
+  // Límite del plan: si el archivo trae más causas cargables de las que quedan libres, se rechaza completo.
+  const libres = Math.max(r.causasMax - r.causasPropias, 0);
+  const cargables = r.analisis.filas.filter((f) => (f.datos || f.reparable) && !f.duplicada).length;
+  if (cargables > libres) {
+    return {
+      error: `El archivo tiene ${cargables} causas para cargar y tu plan permite ${libres} más. No se puede cargar: reducí el archivo o ampliá tu plan.`,
+      columnasDesconocidas: [],
+      filas: [],
+      causasMax: r.causasMax,
+      causasPropias: r.causasPropias,
+    };
+  }
   return { ...r.analisis, causasMax: r.causasMax, causasPropias: r.causasPropias };
 }
 
