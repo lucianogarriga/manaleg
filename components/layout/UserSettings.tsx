@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
-  ArrowLeft, Bell, BellOff, Bug, ChevronRight, ExternalLink,
+  ArrowLeft, Bell, BellOff, Bug, Check, ChevronRight, ExternalLink,
   FileText, LogOut, Mail, MessageSquare, Palette, ShieldCheck, Zap,
 } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
@@ -44,6 +44,8 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
   const [contactOpen, setContactOpen] = useState(false);
   const [emailEnabled, setEmailEnabled] = useState(profile.notificaciones_email ?? true);
   const [paleta, setPaleta] = useState<PaletaId>(profile.paleta ?? "opcion1");
+  const [paletaOpen, setPaletaOpen] = useState(false);
+  const paletaRef = useRef<HTMLDivElement>(null);
   const [isPending, startTransition] = useTransition();
   useGlobalLoading(isPending);
   const [pos, setPos] = useState<DropdownPos | null>(null);
@@ -53,6 +55,7 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
 
   useEffect(() => {
     setMasInfoOpen(false);
+    setPaletaOpen(false);
     if (!open || !triggerRef.current) return;
     const r = triggerRef.current.getBoundingClientRect();
     if (isSidebar) {
@@ -66,7 +69,7 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
     if (!open) return;
     const onDown = (e: MouseEvent) => {
       const target = e.target as Node;
-      if (triggerRef.current?.contains(target) || dropRef.current?.contains(target) || subRef.current?.contains(target)) return;
+      if (triggerRef.current?.contains(target) || dropRef.current?.contains(target) || subRef.current?.contains(target) || paletaRef.current?.contains(target)) return;
       setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
@@ -83,6 +86,7 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
 
   const elegirPaleta = (next: PaletaId) => {
     setPaleta(next);
+    setPaletaOpen(false);
     document.documentElement.setAttribute("data-palette", next);
     startTransition(async () => { await guardarPaleta(next); });
   };
@@ -155,31 +159,16 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
           </span>
         </button>
 
-        {/* Paleta de colores por usuario */}
-        <div className="px-[9px] py-[7px]">
-          <div className="mb-[6px] flex items-center gap-[9px]">
-            <Palette size={13} strokeWidth={1.8} className={`shrink-0 text-muted ${ico}`} />
-            <span className={`text-sub ${txt}`}>Paleta</span>
-          </div>
-          <div role="group" aria-label="Paleta de colores" className="grid grid-cols-2 gap-[4px]">
-            {PALETAS.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => elegirPaleta(p.id)}
-                disabled={isPending}
-                aria-pressed={paleta === p.id}
-                className={`cursor-pointer truncate rounded-[6px] border px-[6px] py-[4px] text-[11px] transition-colors ${
-                  paleta === p.id
-                    ? "border-blue bg-blue font-semibold text-on-primary"
-                    : "border-border text-sub hover:text-text"
-                }`}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        {/* Paleta de colores por usuario: submenú a la derecha */}
+        <button type="button" onClick={() => { setMasInfoOpen(false); setPaletaOpen((v) => !v); }}
+          className={rowCls} {...rowStyle} aria-expanded={paletaOpen}>
+          <Palette size={13} strokeWidth={1.8} className={`shrink-0 text-muted ${ico}`} />
+          <span className={`flex-1 text-sub ${txt}`}>Paleta</span>
+          <span className="flex items-center gap-[5px] text-[11px] text-muted">
+            {PALETAS.find((p) => p.id === paleta)?.label}
+            <ChevronRight size={12} className={isSidebar ? "h-[16px] w-[16px] md:h-[12px] md:w-[12px]" : ""} />
+          </span>
+        </button>
 
         {separador}
 
@@ -202,7 +191,7 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
         {separador}
 
         {/* Más información: abre un submenú al costado (desktop) o superpuesto (mobile) */}
-        <button type="button" onClick={() => setMasInfoOpen((v) => !v)} className={rowCls} {...rowStyle}
+        <button type="button" onClick={() => { setPaletaOpen(false); setMasInfoOpen((v) => !v); }} className={rowCls} {...rowStyle}
           aria-expanded={masInfoOpen}>
           <MessageSquare size={13} strokeWidth={1.8} className={`shrink-0 text-muted ${ico}`} />
           <span className={`flex-1 text-sub ${txt}`}>Más información</span>
@@ -276,6 +265,54 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
     </div>
   );
 
+  // ── Submenú "Paleta" ───────────────────────────────────────────────────────
+  const submenuPaleta = pos && open && paletaOpen && (
+    <div
+      ref={paletaRef}
+      style={{
+        position: "fixed",
+        zIndex: 10000,
+        ...(esMobile
+          ? { left: 8, right: 8 }
+          : { left: pos.left + DROPDOWN_WIDTH + 8, width: 180 }),
+        ...anclaje,
+        background: "var(--color-card)",
+        border: "1px solid var(--color-border)",
+        borderRadius: 12,
+        boxShadow: "0 4px 24px rgba(0,0,0,.16)",
+        overflow: "hidden",
+      }}
+    >
+      <div className="flex items-center gap-2 px-3 py-[9px]" style={{ borderBottom: "1px solid var(--color-border)" }}>
+        <button type="button" onClick={() => setPaletaOpen(false)}
+          aria-label="Volver"
+          className="flex cursor-pointer items-center justify-center rounded-md p-[3px] transition-colors"
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--hover-row)"; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = ""; }}>
+          <ArrowLeft size={13} className={`text-muted ${isSidebar ? "h-[18px] w-[18px] md:h-[13px] md:w-[13px]" : ""}`} />
+        </button>
+        <span className={`font-semibold text-text ${isSidebar ? "text-[15px] md:text-[12px]" : "text-[12px]"}`}>Paleta</span>
+      </div>
+
+      <div role="radiogroup" aria-label="Paleta de colores" className="p-[5px]">
+        {PALETAS.map((p) => (
+          <button key={p.id} type="button" role="radio" aria-checked={paleta === p.id}
+            disabled={isPending} onClick={() => elegirPaleta(p.id)}
+            className={rowCls} {...rowStyle}>
+            <span className="flex shrink-0 items-center">
+              {p.muestra.map((color) => (
+                <span key={color} className="-ml-[4px] first:ml-0 h-[12px] w-[12px] rounded-full border"
+                  style={{ background: color, borderColor: "var(--color-card)" }} />
+              ))}
+            </span>
+            <span className={`flex-1 text-sub ${txt} ${paleta === p.id ? "font-semibold text-text" : ""}`}>{p.label}</span>
+            {paleta === p.id && <Check size={13} className={`shrink-0 text-blue ${ico}`} />}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   // ── Trigger ────────────────────────────────────────────────────────────────
   const avatarCircle = (
     <div className={`flex shrink-0 items-center justify-center rounded-full font-bold tracking-[.5px] ${
@@ -315,6 +352,7 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
 
       {typeof document !== "undefined" && createPortal(dropdown, document.body)}
       {typeof document !== "undefined" && createPortal(submenu, document.body)}
+      {typeof document !== "undefined" && createPortal(submenuPaleta, document.body)}
     </>
   );
 }
