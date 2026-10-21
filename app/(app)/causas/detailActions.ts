@@ -6,6 +6,7 @@ import { TIPOS_MOVIMIENTO } from "@/utils/constants";
 import { isISODate, oneOf, parseMonto, text } from "@/utils/formData";
 import { todayISO } from "@/utils/formatters";
 import type { FormState } from "@/types";
+import { monedaDeHonorario } from "@/utils/honorarios";
 
 async function getAuthUserId() {
   const supabase = await createClient();
@@ -95,7 +96,7 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
   const monto = parseMonto(text(formData, "monto_acordado"));
   const porcentajeRaw = text(formData, "porcentaje");
   const fechaPacto = text(formData, "fecha_pacto");
-  const moneda = text(formData, "moneda") === "USD" ? "USD" : "ARS";
+  const moneda = monedaDeHonorario(text(formData, "moneda"));
   const montoAdicionalRaw = text(formData, "monto_adicional");
   const notasHonorarios = text(formData, "notas_honorarios") || null;
   const conceptoElegido = text(formData, "concepto");

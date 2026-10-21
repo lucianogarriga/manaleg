@@ -7,11 +7,12 @@ import StatCard from "@/components/ui/StatCard";
 import { createClient } from "@/services/supabase/server";
 import type { Honorario } from "@/types";
 import { formatCurrency } from "@/utils/formatters";
+import { monedaDeHonorario } from "@/utils/honorarios";
 
 type HonorarioConCausa = Honorario & { causa: { id: string; caratula: string } | null };
 
 interface TotalFila {
-  moneda: "ARS" | "USD";
+  moneda: "ARS" | "USD" | "JUS";
   acordado: number;
   cobrado: number;
   saldo: number;
@@ -108,7 +109,7 @@ export default async function HonorariosPage({ searchParams }: { searchParams: P
 
 function filasDePagina(items: HonorarioConCausa[]) {
   return items.map((h) => {
-    const moneda = h.moneda === "USD" ? "USD" : "ARS";
+    const moneda = monedaDeHonorario(h.moneda);
     const esMensual = h.periodicidad === "mensual";
     return (
       <div key={h.id} className={`border-b border-slate-100 px-[13px] py-[10px] last:border-b-0 ${h.anulado ? "opacity-60" : ""}`}>

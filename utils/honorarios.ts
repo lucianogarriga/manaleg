@@ -1,7 +1,12 @@
 import type { Honorario } from "@/types";
 
 export const CONCEPTOS_HONORARIO = ["Consulta", "Asesoría", "Patrocinio", "Mensual", "Otro"] as const;
-export type MonedaHonorario = "ARS" | "USD";
+export const MONEDAS_HONORARIO = ["ARS", "USD", "JUS"] as const;
+export type MonedaHonorario = (typeof MONEDAS_HONORARIO)[number];
+
+export function monedaDeHonorario(valor: string | null | undefined): MonedaHonorario {
+  return valor === "USD" || valor === "JUS" ? valor : "ARS";
+}
 
 export interface Totales {
   acordado: number;
@@ -14,10 +19,11 @@ export function totalesPorMoneda(items: Honorario[]): Record<MonedaHonorario, To
   const t: Record<MonedaHonorario, Totales> = {
     ARS: { acordado: 0, cobrado: 0, saldo: 0 },
     USD: { acordado: 0, cobrado: 0, saldo: 0 },
+    JUS: { acordado: 0, cobrado: 0, saldo: 0 },
   };
   for (const h of items) {
     if (h.anulado) continue;
-    const moneda: MonedaHonorario = h.moneda === "USD" ? "USD" : "ARS";
+    const moneda = monedaDeHonorario(h.moneda);
     t[moneda].cobrado += h.monto_cobrado;
     if (h.periodicidad === "unico") {
       t[moneda].acordado += h.monto_acordado;
@@ -28,6 +34,6 @@ export function totalesPorMoneda(items: Honorario[]): Record<MonedaHonorario, To
 }
 
 export function monedasPresentes(items: Honorario[]): MonedaHonorario[] {
-  const set = new Set(items.map((h) => (h.moneda === "USD" ? "USD" : "ARS")) as MonedaHonorario[]);
-  return (["ARS", "USD"] as const).filter((m) => set.has(m));
+  const set = new Set(items.map((h) => monedaDeHonorario(h.moneda)));
+  return MONEDAS_HONORARIO.filter((m) => set.has(m));
 }

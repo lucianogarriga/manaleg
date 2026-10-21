@@ -248,7 +248,7 @@ export interface Honorario {
   porcentaje: number | null;
   monto_adicional: number | null;
   fecha_pacto: string | null;
-  moneda: "ARS" | "USD";
+  moneda: "ARS" | "USD" | "JUS";
   consulta_cobrada: boolean;
   monto_consulta: number | null;
   notas_honorarios: string | null;

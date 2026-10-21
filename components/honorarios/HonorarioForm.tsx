@@ -7,7 +7,7 @@ import { FormSection, TextField } from "@/components/ui/FormControls";
 import Modal from "@/components/ui/Modal";
 import ModalFooter from "@/components/ui/ModalFooter";
 import { useFormAction } from "@/hooks/useFormAction";
-import { CONCEPTOS_HONORARIO } from "@/utils/honorarios";
+import { CONCEPTOS_HONORARIO, MONEDAS_HONORARIO, monedaDeHonorario, type MonedaHonorario } from "@/utils/honorarios";
 import type { Honorario } from "@/types";
 
 interface HonorarioFormProps {
@@ -35,7 +35,7 @@ function Opcion({ activo, onClick, children }: { activo: boolean; onClick: () =>
 
 export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: HonorarioFormProps) {
   const { state, pending, onSubmit } = useFormAction(saveHonorario, (s) => onSaved(s.message ?? "Guardado."));
-  const [moneda, setMoneda] = useState<"ARS" | "USD">(honorario?.moneda ?? "ARS");
+  const [moneda, setMoneda] = useState<MonedaHonorario>(monedaDeHonorario(honorario?.moneda));
   const conceptoInicial = honorario && CONCEPTOS_CON_OTRO.includes(honorario.concepto) ? honorario.concepto : honorario ? "Otro" : "Consulta";
   const [concepto, setConcepto] = useState(conceptoInicial);
   const [periodicidad, setPeriodicidad] = useState<"unico" | "mensual">(honorario?.periodicidad ?? "unico");
@@ -87,7 +87,7 @@ export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: 
           <div>
             <label className="mb-1 block text-[12px] font-semibold text-sub">Moneda</label>
             <div className="flex gap-2">
-              {(["ARS", "USD"] as const).map((m) => (
+              {MONEDAS_HONORARIO.map((m) => (
                 <Opcion key={m} activo={moneda === m} onClick={() => setMoneda(m)}>
                   {m}
                 </Opcion>
@@ -140,7 +140,7 @@ export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: 
             required
             autoFocus
             defaultValue={honorario?.monto_acordado ?? ""}
-            placeholder={moneda === "USD" ? "5000" : "840000"}
+            placeholder={moneda === "ARS" ? "840000" : moneda === "USD" ? "5000" : "1000"}
           />
           {periodicidad === "unico" && (
             <TextField
