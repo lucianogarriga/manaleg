@@ -1,6 +1,5 @@
 "use client";
 
-import { useGlobalLoading } from "@/hooks/useGlobalLoading";
 import Link from "next/link";
 import { useActionState, useState, useTransition } from "react";
 import { User, Mail, Lock } from "lucide-react";
@@ -18,7 +17,6 @@ export default function RegisterPage() {
   const [legalModal, setLegalModal] = useState<"terminos" | "privacidad" | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [pending, setPending] = useState(false);
-  useGlobalLoading(pending);
 
   if (state.message) {
     return (

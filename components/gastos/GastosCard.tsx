@@ -1,6 +1,5 @@
 "use client";
 
-import { useGlobalLoading } from "@/hooks/useGlobalLoading";
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { ExternalLink, Pencil, Trash2 } from "lucide-react";
@@ -30,7 +29,6 @@ function GastoForm({
   const action = gasto ? updateGasto : createGasto;
   const [state, dispatch, pending] = useActionState<FormState, FormData>(action, {});
   const [, startSubmit] = useTransition();
-  useGlobalLoading(pending);
 
   useEffect(() => {
     if (state.message) onSaved(state.message);

@@ -1,6 +1,5 @@
 "use client";
 
-import { useGlobalLoading } from "@/hooks/useGlobalLoading";
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, Trash2 } from "lucide-react";
@@ -17,7 +16,6 @@ export default function TodoList({ causaId }: { causaId: string }) {
 
   const [state, dispatch, pending] = useActionState<FormState, FormData>(createTodo, {});
   const [, startAdd] = useTransition();
-  useGlobalLoading(pending);
 
   useEffect(() => {
     if (state.message) {

@@ -1,6 +1,5 @@
 "use client";
 
-import { useGlobalLoading } from "@/hooks/useGlobalLoading";
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { Calendar, CheckCircle2, Circle, Clock, MapPin, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -44,7 +43,6 @@ function VencimientoFormRow({ causaId, editTarget, onClose, onDone }: FormRowPro
   const action = editTarget ? updateVencimiento : createVencimiento;
   const [state, dispatch, pending] = useActionState<FormState, FormData>(action, {});
   const [, startT] = useTransition();
-  useGlobalLoading(pending);
   const [tipo, setTipo] = useState<string>(editTarget?.tipo ?? "Vencimiento");
 
   useEffect(() => {
@@ -204,7 +202,6 @@ export default function VencimientosSection({ causaId, esTitular }: Props) {
   const [addOpen, setAddOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [toggling, startToggle] = useTransition();
-  useGlobalLoading(toggling);
 
   const done = (msg: string) => {
     showToast({ message: msg });
