@@ -214,7 +214,7 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
             type="submit"
             form="causa-form"
             disabled={busy}
-            className="cursor-pointer rounded-[6px] bg-blue px-4 py-[6px] text-[14px] font-semibold text-bg hover:opacity-90 disabled:opacity-60"
+            className="cursor-pointer rounded-[6px] bg-blue px-4 py-[6px] text-[14px] font-semibold text-on-primary hover:opacity-90 disabled:opacity-60"
           >
             {pending ? "Guardando…" : causa ? "Guardar cambios" : "Crear causa"}
           </button>
@@ -388,14 +388,14 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
               <button
                 type="button"
                 onClick={() => setTieneVencimiento(true)}
-                className={`px-4 py-[5px] transition-colors ${tieneVencimiento ? "bg-blue text-bg" : "bg-card text-sub hover:bg-bg"}`}
+                className={`px-4 py-[5px] transition-colors ${tieneVencimiento ? "bg-blue text-on-primary" : "bg-card text-sub hover:bg-bg"}`}
               >
                 Sí
               </button>
               <button
                 type="button"
                 onClick={() => setTieneVencimiento(false)}
-                className={`border-l border-border px-4 py-[5px] transition-colors ${!tieneVencimiento ? "bg-blue text-bg" : "bg-card text-sub hover:bg-bg"}`}
+                className={`border-l border-border px-4 py-[5px] transition-colors ${!tieneVencimiento ? "bg-blue text-on-primary" : "bg-card text-sub hover:bg-bg"}`}
               >
                 No
               </button>

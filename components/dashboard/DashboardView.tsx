@@ -118,7 +118,7 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
             type="button"
             onClick={() => setTab(t)}
             className={`-mb-px border-b-2 px-0.5 py-2 text-[14px] transition-colors ${
-              tab === t ? "border-blue font-semibold text-text" : "border-transparent text-muted hover:text-text"
+              tab === t ? "border-accent font-semibold text-text" : "border-transparent text-muted hover:text-text"
             }`}
           >
             {t === "novedades" ? "Novedades" : "KPIs"}
@@ -256,7 +256,7 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
           {estilo === "barras"
             ? <BarrasAgrupadas meses={meses} cobrado={cobrados} pendiente={pendientes} moneda={moneda} />
             : <Ondas meses={meses} moneda={moneda} series={[
-                { valores: cobrados, color: "var(--color-blue)", posicion: "arriba" },
+                { valores: cobrados, color: "var(--color-series-1)", posicion: "arriba" },
                 { valores: pendientes, color: "var(--color-pur)", posicion: "abajo" },
               ]} />}
           <div className="mt-2 flex gap-4 text-[12px] text-muted">
@@ -336,7 +336,7 @@ function FilaEstado({ color, etiqueta, valor, total }: { color: string; etiqueta
   );
 }
 
-function RingPct({ pct, color = "var(--color-blue)", size = 44, stroke = 5 }: { pct: number; color?: string; size?: number; stroke?: number }) {
+function RingPct({ pct, color = "var(--color-series-1)", size = 44, stroke = 5 }: { pct: number; color?: string; size?: number; stroke?: number }) {
   const c = size / 2, r = c - stroke - 1, circ = 2 * Math.PI * r;
   const dash = (Math.min(100, Math.max(0, pct)) / 100) * circ;
   return (
@@ -376,9 +376,9 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
   const meses = n.causas.nuevasSeisMeses.map((x) => ABREV_MES[Number(x.mes.slice(5, 7)) - 1]);
 
   const segmentos = [
-    { etiqueta: "Judicial", valor: n.causas.judiciales, color: "var(--color-blue)" },
-    { etiqueta: "Extrajudicial", valor: n.causas.extrajudiciales, color: "var(--color-cel)" },
-    { etiqueta: "Cerrada", valor: n.causas.cerradas, color: "var(--color-gray)" },
+    { etiqueta: "Judicial", valor: n.causas.judiciales, color: "var(--color-series-1)" },
+    { etiqueta: "Extrajudicial", valor: n.causas.extrajudiciales, color: "var(--color-series-2)" },
+    { etiqueta: "Cerrada", valor: n.causas.cerradas, color: "var(--color-donut-3)" },
   ];
 
   const plazosPct = n.gestion.plazosTotal90 > 0 ? Math.round((n.gestion.plazosATiempo90 / n.gestion.plazosTotal90) * 100) : null;
@@ -415,9 +415,9 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
           <div className="grid grid-cols-2 items-center gap-4">
             <Dona segmentos={segmentos} sinLeyenda />
             <ul className="flex min-w-0 flex-col gap-1">
-              <FilaEstado color="var(--color-blue)" etiqueta="Judicial" valor={n.causas.judiciales} total={n.causas.total} />
-              <FilaEstado color="var(--color-cel)" etiqueta="Extrajudicial" valor={n.causas.extrajudiciales} total={n.causas.total} />
-              <FilaEstado color="var(--color-gray)" etiqueta="Cerrada" valor={n.causas.cerradas} total={n.causas.total} />
+              <FilaEstado color="var(--color-series-1)" etiqueta="Judicial" valor={n.causas.judiciales} total={n.causas.total} />
+              <FilaEstado color="var(--color-series-2)" etiqueta="Extrajudicial" valor={n.causas.extrajudiciales} total={n.causas.total} />
+              <FilaEstado color="var(--color-donut-3)" etiqueta="Cerrada" valor={n.causas.cerradas} total={n.causas.total} />
             </ul>
           </div>
         </Card>
@@ -540,7 +540,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
             etiquetas={{ barras: "Barras", ondas: "Ondas" }} />} sub="Últimos 6 meses">Causas nuevas por mes</Titulo>
           {estilo === "barras"
             ? <BarrasVerticales meses={meses} valores={nuevasPorMes} />
-            : <Ondas meses={meses} series={[{ valores: nuevasPorMes, color: "var(--color-blue)", posicion: "arriba" }]} formato={(v) => String(Math.round(v))} />}
+            : <Ondas meses={meses} series={[{ valores: nuevasPorMes, color: "var(--color-series-1)", posicion: "arriba" }]} formato={(v) => String(Math.round(v))} />}
         </Card>
         <div className="flex flex-col gap-3">
           <Card className="flex flex-1 flex-col justify-center">
@@ -560,16 +560,16 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
                 <div className="text-[14px] font-semibold text-text">Causas cerradas con resultado</div>
                 <div className="text-[12px] text-muted">{n.gestion.exito.total} causas · últimos 2 años</div>
                 <Dona sinLeyenda segmentos={[
-                  { etiqueta: "Ganadas", valor: n.gestion.exito.ganadas, color: "var(--color-blue)" },
-                  { etiqueta: "Transadas", valor: n.gestion.exito.transadas, color: "var(--color-cel)" },
-                  { etiqueta: "Perdidas", valor: n.gestion.exito.perdidas, color: "var(--color-gray)" },
+                  { etiqueta: "Ganadas", valor: n.gestion.exito.ganadas, color: "var(--color-series-1)" },
+                  { etiqueta: "Transadas", valor: n.gestion.exito.transadas, color: "var(--color-series-2)" },
+                  { etiqueta: "Perdidas", valor: n.gestion.exito.perdidas, color: "var(--color-donut-3)" },
                 ]} />
               </div>
               <ul className="flex flex-col justify-center gap-3 text-[13px]">
                 {[
-                  { etiqueta: "Ganadas", valor: n.gestion.exito.ganadas, color: "var(--color-blue)" },
-                  { etiqueta: "Transadas", valor: n.gestion.exito.transadas, color: "var(--color-cel)" },
-                  { etiqueta: "Perdidas", valor: n.gestion.exito.perdidas, color: "var(--color-gray)" },
+                  { etiqueta: "Ganadas", valor: n.gestion.exito.ganadas, color: "var(--color-series-1)" },
+                  { etiqueta: "Transadas", valor: n.gestion.exito.transadas, color: "var(--color-series-2)" },
+                  { etiqueta: "Perdidas", valor: n.gestion.exito.perdidas, color: "var(--color-donut-3)" },
                 ].map((f) => (
                   <li key={f.etiqueta} className="flex items-center gap-2 border-b border-border pb-2 last:border-0">
                     <span className="flex flex-1 items-center gap-2 text-text">

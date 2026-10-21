@@ -391,7 +391,7 @@ export default function ImportarCausasModal({ open, onClose, onImported }: Props
             type="button"
             onClick={cargar}
             disabled={cargando || !vista || aCargar === 0 || excedeLimite}
-            className="cursor-pointer rounded-[6px] bg-blue px-4 py-[6px] text-[14px] font-semibold text-bg hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="cursor-pointer rounded-[6px] bg-blue px-4 py-[6px] text-[14px] font-semibold text-on-primary hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {cargando ? "Procesando…" : `Cargar ${aCargar} ${aCargar === 1 ? "causa" : "causas"}`}
           </button>

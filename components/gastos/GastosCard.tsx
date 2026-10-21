@@ -55,7 +55,7 @@ function GastoForm({
             Cancelar
           </button>
           <button type="submit" form="gasto-form" disabled={pending}
-            className="cursor-pointer rounded-[6px] bg-blue px-4 py-[6px] text-[14px] font-semibold text-bg hover:opacity-90 disabled:opacity-60">
+            className="cursor-pointer rounded-[6px] bg-blue px-4 py-[6px] text-[14px] font-semibold text-on-primary hover:opacity-90 disabled:opacity-60">
             {pending ? "Guardando…" : gasto ? "Guardar cambios" : "Registrar"}
           </button>
         </div>

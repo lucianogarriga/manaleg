@@ -70,7 +70,7 @@ export default function TodoList({ causaId }: { causaId: string }) {
         <button
           type="submit"
           disabled={pending}
-          className="shrink-0 cursor-pointer rounded-[5px] bg-blue px-3 py-[4px] text-[12px] font-semibold text-bg hover:opacity-90 disabled:opacity-60"
+          className="shrink-0 cursor-pointer rounded-[5px] bg-blue px-3 py-[4px] text-[12px] font-semibold text-on-primary hover:opacity-90 disabled:opacity-60"
         >
           {pending ? "…" : "+ Agregar"}
         </button>

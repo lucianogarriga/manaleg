@@ -82,7 +82,7 @@ export default async function MovimientosPage({
             key={p.value}
             href={buildHref(1, p.value)}
             className={`rounded-[20px] border px-[10px] py-[3px] text-[12px] font-medium transition-colors ${
-              periodo === p.value ? "border-blue bg-blue text-bg" : "border-border text-sub hover:bg-bg"
+              periodo === p.value ? "border-blue bg-blue text-on-primary" : "border-border text-sub hover:bg-bg"
             }`}
           >
             {p.label}

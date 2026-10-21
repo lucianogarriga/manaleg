@@ -398,7 +398,7 @@ export function Segmentado<T extends string>({ valores, actual, onChange, etique
             title={off ? "Próximamente" : undefined}
             onClick={() => onChange(v)}
             className={`whitespace-nowrap transition-colors ${small ? "px-2.5 py-[5px] text-[11.5px]" : "px-3 py-[7px] text-[13px]"} ${
-              activo ? "bg-blue font-semibold text-bg" : off ? "cursor-not-allowed text-muted opacity-50" : "text-sub hover:text-text"
+              activo ? "bg-blue font-semibold text-on-primary" : off ? "cursor-not-allowed text-muted opacity-50" : "text-sub hover:text-text"
             }`}
           >
             {etiquetas[v]}
@@ -429,7 +429,7 @@ export function Calendario({ anio, mes, dias, hoy }: {
           if (n === null) return <div key={`v${i}`} />;
           const d = porDia.get(n);
           return (
-            <div key={n} className={`relative rounded-md py-1.5 ${esHoy(n) ? "bg-blue font-bold text-bg" : ""}`}>
+            <div key={n} className={`relative rounded-md py-1.5 ${esHoy(n) ? "bg-blue font-bold text-on-primary" : ""}`}>
               {n}
               <div className="absolute bottom-[2px] left-1/2 flex -translate-x-1/2 gap-[2px]">
                 {d && d.audiencias > 0 && <span className="h-1 w-1 rounded-full bg-cel" />}

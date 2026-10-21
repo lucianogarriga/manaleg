@@ -68,7 +68,7 @@ export default async function InvitacionPage({
         texto={`${quien} te invitó a colaborar en "${causa?.caratula ?? "una causa"}". Para aceptar, ingresá o registrate con ${inv.email} y volvé a abrir este enlace.`}
       >
         <div className="flex gap-3">
-          <Link href="/login" className="rounded-[8px] bg-blue px-4 py-[9px] text-[13.5px] font-semibold text-bg hover:opacity-90">Ingresar</Link>
+          <Link href="/login" className="rounded-[8px] bg-blue px-4 py-[9px] text-[13.5px] font-semibold text-on-primary hover:opacity-90">Ingresar</Link>
           <Link href="/register" className="rounded-[8px] border px-4 py-[9px] text-[13.5px] font-semibold" style={{ borderColor: "var(--color-border)", color: "var(--color-text)" }}>Crear cuenta</Link>
         </div>
       </Mensaje>
@@ -97,7 +97,7 @@ export default async function InvitacionPage({
       )}
       <form action={aceptarInvitacion}>
         <input type="hidden" name="token" value={token} />
-        <button type="submit" className="rounded-[8px] bg-blue px-5 py-[10px] text-[14px] font-semibold text-bg hover:opacity-90">
+        <button type="submit" className="rounded-[8px] bg-blue px-5 py-[10px] text-[14px] font-semibold text-on-primary hover:opacity-90">
           Aceptar invitación
         </button>
       </form>

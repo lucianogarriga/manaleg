@@ -146,7 +146,7 @@ export default async function PlanesPage() {
               }}
             >
               {plan.highlight && (
-                <div className="absolute -top-[11px] left-5 flex items-center gap-1 rounded-full bg-blue px-3 py-[2px] text-[10.5px] font-bold uppercase tracking-wide text-bg">
+                <div className="absolute -top-[11px] left-5 flex items-center gap-1 rounded-full bg-blue px-3 py-[2px] text-[10.5px] font-bold uppercase tracking-wide text-on-primary">
                   <Zap size={9} strokeWidth={2.5} /> Más popular
                 </div>
               )}
@@ -197,7 +197,7 @@ export default async function PlanesPage() {
                 <button
                   type="button"
                   disabled
-                  className="mt-auto block w-full cursor-not-allowed rounded-[8px] bg-blue py-[9px] text-center text-[13px] font-semibold text-bg opacity-50"
+                  className="mt-auto block w-full cursor-not-allowed rounded-[8px] bg-blue py-[9px] text-center text-[13px] font-semibold text-on-primary opacity-50"
                 >
                   Contratar Plan {plan.name}
                 </button>

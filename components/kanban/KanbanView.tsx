@@ -1,7 +1,7 @@
 "use client";
 
 import { useGlobalLoading } from "@/hooks/useGlobalLoading";
-import { useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Pencil, Plus, X } from "lucide-react";
 import { createTodo, deleteTodo, updateTodo, updateTodoEstado } from "@/app/(app)/causas/todoActions";
 import { useTodosGlobal } from "@/hooks/useCausaData";
@@ -46,15 +46,17 @@ function FechaLimiteBadge({ fecha }: { fecha: string | null }) {
 function TareaCard({
   todo,
   isDragging,
+  landed,
   onDelete,
   onEdit,
   onDragStart,
 }: {
   todo: TodoConCausa;
   isDragging: boolean;
-  onDelete: () => void;
-  onEdit: (texto: string, fechaLimite: string | null) => Promise<boolean>;
-  onDragStart: (e: React.DragEvent) => void;
+  landed: boolean;
+  onDelete: (id: string) => void;
+  onEdit: (id: string, texto: string, fechaLimite: string | null) => Promise<boolean>;
+  onDragStart: (id: string, e: React.DragEvent) => void;
 }) {
   const [editando, setEditando] = useState(false);
   const [texto, setTexto] = useState(todo.texto);
@@ -112,7 +114,7 @@ function TareaCard({
 
   const guardar = async () => {
     setGuardando(true);
-    const ok = await onEdit(texto, fecha || null);
+    const ok = await onEdit(todo.id, texto, fecha || null);
     setGuardando(false);
     if (ok) setEditando(false);
   };
@@ -143,7 +145,7 @@ function TareaCard({
             type="button"
             onClick={guardar}
             disabled={guardando || !texto.trim()}
-            className="rounded-[6px] bg-blue px-2.5 py-[4px] text-[12px] font-semibold text-bg disabled:opacity-50"
+            className="rounded-[6px] bg-blue px-2.5 py-[4px] text-[12px] font-semibold text-on-primary disabled:opacity-50"
           >
             {guardando ? "Guardando…" : "Guardar"}
           </button>
@@ -157,9 +159,9 @@ function TareaCard({
       draggable
       onDragStart={(e) => {
         if (redimensionando.current) { e.preventDefault(); return; }
-        onDragStart(e);
+        onDragStart(todo.id, e);
       }}
-      className={`group relative cursor-grab overflow-hidden rounded-lg border p-3 transition-[opacity,transform] duration-150 active:cursor-grabbing ${isDragging ? "opacity-40 scale-95" : ""}`}
+      className={`group relative cursor-grab overflow-hidden rounded-lg border p-3 transition-[opacity,transform] duration-150 active:cursor-grabbing ${isDragging ? "opacity-40 scale-95" : ""} ${landed ? "kanban-land" : ""}`}
       style={{
         background: "var(--color-card)",
         borderColor: "var(--color-border)",
@@ -180,7 +182,7 @@ function TareaCard({
           </button>
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            onClick={(e) => { e.stopPropagation(); onDelete(todo.id); }}
             className="cursor-pointer rounded p-[2px] text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-red"
           >
             <X size={11} />
@@ -222,6 +224,8 @@ function TareaCard({
     </div>
   );
 }
+
+const TareaCardMemo = memo(TareaCard);
 
 // ── Formulario de nueva tarea en columna ──────────────────────────────────────
 
@@ -284,7 +288,7 @@ function NuevaTareaForm({
           Cancelar
         </button>
         <button type="submit" disabled={pending}
-          className="cursor-pointer rounded-[5px] bg-blue px-3 py-[4px] text-[12px] font-semibold text-bg hover:opacity-90 disabled:opacity-60">
+          className="cursor-pointer rounded-[5px] bg-blue px-3 py-[4px] text-[12px] font-semibold text-on-primary hover:opacity-90 disabled:opacity-60">
           {pending ? "…" : "Agregar"}
         </button>
       </div>
@@ -306,11 +310,18 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
   const [addingIn, setAddingIn] = useState<EstadoTarea | null>(null);
   const [dragging, setDragging] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<EstadoTarea | null>(null);
+  const [aterrizaje, setAterrizaje] = useState<string | null>(null);
   const dragId = useRef<string | null>(null);
 
   const filtered = todos.filter((t) =>
     filtro === "mias" ? t.user_id === userId : true,
   );
+
+  const handleDragStart = useCallback((id: string, e: React.DragEvent) => {
+    dragId.current = id;
+    setDragging(id);
+    e.dataTransfer.effectAllowed = "move";
+  }, []);
 
   const handleDrop = async (e: React.DragEvent, targetEstado: EstadoTarea) => {
     e.preventDefault();
@@ -321,6 +332,8 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
 
     setDragging(null);
     setDragOver(null);
+    setAterrizaje(id);
+    setTimeout(() => setAterrizaje((actual) => (actual === id ? null : actual)), 700);
     patch(id, { estado: targetEstado, completado: targetEstado === "Completado" });
 
     const result = await updateTodoEstado(id, targetEstado);
@@ -332,18 +345,18 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
     reload();
   };
 
-  const handleEdit = async (id: string, texto: string, fechaLimite: string | null): Promise<boolean> => {
+  const handleEdit = useCallback(async (id: string, texto: string, fechaLimite: string | null): Promise<boolean> => {
     const result = await updateTodo(id, texto, fechaLimite);
     if (result.error) { showToast({ message: result.error }); return false; }
     patch(id, { texto: texto.trim(), fecha_limite: fechaLimite || null });
     return true;
-  };
+  }, [patch, showToast]);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     const result = await deleteTodo(id);
     if (result.error) { showToast({ message: result.error }); return; }
     reload();
-  };
+  }, [reload, showToast]);
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -355,7 +368,7 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
             type="button"
             onClick={() => setFiltro(f)}
             className={`inline-flex cursor-pointer items-center rounded-[20px] border px-3 py-[3px] text-[12px] font-medium transition-colors ${
-              filtro === f ? "border-blue bg-blue text-bg" : "border-border text-sub hover:bg-bg"
+              filtro === f ? "border-blue bg-blue text-on-primary" : "border-border text-sub hover:bg-bg"
             }`}
           >
             {f === "todas" ? "Todas las tareas" : "Mis tareas"}
@@ -407,17 +420,14 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
               {/* Cards */}
               <div className="flex flex-1 flex-col gap-2 px-3 pb-3">
                 {items.map((t) => (
-                  <TareaCard
+                  <TareaCardMemo
                     key={t.id}
                     todo={t}
                     isDragging={dragging === t.id}
-                    onDelete={() => handleDelete(t.id)}
-                    onEdit={(texto, fecha) => handleEdit(t.id, texto, fecha)}
-                    onDragStart={(e) => {
-                      dragId.current = t.id;
-                      setDragging(t.id);
-                      e.dataTransfer.effectAllowed = "move";
-                    }}
+                    landed={aterrizaje === t.id}
+                    onDelete={handleDelete}
+                    onEdit={handleEdit}
+                    onDragStart={handleDragStart}
                   />
                 ))}
 

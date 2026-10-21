@@ -186,7 +186,7 @@ function VencimientoFormRow({ causaId, editTarget, onClose, onDone }: FormRowPro
         <button
           type="submit"
           disabled={pending}
-          className="cursor-pointer rounded-[6px] bg-blue px-4 py-[5px] text-[13px] font-semibold text-bg hover:opacity-90 disabled:opacity-60"
+          className="cursor-pointer rounded-[6px] bg-blue px-4 py-[5px] text-[13px] font-semibold text-on-primary hover:opacity-90 disabled:opacity-60"
         >
           {pending ? "Guardando…" : editTarget ? "Actualizar" : "Agregar"}
         </button>

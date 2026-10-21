@@ -66,7 +66,7 @@ export default function FeedbackModal({ onClose, type = "feedback" }: Props) {
                 <button
                   type="button"
                   onClick={onClose}
-                  className="mt-4 cursor-pointer rounded-[7px] bg-blue px-5 py-[7px] text-[13px] font-semibold text-bg hover:opacity-90"
+                  className="mt-4 cursor-pointer rounded-[7px] bg-blue px-5 py-[7px] text-[13px] font-semibold text-on-primary hover:opacity-90"
                 >
                   Cerrar
                 </button>
@@ -97,7 +97,7 @@ export default function FeedbackModal({ onClose, type = "feedback" }: Props) {
                   type="button"
                   onClick={handleSubmit}
                   disabled={isPending || !texto.trim()}
-                  className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-[8px] bg-blue py-[9px] text-[13px] font-semibold text-bg transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-[8px] bg-blue py-[9px] text-[13px] font-semibold text-on-primary transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Send size={13} />
                   {isPending ? "Enviando..." : "Enviar feedback"}

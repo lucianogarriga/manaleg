@@ -11,7 +11,7 @@ export default function SubmitButton({
     <button
       type="submit"
       disabled={pending}
-      className="w-full cursor-pointer rounded-[6px] bg-blue py-[8px] text-[14.5px] font-semibold text-bg shadow-[0_4px_14px_rgba(29,78,216,.25)] transition-opacity hover:opacity-90 disabled:cursor-default disabled:opacity-60"
+      className="w-full cursor-pointer rounded-[6px] bg-blue py-[8px] text-[14.5px] font-semibold text-on-primary shadow-[0_4px_14px_rgba(29,78,216,.25)] transition-opacity hover:opacity-90 disabled:cursor-default disabled:opacity-60"
     >
       {pending ? pendingText : children}
     </button>

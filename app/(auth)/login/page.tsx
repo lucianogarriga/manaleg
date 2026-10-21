@@ -36,7 +36,7 @@ function LoginTransition() {
         />
       </div>
       <div className="auth-fade-in relative flex flex-col items-center gap-5">
-        <div className="auth-logo flex h-[56px] w-[56px] items-center justify-center rounded-[16px] bg-blue text-[26px] font-bold text-bg">
+        <div className="auth-logo flex h-[56px] w-[56px] items-center justify-center rounded-[16px] bg-blue text-[26px] font-bold text-on-primary">
           M
         </div>
         <div className="flex flex-col items-center gap-1">
