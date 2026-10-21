@@ -4,6 +4,7 @@ import { createClient } from "@/services/supabase/server";
 import { revalidatePath } from "next/cache";
 import { escapeHtml, sendEmail } from "@/services/email/resend";
 import { dentroDelLimite } from "@/services/security/limites";
+import { esPaletaValida } from "@/utils/paletas";
 
 export async function toggleNotificacionesEmail(enabled: boolean): Promise<{ error?: string }> {
   const supabase = await createClient();
@@ -13,6 +14,23 @@ export async function toggleNotificacionesEmail(enabled: boolean): Promise<{ err
   const { error } = await supabase
     .from("profiles")
     .update({ notificaciones_email: enabled })
+    .eq("id", user.id);
+
+  if (error) return { error: error.message };
+  revalidatePath("/", "layout");
+  return {};
+}
+
+export async function guardarPaleta(paleta: string): Promise<{ error?: string }> {
+  if (!esPaletaValida(paleta)) return { error: "Paleta no válida." };
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "No autenticado." };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ paleta })
     .eq("id", user.id);
 
   if (error) return { error: error.message };

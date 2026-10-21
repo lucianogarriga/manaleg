@@ -6,10 +6,11 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   ArrowLeft, Bell, BellOff, Bug, ChevronRight, ExternalLink,
-  FileText, LogOut, Mail, MessageSquare, ShieldCheck, Zap,
+  FileText, LogOut, Mail, MessageSquare, Palette, ShieldCheck, Zap,
 } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
-import { toggleNotificacionesEmail } from "@/app/(app)/ajustes/actions";
+import { guardarPaleta, toggleNotificacionesEmail } from "@/app/(app)/ajustes/actions";
+import { PALETAS, type PaletaId } from "@/utils/paletas";
 import { getInitials } from "@/utils/formatters";
 import FeedbackModal from "./FeedbackModal";
 import ContactModal from "./ContactModal";
@@ -42,6 +43,7 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [emailEnabled, setEmailEnabled] = useState(profile.notificaciones_email ?? true);
+  const [paleta, setPaleta] = useState<PaletaId>(profile.paleta ?? "opcion1");
   const [isPending, startTransition] = useTransition();
   useGlobalLoading(isPending);
   const [pos, setPos] = useState<DropdownPos | null>(null);
@@ -77,6 +79,12 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
     const next = !emailEnabled;
     setEmailEnabled(next);
     startTransition(async () => { await toggleNotificacionesEmail(next); });
+  };
+
+  const elegirPaleta = (next: PaletaId) => {
+    setPaleta(next);
+    document.documentElement.setAttribute("data-palette", next);
+    startTransition(async () => { await guardarPaleta(next); });
   };
 
   const initials = getInitials(profile.nombre_completo, profile.email[0]?.toUpperCase());
@@ -146,6 +154,28 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
               style={{ transform: emailEnabled ? "translateX(11px)" : "translateX(0)" }} />
           </span>
         </button>
+
+        {/* Paleta de colores por usuario */}
+        <div className="flex items-center gap-[9px] px-[9px] py-[7px]">
+          <Palette size={13} strokeWidth={1.8} className={`shrink-0 text-muted ${ico}`} />
+          <span className={`flex-1 text-sub ${txt}`}>Paleta</span>
+          <div role="group" aria-label="Paleta de colores" className="flex overflow-hidden rounded-[6px] border border-border">
+            {PALETAS.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => elegirPaleta(p.id)}
+                disabled={isPending}
+                aria-pressed={paleta === p.id}
+                className={`cursor-pointer px-[7px] py-[2px] text-[11px] transition-colors ${
+                  paleta === p.id ? "bg-blue font-semibold text-on-primary" : "text-sub hover:text-text"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {separador}
 
