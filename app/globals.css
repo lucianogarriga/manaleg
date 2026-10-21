@@ -1,130 +1,101 @@
 @import "tailwindcss";
 
-/* ─── DESIGN TOKENS — LIGHT (default) ─── */
-:root {
-  /* Page / surfaces */
-  --color-bg:      #f0f4f8;
-  --color-card:    #ffffff;
-  --color-border:  #e2e8f0;
+/* ─── PALETA (especificación del dashboard, sección 7.1) ───
+   Por defecto: oscuro (Carbón suave). Modo claro: Gris cálido.
+   Los nombres --color-blue / --color-grn / --color-pur son legados:
+   --color-blue es el color primario (teal de la especificación).
+   Los valores de texto y de alerta están ajustados para cumplir
+   contraste WCAG AA (4,5:1 en texto normal). Ver PR de paleta. */
 
-  /* Text */
-  --color-text:    #0f172a;
-  --color-sub:     #475569;
-  --color-muted:   #94a3b8;
-
-  /* Accent */
-  --color-blue:    #0284c7;
-  --color-blue-lt: #f0f9ff;
-
-  /* Semáforo */
-  --color-red:     #b91c1c;
-  --color-red-lt:  #fef2f2;
-  --color-red-bd:  #fecaca;
-  --color-amb:     #b45309;
-  --color-amb-lt:  #fffbeb;
-  --color-amb-bd:  #fde68a;
-  --color-grn:     #047857;
-  --color-grn-lt:  #f0fdf9;
-  --color-pur:     #5b21b6;
-  --color-pur-lt:  #f5f3ff;
-
-  /* Calendario */
-  --cal-out:       rgba(0,0,0,.03);
-  --cal-wknd:      rgba(0,0,0,.025);
-  --cal-inh:       #fff7ed;
-
-  /* Sidebar */
-  --sb-bg:         #ffffff;
-  --sb-fg:         #64748b;
-  --sb-accent:     #0284c7;
-  --sb-act-bg:     rgba(2,132,199,.13);
-  --sb-act-fg:     #0284c7;
-  --sb-shadow:     0 2px 8px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.06), 0 0 0 1px rgba(0,0,0,.04);
-
-  /* Topbar */
-  --tb-bg:         #ffffff;
-  --tb-border:     #e2e8f0;
-
-  color-scheme: light;
-}
-
-/* ─── DARK MODE — media query ─── */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --color-bg:      #0d0d0f;
-    --color-card:    #191a1e;
-    --color-border:  #2a2b30;
-    --color-text:    #e8e8e8;
-    --color-sub:     #9b9da6;
-    --color-muted:   #5a5c66;
-    --color-blue:    #38bdf8;
-    --color-blue-lt: rgba(56,189,248,.13);
-    --color-red:     #f87171;
-    --color-red-lt:  rgba(248,113,113,.12);
-    --color-red-bd:  rgba(248,113,113,.25);
-    --color-amb:     #fbbf24;
-    --color-amb-lt:  rgba(251,191,36,.12);
-    --color-amb-bd:  rgba(251,191,36,.25);
-    --color-grn:     #34d399;
-    --color-grn-lt:  rgba(52,211,153,.12);
-    --color-pur:     #a5b4fc;
-    --color-pur-lt:  rgba(165,180,252,.12);
-    --cal-out:       rgba(255,255,255,.02);
-    --cal-wknd:      rgba(255,255,255,.035);
-    --cal-inh:       rgba(251,146,60,.13);
-
-    --sb-bg:         #191a1e;
-    --sb-fg:         #9b9da6;
-    --sb-accent:     #38bdf8;
-    --sb-act-bg:     rgba(56,189,248,.14);
-    --sb-act-fg:     #7dd3fc;
-    --sb-shadow:     0 0 0 1px rgba(255,255,255,.06), 0 4px 16px rgba(0,0,0,.4);
-    --tb-bg:         transparent;
-    --tb-border:     #2a2b30;
-    --hover-row:     rgba(255,255,255,.08);
-    color-scheme: dark;
-  }
-}
-
-/* ─── DARK MODE — data-theme="dark" (toggle manual) ─── */
+/* ─── OSCURO (por defecto) ─── */
+:root,
 :root[data-theme="dark"] {
-  --color-bg:      #0d0d0f;
-  --color-card:    #191a1e;
-  --color-border:  #2a2b30;
-  --color-text:    #e8e8e8;
-  --color-sub:     #9b9da6;
-  --color-muted:   #5a5c66;
-  --color-blue:    #38bdf8;
-  --color-blue-lt: rgba(56,189,248,.13);
-  --color-red:     #f87171;
-  --color-red-lt:  rgba(248,113,113,.12);
-  --color-red-bd:  rgba(248,113,113,.25);
-  --color-amb:     #fbbf24;
-  --color-amb-lt:  rgba(251,191,36,.12);
-  --color-amb-bd:  rgba(251,191,36,.25);
-  --color-grn:     #34d399;
-  --color-grn-lt:  rgba(52,211,153,.12);
-  --color-pur:     #a5b4fc;
-  --color-pur-lt:  rgba(165,180,252,.12);
+  --color-bg:      #1A1A18;
+  --color-card:    #222220;
+  --color-border:  #343430;
+
+  --color-text:    #ECEAE4;
+  --color-sub:     #BDBAB2;
+  --color-muted:   #9A9790;
+
+  --color-blue:    #5E9CA4;
+  --color-blue-lt: rgba(94,156,164,.14);
+
+  --color-red:     #E07A6F;
+  --color-red-lt:  rgba(224,122,111,.12);
+  --color-red-bd:  rgba(224,122,111,.30);
+  --color-amb:     #D9A154;
+  --color-amb-lt:  rgba(217,161,84,.12);
+  --color-amb-bd:  rgba(217,161,84,.30);
+  --color-grn:     #5E9CA4;
+  --color-grn-lt:  rgba(94,156,164,.12);
+  --color-pur:     #8196B9;
+  --color-pur-lt:  rgba(129,150,185,.14);
+  --color-cel:     #7FA9B5;
+  --color-gray:    #6B6963;
+  --color-panel2:  #2E2E2B;
+
   --cal-out:       rgba(255,255,255,.02);
   --cal-wknd:      rgba(255,255,255,.035);
-  --cal-inh:       rgba(251,146,60,.13);
+  --cal-inh:       rgba(217,161,84,.13);
 
-  --sb-bg:         #191a1e;
-  --sb-fg:         #9b9da6;
-  --sb-accent:     #38bdf8;
-  --sb-act-bg:     rgba(56,189,248,.14);
-  --sb-act-fg:     #7dd3fc;
+  --sb-bg:         #222220;
+  --sb-fg:         #9A9790;
+  --sb-accent:     #5E9CA4;
+  --sb-act-bg:     rgba(94,156,164,.16);
+  --sb-act-fg:     #5E9CA4;
   --sb-shadow:     0 0 0 1px rgba(255,255,255,.06), 0 4px 16px rgba(0,0,0,.4);
+
   --tb-bg:         transparent;
-  --tb-border:     #2a2b30;
-  --hover-row:     rgba(255,255,255,.08);
+  --tb-border:     #343430;
+  --hover-row:     rgba(255,255,255,.06);
+
   color-scheme: dark;
 }
 
-/* light también necesita hover-row */
-:root {
-  --hover-row: #edf0f4;
+/* ─── CLARO (Gris cálido) ─── */
+:root[data-theme="light"] {
+  --color-bg:      #E2E0DC;
+  --color-card:    #EFEDE9;
+  --color-border:  #CCCAC6;
+
+  --color-text:    #2F2E2B;
+  --color-sub:     #52504A;
+  --color-muted:   #635E57;
+
+  --color-blue:    #2E6A8A;
+  --color-blue-lt: rgba(46,106,138,.10);
+
+  --color-red:     #845A55;
+  --color-red-lt:  rgba(132,90,85,.10);
+  --color-red-bd:  rgba(132,90,85,.28);
+  --color-amb:     #7C613D;
+  --color-amb-lt:  rgba(124,97,61,.10);
+  --color-amb-bd:  rgba(124,97,61,.28);
+  --color-grn:     #2E6A8A;
+  --color-grn-lt:  rgba(46,106,138,.10);
+  --color-pur:     #58677B;
+  --color-pur-lt:  rgba(88,103,123,.10);
+  --color-cel:     #5A8EA0;
+  --color-gray:    #78716A;
+  --color-panel2:  #D7D5D1;
+
+  --cal-out:       rgba(0,0,0,.03);
+  --cal-wknd:      rgba(0,0,0,.025);
+  --cal-inh:       rgba(194,151,95,.16);
+
+  --sb-bg:         #EFEDE9;
+  --sb-fg:         #635E57;
+  --sb-accent:     #2E6A8A;
+  --sb-act-bg:     rgba(46,106,138,.12);
+  --sb-act-fg:     #2E6A8A;
+  --sb-shadow:     0 2px 8px rgba(0,0,0,.10), 0 8px 24px rgba(0,0,0,.07), 0 0 0 1px rgba(0,0,0,.05);
+
+  --tb-bg:         #EFEDE9;
+  --tb-border:     #CCCAC6;
+  --hover-row:     #D7D5D1;
+
+  color-scheme: light;
 }
 
 /* ─── TAILWIND v4 THEME ─── */
@@ -147,6 +118,9 @@
   --color-grn-lt:  var(--color-grn-lt);
   --color-pur:     var(--color-pur);
   --color-pur-lt:  var(--color-pur-lt);
+  --color-cel:     var(--color-cel);
+  --color-gray:    var(--color-gray);
+  --color-panel2:  var(--color-panel2);
 
   --font-mono: "Courier New", monospace;
   --font-sans: var(--font-inter), system-ui, sans-serif;
@@ -207,6 +181,12 @@
 .auth-dots::after {
   content: "";
   animation: auth-dots 1.8s steps(1) infinite;
+}
+
+/* Profundidad sutil en las tarjetas del modo claro */
+:root[data-theme="light"] .bg-card,
+:root[data-theme="light"] [style*="var(--color-card)"] {
+  box-shadow: 0 1px 1px rgba(40, 42, 46, .04), 0 2px 6px rgba(40, 42, 46, .05), inset 0 1px 0 rgba(255, 255, 255, .6);
 }
 
 /* Scrollbars finos */

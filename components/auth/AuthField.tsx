@@ -12,23 +12,23 @@ export default function AuthField({ label, name, icon: Icon, error, ...props }: 
   return (
     <div className="block">
       <label className="block">
-        <span className="mb-[7px] block text-[10.5px] font-bold uppercase tracking-[.6px]" style={{ color: "#94a3b8" }}>
+        <span className="mb-[7px] block text-[10.5px] font-bold uppercase tracking-[.6px]" style={{ color: "var(--color-muted)" }}>
           {label}
         </span>
         <div className="relative">
           {Icon && (
-            <span className="pointer-events-none absolute left-[11px] top-1/2 -translate-y-1/2" style={{ color: error ? "#ef4444" : "#94a3b8" }}>
+            <span className="pointer-events-none absolute left-[11px] top-1/2 -translate-y-1/2" style={{ color: error ? "var(--color-red)" : "var(--color-muted)" }}>
               <Icon size={15} strokeWidth={1.8} />
             </span>
           )}
           <input
             name={name}
             style={{
-              background: "#ffffff",
-              borderColor: error ? "#ef4444" : "#e2e8f0",
-              color: "#0f172a",
+              background: "var(--color-card)",
+              borderColor: error ? "var(--color-red)" : "var(--color-border)",
+              color: "var(--color-text)",
             }}
-            className={`w-full rounded-[9px] border text-[14px] outline-none transition-colors placeholder:text-[#cbd5e1] focus:border-[#0284c7] focus:bg-white ${
+            className={`w-full rounded-[9px] border text-[14px] outline-none transition-colors placeholder:text-muted focus:border-blue focus:bg-card ${
               Icon ? "pl-[36px] pr-[12px] py-[11px]" : "px-[12px] py-[11px]"
             }`}
             {...props}
@@ -36,7 +36,7 @@ export default function AuthField({ label, name, icon: Icon, error, ...props }: 
         </div>
       </label>
       {error && (
-        <p className="mt-[5px] text-[12px]" style={{ color: "#ef4444" }}>{error}</p>
+        <p className="mt-[5px] text-[12px]" style={{ color: "var(--color-red)" }}>{error}</p>
       )}
     </div>
   );

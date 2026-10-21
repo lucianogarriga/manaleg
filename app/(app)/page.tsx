@@ -1,24 +1,14 @@
 import { getCurrentProfile } from "@/components/auth/AuthGuard";
 import DashboardView from "@/components/dashboard/DashboardView";
-import { getLayoutCounts } from "@/services/supabase/layoutCounts";
-import { getProximosEventos } from "@/services/supabase/eventos";
-import { getDashboardStats } from "@/services/supabase/dashboardStats";
+import { cargarNovedadesCacheada } from "@/services/supabase/novedades";
 
 export default async function DashboardPage() {
-  const [profile, counts, eventos, stats] = await Promise.all([
-    getCurrentProfile(),
-    getLayoutCounts(),
-    getProximosEventos(30),
-    getDashboardStats().catch(() => null),
-  ]);
+  const profile = await getCurrentProfile();
+  // Si falla el cálculo, la pantalla muestra el aviso con "Reintentar" en vez de romperse.
+  const inicial = await cargarNovedadesCacheada("mes").catch((err) => {
+    console.error("[Dashboard] no se pudieron cargar los indicadores", err);
+    return null;
+  });
 
-  return (
-    <DashboardView
-      nombre={profile.nombre_completo ?? profile.email}
-      causasActivas={counts.causasActivas}
-      alertas={counts.alertas}
-      eventos={eventos}
-      stats={stats}
-    />
-  );
+  return <DashboardView inicial={inicial} preferencia={profile.preferencia_graficos} nombre={profile.nombre_completo ?? ""} />;
 }

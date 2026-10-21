@@ -25,7 +25,7 @@ function Opcion({ activo, onClick, children }: { activo: boolean; onClick: () =>
       type="button"
       onClick={onClick}
       className={`rounded-[6px] border px-4 py-[6px] text-[13px] font-semibold transition-colors ${
-        activo ? "border-blue bg-blue text-white" : "border-border bg-bg text-sub hover:border-blue"
+        activo ? "border-blue bg-blue text-bg" : "border-border bg-bg text-sub hover:border-blue"
       }`}
     >
       {children}

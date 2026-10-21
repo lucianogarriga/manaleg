@@ -246,6 +246,8 @@ export async function clearVencimiento(causaId: string): Promise<FormState> {
 
 const TIPOS_VENC = ["Vencimiento", "Audiencia", "Recordatorio"] as const;
 
+const ESTADOS_AUDIENCIA = ["Programada", "Celebrada", "Suspendida", "Reprogramada"] as const;
+
 function extraCampos(tipo: string, formData: FormData) {
   if (tipo === "Audiencia") {
     return {
@@ -253,6 +255,9 @@ function extraCampos(tipo: string, formData: FormData) {
       lugar: text(formData, "lugar") || null,
       notas: text(formData, "notas") || null,
       acto_procesal: null,
+      estado_audiencia: ESTADOS_AUDIENCIA.includes(text(formData, "estado_audiencia") as typeof ESTADOS_AUDIENCIA[number])
+        ? text(formData, "estado_audiencia")
+        : "Programada",
     };
   }
   if (tipo === "Vencimiento") {

@@ -13,8 +13,8 @@ export default function NuevaContrasenaPage() {
   return (
     <form action={action} className="space-y-5">
       <div className="mb-2">
-        <h1 className="text-[24px] font-bold" style={{ color: "#0f172a" }}>Nueva contraseña</h1>
-        <p className="mt-1 text-[13.5px]" style={{ color: "#94a3b8" }}>
+        <h1 className="text-[24px] font-bold" style={{ color: "var(--color-text)" }}>Nueva contraseña</h1>
+        <p className="mt-1 text-[13.5px]" style={{ color: "var(--color-muted)" }}>
           Mínimo 8 caracteres, con mayúsculas, minúsculas y números.
         </p>
       </div>

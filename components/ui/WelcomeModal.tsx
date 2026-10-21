@@ -131,7 +131,7 @@ export default function WelcomeModal() {
           <button
             type="button"
             onClick={handleCargarPrimeraCausa}
-            className="cursor-pointer rounded-[7px] border border-blue bg-blue px-6 py-[8px] text-[13.5px] font-semibold text-white transition-all hover:bg-blue/90 active:scale-[.98]"
+            className="cursor-pointer rounded-[7px] border border-blue bg-blue px-6 py-[8px] text-[13.5px] font-semibold text-bg transition-all hover:bg-blue/90 active:scale-[.98]"
           >
             Cargar mi primera causa
           </button>

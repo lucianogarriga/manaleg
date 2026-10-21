@@ -25,6 +25,7 @@ export async function createGasto(_prev: FormState, formData: FormData): Promise
 
   const tipoRaw = text(formData, "tipo");
   const tipo = TIPOS_GASTO.includes(tipoRaw as typeof TIPOS_GASTO[number]) ? tipoRaw : tipoRaw || null;
+  const reintegrado = formData.get("reintegrado") === "on";
 
   const supabase = await createClient();
   const { error } = await supabase.from("gastos").insert({
@@ -34,6 +35,7 @@ export async function createGasto(_prev: FormState, formData: FormData): Promise
     fecha: fecha || undefined,
     tipo,
     comprobante_url: link,
+    reintegrado,
   });
 
   if (error) return { error: `No se pudo guardar el gasto: ${error.message}` };
@@ -57,11 +59,12 @@ export async function updateGasto(_prev: FormState, formData: FormData): Promise
 
   const tipoRaw = text(formData, "tipo");
   const tipo = TIPOS_GASTO.includes(tipoRaw as typeof TIPOS_GASTO[number]) ? tipoRaw : tipoRaw || null;
+  const reintegrado = formData.get("reintegrado") === "on";
 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("gastos")
-    .update({ descripcion, monto: monto ?? 0, fecha: fecha || null, tipo, comprobante_url: link })
+    .update({ descripcion, monto: monto ?? 0, fecha: fecha || null, tipo, comprobante_url: link, reintegrado })
     .eq("id", id)
     .select("id");
 

@@ -1,11 +1,13 @@
 import type {
   ANTICIPACION_ALERTA,
   ESTADOS_CAUSA,
+  ETAPAS_PROCESALES,
   FUEROS,
   TIPOS_AVISO,
   TIPOS_EVENTO,
   TIPOS_GASTO,
   TIPOS_MOVIMIENTO,
+  RESULTADOS_CAUSA,
   VIAS_PROCESO,
 } from "@/utils/constants";
 
@@ -13,6 +15,8 @@ export type Fuero = (typeof FUEROS)[number];
 export type ViaProceso = (typeof VIAS_PROCESO)[number];
 export type TipoAviso = (typeof TIPOS_AVISO)[number];
 export type EstadoCausa = (typeof ESTADOS_CAUSA)[number];
+export type EtapaProcesal = (typeof ETAPAS_PROCESALES)[number];
+export type ResultadoCausa = (typeof RESULTADOS_CAUSA)[number];
 export type Anticipacion = (typeof ANTICIPACION_ALERTA)[number];
 export type TipoMovimiento = (typeof TIPOS_MOVIMIENTO)[number];
 export type TipoEvento = (typeof TIPOS_EVENTO)[number];
@@ -68,6 +72,7 @@ export interface Profile {
   estado_pago: "activo" | "vencido" | "prueba";
   causas_max: number;
   es_admin: boolean;
+  preferencia_graficos: "barras" | "ondas";
   notificaciones_email: boolean;
   tyc_accepted_at: string | null;
   tyc_version: string | null;
@@ -104,6 +109,9 @@ export interface Causa {
   proximo_vencimiento: string | null;
   tipo_vencimiento: TipoAviso | null;
   motivo_vencimiento: string | null;
+  etapa_procesal: EtapaProcesal | null;
+  resultado: ResultadoCausa | null;
+  resultado_fecha: string | null;
   anticipacion_alerta: Anticipacion;
   inactividad_dias: number;
   monto_reclamado: number | null;
@@ -142,6 +150,9 @@ export type CausaInput = Pick<
   | "proximo_vencimiento"
   | "tipo_vencimiento"
   | "motivo_vencimiento"
+  | "etapa_procesal"
+  | "resultado"
+  | "resultado_fecha"
   | "anticipacion_alerta"
   | "inactividad_dias"
   | "monto_reclamado"
@@ -213,6 +224,7 @@ export interface Vencimiento {
   motivo: string | null;
   anticipacion: string;
   completado: boolean;
+  estado_audiencia: "Programada" | "Celebrada" | "Suspendida" | "Reprogramada" | null;
   // Campos de agenda (opcionales según tipo)
   hora: string | null;         // Audiencia: "HH:MM:SS"
   lugar: string | null;        // Audiencia
@@ -273,6 +285,7 @@ export interface Gasto {
   fecha: string;
   tipo: TipoGasto | null;
   comprobante_url: string | null;
+  reintegrado: boolean;
   created_at: string;
 }
 

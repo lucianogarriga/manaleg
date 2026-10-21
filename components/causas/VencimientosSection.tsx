@@ -139,6 +139,14 @@ function VencimientoFormRow({ causaId, editTarget, onClose, onDone }: FormRowPro
               className={inputCls}
             />
           </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[11px] font-semibold text-sub">Estado</label>
+            <select name="estado_audiencia" defaultValue={editTarget?.estado_audiencia ?? "Programada"} className={inputCls}>
+              {["Programada", "Celebrada", "Suspendida", "Reprogramada"].map((e) => (
+                <option key={e} value={e}>{e}</option>
+              ))}
+            </select>
+          </div>
           <div className="col-span-2 flex flex-col gap-1 sm:col-span-1">
             <label className="text-[11px] font-semibold text-sub">Notas</label>
             <input
@@ -178,7 +186,7 @@ function VencimientoFormRow({ causaId, editTarget, onClose, onDone }: FormRowPro
         <button
           type="submit"
           disabled={pending}
-          className="cursor-pointer rounded-[6px] bg-blue px-4 py-[5px] text-[13px] font-semibold text-white hover:opacity-90 disabled:opacity-60"
+          className="cursor-pointer rounded-[6px] bg-blue px-4 py-[5px] text-[13px] font-semibold text-bg hover:opacity-90 disabled:opacity-60"
         >
           {pending ? "Guardando…" : editTarget ? "Actualizar" : "Agregar"}
         </button>

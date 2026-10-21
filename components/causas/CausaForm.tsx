@@ -11,7 +11,7 @@ import AutocompleteField from "@/components/ui/AutocompleteField";
 import { FormSection, SelectField, TextAreaField, TextField } from "@/components/ui/FormControls";
 import { useCausasStore } from "@/store/causasStore";
 import { useUIStore } from "@/store/uiStore";
-import { ANTICIPACION_ALERTA, ESTADOS_CAUSA, FUEROS, TIPOS_AVISO, TIPOS_JUICIO_POR_FUERO, VIAS_PROCESO } from "@/utils/constants";
+import { ANTICIPACION_ALERTA, ESTADOS_CAUSA, ETAPAS_PROCESALES, FUEROS, RESULTADOS_CAUSA, TIPOS_AVISO, TIPOS_JUICIO_POR_FUERO, VIAS_PROCESO } from "@/utils/constants";
 import type { ClienteOption } from "@/services/supabase/clientes";
 import type { CaracterAbogado, CausaConRelaciones, CausaParte, RolParte, TipoPersona } from "@/types";
 
@@ -214,7 +214,7 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
             type="submit"
             form="causa-form"
             disabled={busy}
-            className="cursor-pointer rounded-[6px] bg-blue px-4 py-[6px] text-[14px] font-semibold text-white hover:opacity-90 disabled:opacity-60"
+            className="cursor-pointer rounded-[6px] bg-blue px-4 py-[6px] text-[14px] font-semibold text-bg hover:opacity-90 disabled:opacity-60"
           >
             {pending ? "Guardando…" : causa ? "Guardar cambios" : "Crear causa"}
           </button>
@@ -355,6 +355,9 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
           />
           <TextField label="Juzgado / Cámara" name="juzgado_camara" defaultValue={v?.juzgado_camara ?? ""} placeholder="Cámara 6°" />
           <TextField label="Fecha de inicio" name="fecha_inicio" type="date" defaultValue={v?.fecha_inicio ?? ""} />
+          <SelectField label="Etapa procesal" name="etapa_procesal" options={ETAPAS_PROCESALES} placeholder="Sin definir" defaultValue={v?.etapa_procesal ?? ""} />
+          <SelectField label="Resultado" name="resultado" options={RESULTADOS_CAUSA} placeholder="Sin resultado" defaultValue={v?.resultado ?? ""} />
+          <TextField label="Fecha del resultado" name="resultado_fecha" type="date" defaultValue={v?.resultado_fecha ?? ""} />
         </FormSection>
 
         {/* ── 4. Cliente y monto ── */}
@@ -385,14 +388,14 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
               <button
                 type="button"
                 onClick={() => setTieneVencimiento(true)}
-                className={`px-4 py-[5px] transition-colors ${tieneVencimiento ? "bg-blue text-white" : "bg-card text-sub hover:bg-bg"}`}
+                className={`px-4 py-[5px] transition-colors ${tieneVencimiento ? "bg-blue text-bg" : "bg-card text-sub hover:bg-bg"}`}
               >
                 Sí
               </button>
               <button
                 type="button"
                 onClick={() => setTieneVencimiento(false)}
-                className={`border-l border-border px-4 py-[5px] transition-colors ${!tieneVencimiento ? "bg-blue text-white" : "bg-card text-sub hover:bg-bg"}`}
+                className={`border-l border-border px-4 py-[5px] transition-colors ${!tieneVencimiento ? "bg-blue text-bg" : "bg-card text-sub hover:bg-bg"}`}
               >
                 No
               </button>

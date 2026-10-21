@@ -17,8 +17,8 @@ interface InvitacionRow {
 function Mensaje({ titulo, texto, children }: { titulo: string; texto: string; children?: React.ReactNode }) {
   return (
     <div className="space-y-4">
-      <h1 className="text-[22px] font-bold" style={{ color: "#0f172a" }}>{titulo}</h1>
-      <p className="text-[13.5px] leading-[1.6]" style={{ color: "#64748b" }}>{texto}</p>
+      <h1 className="text-[22px] font-bold" style={{ color: "var(--color-text)" }}>{titulo}</h1>
+      <p className="text-[13.5px] leading-[1.6]" style={{ color: "var(--color-sub)" }}>{texto}</p>
       {children}
     </div>
   );
@@ -68,8 +68,8 @@ export default async function InvitacionPage({
         texto={`${quien} te invitó a colaborar en "${causa?.caratula ?? "una causa"}". Para aceptar, ingresá o registrate con ${inv.email} y volvé a abrir este enlace.`}
       >
         <div className="flex gap-3">
-          <Link href="/login" className="rounded-[8px] bg-blue px-4 py-[9px] text-[13.5px] font-semibold text-white hover:opacity-90">Ingresar</Link>
-          <Link href="/register" className="rounded-[8px] border px-4 py-[9px] text-[13.5px] font-semibold" style={{ borderColor: "#cbd5e1", color: "#334155" }}>Crear cuenta</Link>
+          <Link href="/login" className="rounded-[8px] bg-blue px-4 py-[9px] text-[13.5px] font-semibold text-bg hover:opacity-90">Ingresar</Link>
+          <Link href="/register" className="rounded-[8px] border px-4 py-[9px] text-[13.5px] font-semibold" style={{ borderColor: "var(--color-border)", color: "var(--color-text)" }}>Crear cuenta</Link>
         </div>
       </Mensaje>
     );
@@ -91,13 +91,13 @@ export default async function InvitacionPage({
         texto={`${quien} te invitó a colaborar en "${causa?.caratula ?? "una causa"}".`}
       />
       {error && (
-        <p className="text-[13px]" style={{ color: "#b91c1c" }}>
+        <p className="text-[13px]" style={{ color: "var(--color-red)" }}>
           {error === "cuenta" ? "Esta invitación es para otra cuenta." : "No se pudo aceptar la invitación. Probá de nuevo."}
         </p>
       )}
       <form action={aceptarInvitacion}>
         <input type="hidden" name="token" value={token} />
-        <button type="submit" className="rounded-[8px] bg-blue px-5 py-[10px] text-[14px] font-semibold text-white hover:opacity-90">
+        <button type="submit" className="rounded-[8px] bg-blue px-5 py-[10px] text-[14px] font-semibold text-bg hover:opacity-90">
           Aceptar invitación
         </button>
       </form>

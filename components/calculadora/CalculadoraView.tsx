@@ -166,7 +166,7 @@ export default function CalculadoraView({ hoy, inhabiles, causas }: CalculadoraV
                   <button
                     type="submit"
                     disabled={pending || causas.length === 0}
-                    className="cursor-pointer rounded-[6px] bg-blue px-4 py-[7px] text-[14px] font-semibold text-white hover:opacity-90 disabled:opacity-60"
+                    className="cursor-pointer rounded-[6px] bg-blue px-4 py-[7px] text-[14px] font-semibold text-bg hover:opacity-90 disabled:opacity-60"
                   >
                     {pending ? "Guardando…" : `Cargar vencimiento del ${formatDate(resultado.vencimiento)}`}
                   </button>

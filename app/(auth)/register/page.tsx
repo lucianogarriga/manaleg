@@ -24,11 +24,11 @@ export default function RegisterPage() {
     return (
       <div className="space-y-4">
         <div className="mb-2">
-          <h1 className="text-[24px] font-bold" style={{ color: "#0f172a" }}>Revisá tu email</h1>
-          <p className="mt-1 text-[13.5px]" style={{ color: "#94a3b8" }}>Te enviamos un link de confirmación.</p>
+          <h1 className="text-[24px] font-bold" style={{ color: "var(--color-text)" }}>Revisá tu email</h1>
+          <p className="mt-1 text-[13.5px]" style={{ color: "var(--color-muted)" }}>Te enviamos un link de confirmación.</p>
         </div>
         <FormAlert state={state} />
-        <Link href="/login" className="block text-center text-[13px] font-semibold hover:underline" style={{ color: "#0284c7" }}>
+        <Link href="/login" className="block text-center text-[13px] font-semibold hover:underline" style={{ color: "var(--color-blue)" }}>
           Volver a ingresar
         </Link>
       </div>
@@ -75,8 +75,8 @@ export default function RegisterPage() {
     <>
       <form onSubmit={handleSubmit} noValidate className="space-y-5">
         <div className="mb-2">
-          <h1 className="text-[24px] font-bold" style={{ color: "#0f172a" }}>Crear cuenta</h1>
-          <p className="mt-1 text-[13.5px]" style={{ color: "#94a3b8" }}>Empezá a gestionar tus causas hoy</p>
+          <h1 className="text-[24px] font-bold" style={{ color: "var(--color-text)" }}>Crear cuenta</h1>
+          <p className="mt-1 text-[13.5px]" style={{ color: "var(--color-muted)" }}>Empezá a gestionar tus causas hoy</p>
         </div>
 
         <FormAlert state={state} />
@@ -126,19 +126,19 @@ export default function RegisterPage() {
               type="checkbox"
               name="tyc"
               value="on"
-              style={{ colorScheme: "light", accentColor: "#0284c7" }}
+              style={{ colorScheme: "light", accentColor: "var(--color-blue)" }}
               className="mt-[3px] h-[15px] w-[15px] shrink-0 cursor-pointer"
               onChange={() => {
                 if (fieldErrors.tyc) setFieldErrors((p) => ({ ...p, tyc: "" }));
               }}
             />
-            <span className="text-[12.5px] leading-[1.5]" style={{ color: "#64748b" }}>
+            <span className="text-[12.5px] leading-[1.5]" style={{ color: "var(--color-sub)" }}>
               Leí y acepto los{" "}
               <button
                 type="button"
                 onClick={() => setLegalModal("terminos")}
                 className="cursor-pointer font-semibold hover:underline"
-                style={{ color: "#0284c7" }}
+                style={{ color: "var(--color-blue)" }}
               >
                 Términos y Condiciones
               </button>{" "}
@@ -147,7 +147,7 @@ export default function RegisterPage() {
                 type="button"
                 onClick={() => setLegalModal("privacidad")}
                 className="cursor-pointer font-semibold hover:underline"
-                style={{ color: "#0284c7" }}
+                style={{ color: "var(--color-blue)" }}
               >
                 Política de Privacidad
               </button>
@@ -155,7 +155,7 @@ export default function RegisterPage() {
             </span>
           </label>
           {fieldErrors.tyc && (
-            <p className="mt-[5px] text-[12px]" style={{ color: "#ef4444" }}>{fieldErrors.tyc}</p>
+            <p className="mt-[5px] text-[12px]" style={{ color: "var(--color-red)" }}>{fieldErrors.tyc}</p>
           )}
         </div>
 
@@ -164,9 +164,9 @@ export default function RegisterPage() {
           Crear cuenta
         </SubmitButton>
 
-        <p className="pt-1 text-center text-[13px]" style={{ color: "#64748b" }}>
+        <p className="pt-1 text-center text-[13px]" style={{ color: "var(--color-sub)" }}>
           ¿Ya tenés cuenta?{" "}
-          <Link href="/login" className="font-semibold hover:underline" style={{ color: "#0284c7" }}>
+          <Link href="/login" className="font-semibold hover:underline" style={{ color: "var(--color-blue)" }}>
             Ingresá
           </Link>
         </p>

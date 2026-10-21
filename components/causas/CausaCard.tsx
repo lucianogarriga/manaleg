@@ -45,7 +45,7 @@ export default function CausaCard({ causa, active, onSelect }: CausaCardProps) {
     >
       {/* Encabezado: carátula + badge estado */}
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1 text-[11.5px] font-semibold leading-snug text-text line-clamp-2 sm:text-[12.5px]">
+        <div className="min-w-0 flex-1 text-[12.5px] font-semibold leading-snug text-text line-clamp-2 sm:text-[13px]">
           {causa.caratula}
         </div>
         <Badge estado={causa.estado} />
