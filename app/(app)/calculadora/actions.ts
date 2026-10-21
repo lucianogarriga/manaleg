@@ -32,6 +32,6 @@ export async function saveVencimientoCausa(_prev: FormState, formData: FormData)
   if (error?.message.includes("row-level security")) return { error: "No se encontró la causa o no tenés acceso." };
   if (error) return { error: `No se pudo guardar: ${error.message}` };
 
-  revalidatePath("/", "layout");
+  revalidatePath("/", "page");
   return { message: `${tipo} cargado en la causa.` };
 }

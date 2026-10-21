@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { X, Share2, Pencil } from "lucide-react";
 import { revokeAccess } from "@/app/(app)/causas/shareActions";
@@ -35,7 +34,6 @@ interface Props {
 }
 
 export default function CausaModal({ causa, userId }: Props) {
-  const router = useRouter();
   const select = useCausasStore((s) => s.select);
   const openEdit = useCausasStore((s) => s.openEdit);
   const showToast = useUIStore((s) => s.showToast);
@@ -92,7 +90,7 @@ export default function CausaModal({ causa, userId }: Props) {
     if (!ok) return;
     const result = await revokeAccess(share.id);
     showToast({ message: result.error ?? result.message ?? "Listo." });
-    if (!result.error) { reloadShares(); router.refresh(); }
+    if (!result.error) reloadShares();
   };
 
   const ultimaActividad = causa.fecha_ultimo_movimiento ?? causa.created_at.slice(0, 10);
@@ -318,7 +316,6 @@ export default function CausaModal({ causa, userId }: Props) {
             setShareOpen(false);
             showToast({ message });
             reloadShares();
-            router.refresh();
           }}
         />
       )}

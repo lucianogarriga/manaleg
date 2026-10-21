@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { Pencil, Trash2 } from "lucide-react";
 import { createTodo, deleteTodo, toggleTodo, updateTodoTexto } from "@/app/(app)/causas/todoActions";
 import { useTodos } from "@/hooks/useCausaData";
@@ -9,7 +8,6 @@ import { useUIStore } from "@/store/uiStore";
 import type { FormState } from "@/types";
 
 export default function TodoList({ causaId }: { causaId: string }) {
-  const router = useRouter();
   const { data: todos, loading, reload } = useTodos(causaId);
   const showToast = useUIStore((s) => s.showToast);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -20,7 +18,6 @@ export default function TodoList({ causaId }: { causaId: string }) {
   useEffect(() => {
     if (state.message) {
       reload();
-      router.refresh();
       if (inputRef.current) inputRef.current.value = "";
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -35,19 +32,18 @@ export default function TodoList({ causaId }: { causaId: string }) {
     const result = await toggleTodo(id, !current);
     if (result.error) showToast({ message: result.error });
     reload();
-    router.refresh();
   };
 
   const onDelete = async (id: string) => {
     const result = await deleteTodo(id);
     if (result.error) showToast({ message: result.error });
-    else { reload(); router.refresh(); }
+    else reload();
   };
 
   const onEdit = async (id: string, texto: string) => {
     const result = await updateTodoTexto(id, texto);
     if (result.error) showToast({ message: result.error });
-    else { reload(); router.refresh(); }
+    else reload();
   };
 
   const pendientes = todos.filter((t) => !t.completado);

@@ -7,7 +7,7 @@ import type { FormState } from "@/types";
 
 import { TIPOS_GASTO } from "@/utils/constants";
 
-const refresh = () => revalidatePath("/", "layout");
+const refresh = () => revalidatePath("/", "page");
 
 export async function createGasto(_prev: FormState, formData: FormData): Promise<FormState> {
   const causaId = text(formData, "causa_id");

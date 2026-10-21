@@ -2,7 +2,6 @@
 
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { Calendar, CheckCircle2, Circle, Clock, MapPin, Pencil, Plus, Trash2, X } from "lucide-react";
-import { useRouter } from "next/navigation";
 import {
   createVencimiento,
   deleteVencimiento,
@@ -195,7 +194,6 @@ function VencimientoFormRow({ causaId, editTarget, onClose, onDone }: FormRowPro
 }
 
 export default function VencimientosSection({ causaId, esTitular }: Props) {
-  const router = useRouter();
   const showToast = useUIStore((s) => s.showToast);
   const { data: vencimientos, reload } = useVencimientos(causaId);
   const { request: confirmRequest, dialog: confirmDialog } = useConfirm();
@@ -206,14 +204,13 @@ export default function VencimientosSection({ causaId, esTitular }: Props) {
   const done = (msg: string) => {
     showToast({ message: msg });
     reload();
-    router.refresh();
   };
 
   const handleToggle = (v: Vencimiento) => {
     startToggle(async () => {
       const r = await toggleVencimientoCompletado(v.id, !v.completado);
       if (r.error) showToast({ message: r.error });
-      else { reload(); router.refresh(); }
+      else reload();
     });
   };
 
@@ -227,7 +224,7 @@ export default function VencimientosSection({ causaId, esTitular }: Props) {
     if (!ok) return;
     const r = await deleteVencimiento(v.id);
     showToast({ message: r.error ?? r.message ?? "Listo." });
-    if (!r.error) { reload(); router.refresh(); }
+    if (!r.error) reload();
   };
 
   return (

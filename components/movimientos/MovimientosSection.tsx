@@ -2,7 +2,6 @@
 
 import { forwardRef, useImperativeHandle, useState } from "react";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
-import { useRouter } from "next/navigation";
 import { deleteMovimiento } from "@/app/(app)/causas/detailActions";
 import CardSection, { CardAction } from "@/components/ui/CardSection";
 import { useMovimientos } from "@/hooks/useCausaData";
@@ -19,7 +18,6 @@ const MovimientosSection = forwardRef<
   MovimientosSectionRef,
   { causaId: string; userId: string; naked?: boolean }
 >(function MovimientosSection({ causaId, userId, naked = false }, ref) {
-  const router = useRouter();
   const { data, loading, error, reload } = useMovimientos(causaId);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<MovimientoConAutor | undefined>(undefined);
@@ -28,7 +26,7 @@ const MovimientosSection = forwardRef<
   useImperativeHandle(ref, () => ({ openForm: () => setFormOpen(true) }), []);
 
   const { request: confirmRequest, dialog: confirmDialog } = useConfirm();
-  const afterChange = () => { reload(); router.refresh(); };
+  const afterChange = () => reload();
 
   const onDelete = async (id: string) => {
     const ok = await confirmRequest({ title: "Eliminar movimiento", message: "¿Eliminar este movimiento?", confirmLabel: "Eliminar", danger: true });
