@@ -151,5 +151,8 @@ export function useTodosGlobal() {
   }, [version]);
 
   const reload = useCallback(() => setVersion((v) => v + 1), []);
-  return { data, loading, reload };
+  const patch = useCallback((id: string, cambios: Partial<TodoConCausa>) => {
+    setData((prev) => prev.map((t) => (t.id === id ? { ...t, ...cambios } : t)));
+  }, []);
+  return { data, loading, reload, patch };
 }

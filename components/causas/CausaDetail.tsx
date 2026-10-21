@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Share2 } from "lucide-react";
 import { revokeAccess } from "@/app/(app)/causas/shareActions";
@@ -63,7 +62,6 @@ interface CausaDetailProps {
 }
 
 export default function CausaDetail({ causa, userId, className = "" }: CausaDetailProps) {
-  const router = useRouter();
   const vencimientosRef = useRef<HTMLElement>(null);
   const openEdit = useCausasStore((s) => s.openEdit);
   const select = useCausasStore((s) => s.select);
@@ -85,7 +83,6 @@ export default function CausaDetail({ causa, userId, className = "" }: CausaDeta
     showToast({ message: result.error ?? result.message ?? "Listo." });
     if (!result.error) {
       reloadShares();
-      router.refresh();
     }
   };
   const ownerName = causa.owner?.nombre_completo ?? causa.owner?.email ?? "—";
@@ -249,7 +246,6 @@ export default function CausaDetail({ causa, userId, className = "" }: CausaDeta
             setShareOpen(false);
             showToast({ message });
             reloadShares();
-            router.refresh();
           }}
         />
       )}

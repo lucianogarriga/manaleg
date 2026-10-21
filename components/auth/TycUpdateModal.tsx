@@ -93,7 +93,7 @@ export default function TycUpdateModal() {
           type="button"
           onClick={aceptar}
           disabled={!acepta || pending}
-          className="w-full cursor-pointer rounded-[8px] bg-blue py-[10px] text-[14px] font-semibold text-bg hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full cursor-pointer rounded-[8px] bg-blue py-[10px] text-[14px] font-semibold text-on-primary hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {pending ? "Registrando..." : "Aceptar y continuar"}
         </button>

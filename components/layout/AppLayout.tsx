@@ -5,6 +5,7 @@ import { createClient } from "@/services/supabase/server";
 import { formatLongDate, todayISO } from "@/utils/formatters";
 import Toaster from "@/components/ui/Toaster";
 import WelcomeModal from "@/components/ui/WelcomeModal";
+import InvitacionesPendientes from "@/components/shares/InvitacionesPendientes";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import TitleUpdater from "./TitleUpdater";
@@ -46,6 +47,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <NavigationProgress />
       <Toaster />
       {!hasSeenWelcome && <WelcomeModal />}
+      <InvitacionesPendientes />
     </div>
   );
 }

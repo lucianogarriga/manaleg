@@ -1,8 +1,6 @@
 "use client";
 
-import { useGlobalLoading } from "@/hooks/useGlobalLoading";
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { Pencil, Trash2 } from "lucide-react";
 import { createTodo, deleteTodo, toggleTodo, updateTodoTexto } from "@/app/(app)/causas/todoActions";
 import { useTodos } from "@/hooks/useCausaData";
@@ -10,19 +8,16 @@ import { useUIStore } from "@/store/uiStore";
 import type { FormState } from "@/types";
 
 export default function TodoList({ causaId }: { causaId: string }) {
-  const router = useRouter();
   const { data: todos, loading, reload } = useTodos(causaId);
   const showToast = useUIStore((s) => s.showToast);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [state, dispatch, pending] = useActionState<FormState, FormData>(createTodo, {});
   const [, startAdd] = useTransition();
-  useGlobalLoading(pending);
 
   useEffect(() => {
     if (state.message) {
       reload();
-      router.refresh();
       if (inputRef.current) inputRef.current.value = "";
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -37,19 +32,18 @@ export default function TodoList({ causaId }: { causaId: string }) {
     const result = await toggleTodo(id, !current);
     if (result.error) showToast({ message: result.error });
     reload();
-    router.refresh();
   };
 
   const onDelete = async (id: string) => {
     const result = await deleteTodo(id);
     if (result.error) showToast({ message: result.error });
-    else { reload(); router.refresh(); }
+    else reload();
   };
 
   const onEdit = async (id: string, texto: string) => {
     const result = await updateTodoTexto(id, texto);
     if (result.error) showToast({ message: result.error });
-    else { reload(); router.refresh(); }
+    else reload();
   };
 
   const pendientes = todos.filter((t) => !t.completado);
@@ -70,7 +64,7 @@ export default function TodoList({ causaId }: { causaId: string }) {
         <button
           type="submit"
           disabled={pending}
-          className="shrink-0 cursor-pointer rounded-[5px] bg-blue px-3 py-[4px] text-[12px] font-semibold text-bg hover:opacity-90 disabled:opacity-60"
+          className="shrink-0 cursor-pointer rounded-[5px] bg-blue px-3 py-[4px] text-[12px] font-semibold text-on-primary hover:opacity-90 disabled:opacity-60"
         >
           {pending ? "…" : "+ Agregar"}
         </button>

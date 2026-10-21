@@ -132,7 +132,7 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
             type="button"
             onClick={atLimit ? undefined : openCreate}
             disabled={atLimit}
-            className="cursor-pointer rounded-[6px] bg-blue px-4 py-[7px] text-[14px] font-semibold text-bg hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="cursor-pointer rounded-[6px] bg-blue px-4 py-[7px] text-[14px] font-semibold text-on-primary hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             + Nueva causa
           </button>

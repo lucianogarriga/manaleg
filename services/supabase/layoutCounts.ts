@@ -10,6 +10,7 @@ export interface AlertaItem {
   fecha: string; // YYYY-MM-DD
   tipo: TipoAviso | null;
   motivo: string | null;
+  esTarea?: boolean;
 }
 
 // Aviso de que un colega modificó una causa compartida

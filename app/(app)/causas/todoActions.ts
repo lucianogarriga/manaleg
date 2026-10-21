@@ -5,7 +5,7 @@ import { createClient } from "@/services/supabase/server";
 import { text } from "@/utils/formData";
 import type { FormState } from "@/types";
 
-const refresh = () => revalidatePath("/", "layout");
+const refresh = () => revalidatePath("/", "page");
 
 export async function createTodo(_prev: FormState, formData: FormData): Promise<FormState> {
   const causaId = text(formData, "causa_id");

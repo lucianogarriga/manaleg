@@ -1,14 +1,13 @@
 "use client";
 
-import { useGlobalLoading } from "@/hooks/useGlobalLoading";
-import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Pencil, Plus, X } from "lucide-react";
 import { createTodo, deleteTodo, updateTodo, updateTodoEstado } from "@/app/(app)/causas/todoActions";
 import { useTodosGlobal } from "@/hooks/useCausaData";
 import { useUIStore } from "@/store/uiStore";
 import { formatDate, getDaysUntil } from "@/utils/formatters";
 import type { EstadoTarea, TodoConCausa } from "@/types";
+import DateInput from "@/components/ui/DateInput";
 
 // ── Columnas del Kanban ──────────────────────────────────────────────────────
 
@@ -18,6 +17,8 @@ const COLUMNS: { estado: EstadoTarea; label: string; color: string; light: strin
   { estado: "Esperando respuesta",  label: "Esperando respuesta",   color: "var(--color-amb)", light: "var(--color-amb-lt)"  },
   { estado: "Completado",           label: "Completado",            color: "var(--color-grn)", light: "var(--color-grn-lt)"  },
 ];
+
+const ALTO_MIN = 72;
 
 // ── Filtros ──────────────────────────────────────────────────────────────────
 
@@ -45,20 +46,65 @@ function FechaLimiteBadge({ fecha }: { fecha: string | null }) {
 function TareaCard({
   todo,
   isDragging,
+  landed,
   onDelete,
   onEdit,
   onDragStart,
 }: {
   todo: TodoConCausa;
   isDragging: boolean;
-  onDelete: () => void;
-  onEdit: (texto: string, fechaLimite: string | null) => Promise<boolean>;
-  onDragStart: (e: React.DragEvent) => void;
+  landed: boolean;
+  onDelete: (id: string) => void;
+  onEdit: (id: string, texto: string, fechaLimite: string | null) => Promise<boolean>;
+  onDragStart: (id: string, e: React.DragEvent) => void;
 }) {
   const [editando, setEditando] = useState(false);
   const [texto, setTexto] = useState(todo.texto);
   const [fecha, setFecha] = useState(todo.fecha_limite ?? "");
   const [guardando, setGuardando] = useState(false);
+  const [alto, setAlto] = useState<number | null>(null);
+  const redimensionando = useRef(false);
+  const altoRef = useRef<number | null>(null);
+  const claveAlto = `kanban-alto:${todo.id}`;
+
+  useEffect(() => {
+    try {
+      const guardado = Number(localStorage.getItem(claveAlto));
+      if (guardado >= ALTO_MIN) setAlto(guardado);
+    } catch {
+      // Sin localStorage (modo privado): la card usa el alto automático.
+    }
+  }, [claveAlto]);
+
+  const moverResize = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!redimensionando.current) return;
+    const base = e.currentTarget.parentElement?.getBoundingClientRect().top ?? 0;
+    const nuevo = Math.max(ALTO_MIN, Math.round(e.clientY - base));
+    altoRef.current = nuevo;
+    setAlto(nuevo);
+  };
+
+  const terminarResize = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!redimensionando.current) return;
+    redimensionando.current = false;
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    if (altoRef.current === null) return;
+    try {
+      localStorage.setItem(claveAlto, String(altoRef.current));
+    } catch {
+      // Sin localStorage: el alto dura solo mientras la página esté abierta.
+    }
+  };
+
+  const restablecerAlto = () => {
+    setAlto(null);
+    altoRef.current = null;
+    try {
+      localStorage.removeItem(claveAlto);
+    } catch {
+      // Sin localStorage: nada que limpiar.
+    }
+  };
 
   const cancelar = () => {
     setTexto(todo.texto);
@@ -68,7 +114,7 @@ function TareaCard({
 
   const guardar = async () => {
     setGuardando(true);
-    const ok = await onEdit(texto, fecha || null);
+    const ok = await onEdit(todo.id, texto, fecha || null);
     setGuardando(false);
     if (ok) setEditando(false);
   };
@@ -86,8 +132,7 @@ function TareaCard({
           aria-label="Modificar tarea"
           className="w-full resize-none bg-transparent text-[13px] text-text outline-none"
         />
-        <input
-          type="date"
+        <DateInput
           value={fecha}
           onChange={(e) => setFecha(e.target.value)}
           aria-label="Fecha límite"
@@ -99,7 +144,7 @@ function TareaCard({
             type="button"
             onClick={guardar}
             disabled={guardando || !texto.trim()}
-            className="rounded-[6px] bg-blue px-2.5 py-[4px] text-[12px] font-semibold text-bg disabled:opacity-50"
+            className="rounded-[6px] bg-blue px-2.5 py-[4px] text-[12px] font-semibold text-on-primary disabled:opacity-50"
           >
             {guardando ? "Guardando…" : "Guardar"}
           </button>
@@ -111,12 +156,16 @@ function TareaCard({
   return (
     <div
       draggable
-      onDragStart={onDragStart}
-      className={`group cursor-grab rounded-lg border p-3 transition-all active:cursor-grabbing ${isDragging ? "opacity-40 scale-95" : ""}`}
+      onDragStart={(e) => {
+        if (redimensionando.current) { e.preventDefault(); return; }
+        onDragStart(todo.id, e);
+      }}
+      className={`group relative cursor-grab overflow-hidden rounded-lg border p-3 transition-[opacity,transform] duration-150 active:cursor-grabbing ${isDragging ? "opacity-40 scale-95" : ""} ${landed ? "kanban-land" : ""}`}
       style={{
         background: "var(--color-card)",
         borderColor: "var(--color-border)",
         boxShadow: "0 1px 3px rgba(0,0,0,.07)",
+        height: alto ?? undefined,
       }}
     >
       <div className="flex items-start justify-between gap-2">
@@ -132,7 +181,7 @@ function TareaCard({
           </button>
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            onClick={(e) => { e.stopPropagation(); onDelete(todo.id); }}
             className="cursor-pointer rounded p-[2px] text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-red"
           >
             <X size={11} />
@@ -151,9 +200,31 @@ function TareaCard({
           <FechaLimiteBadge fecha={todo.fecha_limite} />
         </div>
       )}
+      <div
+        role="separator"
+        aria-label="Arrastrar para cambiar el alto de la tarea (doble clic para restablecer)"
+        title="Arrastrá para cambiar el alto · doble clic para restablecer"
+        onPointerDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          redimensionando.current = true;
+          altoRef.current = alto;
+          e.currentTarget.setPointerCapture(e.pointerId);
+        }}
+        onPointerMove={moverResize}
+        onPointerUp={terminarResize}
+        onPointerCancel={terminarResize}
+        onDoubleClick={(e) => { e.stopPropagation(); restablecerAlto(); }}
+        className="absolute bottom-0 right-0 h-[14px] w-[14px] cursor-nwse-resize opacity-0 transition-opacity group-hover:opacity-100"
+        style={{
+          background: "linear-gradient(135deg, transparent 50%, var(--color-muted) 50%)",
+        }}
+      />
     </div>
   );
 }
+
+const TareaCardMemo = memo(TareaCard);
 
 // ── Formulario de nueva tarea en columna ──────────────────────────────────────
 
@@ -169,7 +240,6 @@ function NuevaTareaForm({
   onSaved: () => void;
 }) {
   const [pending, setPending] = useState(false);
-  useGlobalLoading(pending);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -204,9 +274,9 @@ function NuevaTareaForm({
           <option key={c.id} value={c.id}>{c.caratula}</option>
         ))}
       </select>
-      <input
+      <DateInput
         name="fecha_limite"
-        type="date"
+        aria-label="Fecha límite"
         className="mt-2 w-full rounded-[5px] border border-border bg-bg px-2 py-[5px] text-[11.5px] text-sub outline-none focus:border-blue"
       />
       {error && <p className="mt-1 text-[11px] text-red">{error}</p>}
@@ -216,7 +286,7 @@ function NuevaTareaForm({
           Cancelar
         </button>
         <button type="submit" disabled={pending}
-          className="cursor-pointer rounded-[5px] bg-blue px-3 py-[4px] text-[12px] font-semibold text-bg hover:opacity-90 disabled:opacity-60">
+          className="cursor-pointer rounded-[5px] bg-blue px-3 py-[4px] text-[12px] font-semibold text-on-primary hover:opacity-90 disabled:opacity-60">
           {pending ? "…" : "Agregar"}
         </button>
       </div>
@@ -232,18 +302,25 @@ interface KanbanViewProps {
 }
 
 export default function KanbanView({ causas, userId }: KanbanViewProps) {
-  const router = useRouter();
   const showToast = useUIStore((s) => s.showToast);
-  const { data: todos, loading, reload } = useTodosGlobal();
+  const { data: todos, loading, reload, patch } = useTodosGlobal();
   const [filtro, setFiltro] = useState<Filtro>("todas");
   const [addingIn, setAddingIn] = useState<EstadoTarea | null>(null);
   const [dragging, setDragging] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<EstadoTarea | null>(null);
+  const [aterrizaje, setAterrizaje] = useState<string | null>(null);
+  const [rebote, setRebote] = useState<EstadoTarea | null>(null);
   const dragId = useRef<string | null>(null);
 
   const filtered = todos.filter((t) =>
     filtro === "mias" ? t.user_id === userId : true,
   );
+
+  const handleDragStart = useCallback((id: string, e: React.DragEvent) => {
+    dragId.current = id;
+    setDragging(id);
+    e.dataTransfer.effectAllowed = "move";
+  }, []);
 
   const handleDrop = async (e: React.DragEvent, targetEstado: EstadoTarea) => {
     e.preventDefault();
@@ -254,28 +331,31 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
 
     setDragging(null);
     setDragOver(null);
+    setAterrizaje(id);
+    setRebote(targetEstado);
+    setTimeout(() => setAterrizaje((actual) => (actual === id ? null : actual)), 900);
+    setTimeout(() => setRebote(null), 500);
+    patch(id, { estado: targetEstado, completado: targetEstado === "Completado" });
 
     const result = await updateTodoEstado(id, targetEstado);
-    if (result.error) { showToast({ message: result.error }); return; }
-    showToast({ message: `Tarea movida a "${targetEstado}"` });
-    reload();
-    router.refresh();
+    if (result.error) {
+      patch(id, { estado: todo.estado, completado: todo.completado });
+      showToast({ message: result.error });
+    }
   };
 
-  const handleEdit = async (id: string, texto: string, fechaLimite: string | null): Promise<boolean> => {
+  const handleEdit = useCallback(async (id: string, texto: string, fechaLimite: string | null): Promise<boolean> => {
     const result = await updateTodo(id, texto, fechaLimite);
     if (result.error) { showToast({ message: result.error }); return false; }
-    reload();
-    router.refresh();
+    patch(id, { texto: texto.trim(), fecha_limite: fechaLimite || null });
     return true;
-  };
+  }, [patch, showToast]);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     const result = await deleteTodo(id);
     if (result.error) { showToast({ message: result.error }); return; }
     reload();
-    router.refresh();
-  };
+  }, [reload, showToast]);
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -287,7 +367,7 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
             type="button"
             onClick={() => setFiltro(f)}
             className={`inline-flex cursor-pointer items-center rounded-[20px] border px-3 py-[3px] text-[12px] font-medium transition-colors ${
-              filtro === f ? "border-blue bg-blue text-bg" : "border-border text-sub hover:bg-bg"
+              filtro === f ? "border-blue bg-blue text-on-primary" : "border-border text-sub hover:bg-bg"
             }`}
           >
             {f === "todas" ? "Todas las tareas" : "Mis tareas"}
@@ -319,27 +399,34 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
                 <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: color }} />
                 <span className="flex-1 text-[12.5px] font-semibold text-text">{label}</span>
                 <span
-                  className="rounded-full px-[7px] py-px text-[10px] font-bold"
+                  className={`rounded-full px-[7px] py-px text-[10px] font-bold ${rebote === estado ? "kanban-bump" : ""}`}
                   style={{ background: light, color }}
                 >
                   {items.length}
                 </span>
+                <button
+                  type="button"
+                  onClick={() => setAddingIn(estado)}
+                  aria-label={`Nueva tarea en ${label}`}
+                  title={`Nueva tarea en ${label}`}
+                  className="flex h-[22px] w-[22px] cursor-pointer items-center justify-center rounded-[6px] transition-colors hover:opacity-80"
+                  style={{ background: light, color }}
+                >
+                  <Plus size={14} strokeWidth={2.4} />
+                </button>
               </div>
 
               {/* Cards */}
               <div className="flex flex-1 flex-col gap-2 px-3 pb-3">
                 {items.map((t) => (
-                  <TareaCard
+                  <TareaCardMemo
                     key={t.id}
                     todo={t}
                     isDragging={dragging === t.id}
-                    onDelete={() => handleDelete(t.id)}
-                    onEdit={(texto, fecha) => handleEdit(t.id, texto, fecha)}
-                    onDragStart={(e) => {
-                      dragId.current = t.id;
-                      setDragging(t.id);
-                      e.dataTransfer.effectAllowed = "move";
-                    }}
+                    landed={aterrizaje === t.id}
+                    onDelete={handleDelete}
+                    onEdit={handleEdit}
+                    onDragStart={handleDragStart}
                   />
                 ))}
 
@@ -359,15 +446,16 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
                     estado={estado}
                     causas={causas}
                     onClose={() => setAddingIn(null)}
-                    onSaved={() => { reload(); router.refresh(); }}
+                    onSaved={reload}
                   />
                 ) : (
                   <button
                     type="button"
                     onClick={() => setAddingIn(estado)}
-                    className="mt-auto flex cursor-pointer items-center gap-1 rounded-[6px] px-2 py-[5px] text-[12px] text-muted transition-colors hover:bg-border/60 hover:text-sub"
+                    className="mt-auto flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed px-2 py-[7px] text-[12.5px] font-semibold transition-colors hover:opacity-80"
+                    style={{ borderColor: color, color }}
                   >
-                    <Plus size={13} /> Nueva tarea
+                    <Plus size={14} strokeWidth={2.4} /> Nueva tarea
                   </button>
                 )}
               </div>

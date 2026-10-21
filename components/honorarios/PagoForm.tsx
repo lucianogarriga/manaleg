@@ -11,7 +11,7 @@ import { formatCurrency, todayISO } from "@/utils/formatters";
 interface PagoFormProps {
   causaId: string;
   honorarioId: string;
-  moneda: "ARS" | "USD";
+  moneda: string;
   saldo: number | null; // ayuda visual: cuánto falta cobrar (null en honorarios mensuales)
   onClose: () => void;
   onSaved: () => void;
@@ -36,7 +36,7 @@ export default function PagoForm({ causaId, honorarioId, moneda, saldo, onClose,
           </div>
         )}
         <FormSection title={saldo === null ? "Cuota mensual" : `Saldo pendiente: ${formatCurrency(saldo, moneda)}`}>
-          <TextField label={`Monto (${moneda})`} name="monto" inputMode="decimal" required autoFocus placeholder={moneda === "USD" ? "500" : "140000"} />
+          <TextField label={`Monto (${moneda})`} name="monto" inputMode="decimal" required autoFocus placeholder={moneda === "ARS" ? "140000" : "500"} />
           <TextField label="Fecha de pago" name="fecha_pago" type="date" defaultValue={todayISO()} max={todayISO()} />
           <div className="sm:col-span-2">
             <TextField label="Descripción" name="descripcion" placeholder="Pago parcial n° 2" />

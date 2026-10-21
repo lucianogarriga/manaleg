@@ -1,16 +1,22 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { useCausasStore } from "@/store/causasStore";
 import { recargarNovedades, guardarPreferenciaGraficos } from "@/app/(app)/novedadesActions";
 import { toggleTodo } from "@/app/(app)/causas/todoActions";
-import { formatCurrency, todayISO } from "@/utils/formatters";
+import { formatCurrency, formatDate, todayISO } from "@/utils/formatters";
+import FormularioMoneda from "@/components/layout/FormularioMoneda";
+import { useMonedasJudiciales } from "@/store/monedasJudicialesStore";
+import { eliminarMonedaJudicial, listarMonedasJudiciales } from "@/app/(app)/ajustes/actions";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
+import { useUIStore } from "@/store/uiStore";
+import type { MonedaJudicial } from "@/types";
+import { ChevronDown, Pencil, Trash2 } from "lucide-react";
 import type { Moneda, NovedadesCompletas, Periodo, Novedades } from "@/services/supabase/novedades";
 import {
   Badge, BadgeHoy, BarraProgreso, BarrasAgrupadas, BarrasH, BarrasVerticales, Calendario, Card, Dona,
   EtiquetaPlazo, FilaLista, KpiCard, MONEDAS, Montos, Ondas, SeccionEncabezado, Segmentado, Tile, Titulo,
-  textoVariacion, variacion, type Tono,
+  variacion, type Tono,
 } from "./partes";
 
 const NOMBRE_MES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
@@ -32,8 +38,6 @@ function nombrePeriodo(periodo: Periodo, d: Novedades["periodo"]): { nombre: str
   }
   return { nombre: `Ene – ${ABREV_MES[mh - 1]} ${yh}`, comparacion: `vs. mismo período ${yp}` };
 }
-
-const ETIQUETA_PERIODO: Record<Periodo, string> = { mes: "Mes", trim: "Trimestre", anio: "Año" };
 
 const DUR_PERIODO: Record<Periodo, string> = { mes: "Mes", trim: "Trimestre", anio: "Año" };
 
@@ -74,7 +78,6 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
   const [moneda, setMoneda] = useState<Moneda>("ARS");
   const [base, setBase] = useState<"activas" | "todas">("activas");
   const [tareas, setTareas] = useState(inicial?.tareas ?? []);
-  const abrirAltaCausa = () => useCausasStore.getState().openCreate();
 
   const cambiarPeriodo = (p: Periodo) => {
     setPeriodo(p);
@@ -98,6 +101,43 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
   };
 
   const hoy = todayISO();
+  const monedasJud = useMonedasJudiciales((st) => st.monedas);
+  const monedasCargado = useMonedasJudiciales((st) => st.cargado);
+  const setMonedasJud = useMonedasJudiciales((st) => st.setMonedas);
+  useEffect(() => {
+    if (!monedasCargado) listarMonedasJudiciales().then(setMonedasJud);
+  }, [monedasCargado, setMonedasJud]);
+  const diaUno = hoy.slice(8, 10) === "01";
+  const algunaVencida = monedasJud.some((m) => Date.parse(hoy) - Date.parse(m.valor_fecha) > 60 * 86400000);
+  const alertaJud = diaUno || algunaVencida;
+  const [formMoneda, setFormMoneda] = useState<{ moneda: MonedaJudicial | null } | null>(null);
+  const [monedasAbierto, setMonedasAbierto] = useState(false);
+  const monedasRef = useRef<HTMLDivElement>(null);
+  const { request: confirmRequest, dialog: confirmDialog } = useConfirm();
+  const showToast = useUIStore((st) => st.showToast);
+
+  useEffect(() => {
+    if (!monedasAbierto) return;
+    const onDown = (e: MouseEvent) => { if (!monedasRef.current?.contains(e.target as Node)) setMonedasAbierto(false); };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMonedasAbierto(false);
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); };
+  }, [monedasAbierto]);
+
+
+  const borrarMoneda = async (m: MonedaJudicial) => {
+    const ok = await confirmRequest({
+      title: "Eliminar moneda judicial",
+      message: `¿Eliminar ${m.nombre}? Los honorarios ya cargados con esta moneda conservan su cotización.`,
+      confirmLabel: "Eliminar",
+      danger: true,
+    });
+    if (!ok) return;
+    const r = await eliminarMonedaJudicial(m.id);
+    if (r.error) return showToast({ message: r.error });
+    setMonedasJud(monedasJud.filter((x) => x.id !== m.id));
+  };
 
   return (
     <div className="flex flex-col gap-3 px-4 pb-6 md:px-6">
@@ -118,13 +158,86 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
             type="button"
             onClick={() => setTab(t)}
             className={`-mb-px border-b-2 px-0.5 py-2 text-[14px] transition-colors ${
-              tab === t ? "border-blue font-semibold text-text" : "border-transparent text-muted hover:text-text"
+              tab === t ? "border-accent font-semibold text-text" : "border-transparent text-muted hover:text-text"
             }`}
           >
             {t === "novedades" ? "Novedades" : "KPIs"}
           </button>
         ))}
-        <div className="ml-auto pb-[6px]">
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2 pb-[6px]">
+          <div ref={monedasRef} className="relative">
+            <button type="button" onClick={() => setMonedasAbierto((v) => !v)} aria-expanded={monedasAbierto}
+              className={`flex cursor-pointer items-center gap-1.5 rounded-[8px] border px-3 py-[5px] text-[12px] font-semibold text-text ${
+                alertaJud ? "border-amb-bd bg-amb-lt text-amb" : "border-border bg-card"
+              }`}>
+              Monedas judiciales
+              <ChevronDown size={14} strokeWidth={2} className={`transition-transform ${monedasAbierto ? "rotate-180" : ""}`} />
+            </button>
+
+            {monedasAbierto && (
+              <div className="absolute right-0 top-full z-30 mt-1 w-[310px] max-w-[calc(100vw-24px)] rounded-[10px] border border-border bg-card p-2 shadow-[0_8px_24px_rgba(0,0,0,.18)]">
+                <div className="flex items-center justify-between px-1.5 pb-1.5 pt-0.5">
+                  <span className="text-[10.5px] font-bold uppercase tracking-[.5px] text-muted">Monedas judiciales</span>
+                  <span className="group/info relative inline-flex h-[16px] w-[16px] cursor-help items-center justify-center rounded-full border border-muted text-[10px] font-bold text-muted" tabIndex={0} aria-label="¿Qué es la moneda judicial?">
+                    i
+                    <span className="pointer-events-none absolute right-0 top-full z-40 mt-1 hidden w-[280px] rounded-[8px] border border-border bg-card p-3 text-[12px] font-normal text-sub normal-case tracking-normal shadow-[0_8px_24px_rgba(0,0,0,.18)] group-hover/info:block group-focus/info:block">
+                      <span className="block">Valor de referencia de uso judicial, con el que se expresan honorarios y montos.</span>
+                      <span className="mt-1.5 block text-muted">Ejemplos: JUS de Córdoba, UMA de Buenos Aires, u otra moneda propia.</span>
+                      {alertaJud && <span className="mt-1.5 block font-semibold text-amb">{diaUno ? "Día 1 del mes: conviene actualizar los valores." : "Hay valores con más de 60 días: conviene actualizarlos."}</span>}
+                    </span>
+                  </span>
+                </div>
+
+                {monedasJud.length === 0 && !formMoneda && (
+                  <p className="px-2 py-2 text-[13px] text-muted">Todavía no cargaste monedas judiciales.</p>
+                )}
+
+                {monedasJud.length > 0 && (
+                  <ul className="flex flex-col">
+                    {monedasJud.map((m) => (
+                      <li key={m.id} className="flex items-center gap-2 rounded-[6px] px-2 py-2 hover:bg-panel2">
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-[14px] font-semibold text-text">
+                            {m.nombre}{m.referencia ? <span className="font-normal text-muted"> · {m.referencia}</span> : null}
+                          </div>
+                          <div className="text-[12.5px] tabular-nums text-sub">{formatCurrency(m.valor, "ARS")} <span className="text-muted">· {formatDate(m.valor_fecha)}</span></div>
+                        </div>
+                        <button type="button" aria-label={`Editar ${m.nombre}`} title="Editar"
+                          onClick={() => setFormMoneda({ moneda: m })}
+                          className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-[6px] text-sub hover:bg-bg hover:text-blue">
+                          <Pencil size={14} strokeWidth={1.8} />
+                        </button>
+                        <button type="button" aria-label={`Eliminar ${m.nombre}`} title="Eliminar"
+                          onClick={() => borrarMoneda(m)}
+                          className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-[6px] text-sub hover:bg-bg hover:text-red">
+                          <Trash2 size={14} strokeWidth={1.8} />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {formMoneda ? (
+                  <div className="mt-2 rounded-[8px] border border-border p-3">
+                    <div className="mb-2.5 text-[12px] font-bold uppercase tracking-[.4px] text-sub">
+                      {formMoneda.moneda ? "Editar moneda" : "Agregar moneda"}
+                    </div>
+                    <FormularioMoneda
+                      key={formMoneda.moneda?.id ?? "nueva"}
+                      inicial={formMoneda.moneda}
+                      onHecho={() => setFormMoneda(null)}
+                      onCancelar={() => setFormMoneda(null)}
+                    />
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => setFormMoneda({ moneda: null })}
+                    className="mt-1 w-full cursor-pointer rounded-[6px] px-2 py-2 text-left text-[13.5px] font-semibold text-blue hover:bg-panel2">
+                    + Agregar moneda
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
           <Segmentado
             titulo="Período"
             valores={["mes", "trim", "anio"] as Periodo[]}
@@ -135,6 +248,8 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
           />
         </div>
       </div>
+
+      {confirmDialog}
 
       {error && (
         <div className="flex items-center justify-between gap-3 rounded-xl border border-amb-bd bg-amb-lt px-4 py-3 text-[13px] text-amb">
@@ -182,8 +297,7 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
 
   return (
     <>
-      <SeccionEncabezado>Operativo</SeccionEncabezado>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <KpiCard
           titulo="Causas activas"
           valor={n.causas.activas}
@@ -209,14 +323,13 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
         />
       </div>
 
-      <SeccionEncabezado sub={per.nombre}>Financiero · {DUR_PERIODO[periodo]}</SeccionEncabezado>
       <div className="mb-1 flex flex-wrap gap-2">
         <BadgeHoy etiqueta="Plazos vencidos" valor={n.vencimientos.vencidos} rojo />
         <BadgeHoy etiqueta="Plazos que vencen hoy" valor={n.vencimientos.hoy} />
         <BadgeHoy etiqueta="Audiencias hoy" valor={n.audiencias.hoy} />
         <BadgeHoy etiqueta="Tareas hoy" valor={n.tareas.hoy} />
       </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <KpiCard
           titulo="Honorarios cobrados"
           valor={<Montos valores={n.financiero.cobrado} />}
@@ -256,7 +369,7 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
           {estilo === "barras"
             ? <BarrasAgrupadas meses={meses} cobrado={cobrados} pendiente={pendientes} moneda={moneda} />
             : <Ondas meses={meses} moneda={moneda} series={[
-                { valores: cobrados, color: "var(--color-blue)", posicion: "arriba" },
+                { valores: cobrados, color: "var(--color-series-1)", posicion: "arriba" },
                 { valores: pendientes, color: "var(--color-pur)", posicion: "abajo" },
               ]} />}
           <div className="mt-2 flex gap-4 text-[12px] text-muted">
@@ -336,7 +449,7 @@ function FilaEstado({ color, etiqueta, valor, total }: { color: string; etiqueta
   );
 }
 
-function RingPct({ pct, color = "var(--color-blue)", size = 44, stroke = 5 }: { pct: number; color?: string; size?: number; stroke?: number }) {
+function RingPct({ pct, color = "var(--color-series-1)", size = 44, stroke = 5 }: { pct: number; color?: string; size?: number; stroke?: number }) {
   const c = size / 2, r = c - stroke - 1, circ = 2 * Math.PI * r;
   const dash = (Math.min(100, Math.max(0, pct)) / 100) * circ;
   return (
@@ -376,9 +489,9 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
   const meses = n.causas.nuevasSeisMeses.map((x) => ABREV_MES[Number(x.mes.slice(5, 7)) - 1]);
 
   const segmentos = [
-    { etiqueta: "Judicial", valor: n.causas.judiciales, color: "var(--color-blue)" },
-    { etiqueta: "Extrajudicial", valor: n.causas.extrajudiciales, color: "var(--color-cel)" },
-    { etiqueta: "Cerrada", valor: n.causas.cerradas, color: "var(--color-gray)" },
+    { etiqueta: "Judicial", valor: n.causas.judiciales, color: "var(--color-series-1)" },
+    { etiqueta: "Extrajudicial", valor: n.causas.extrajudiciales, color: "var(--color-series-2)" },
+    { etiqueta: "Cerrada", valor: n.causas.cerradas, color: "var(--color-donut-3)" },
   ];
 
   const plazosPct = n.gestion.plazosTotal90 > 0 ? Math.round((n.gestion.plazosATiempo90 / n.gestion.plazosTotal90) * 100) : null;
@@ -415,9 +528,9 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
           <div className="grid grid-cols-2 items-center gap-4">
             <Dona segmentos={segmentos} sinLeyenda />
             <ul className="flex min-w-0 flex-col gap-1">
-              <FilaEstado color="var(--color-blue)" etiqueta="Judicial" valor={n.causas.judiciales} total={n.causas.total} />
-              <FilaEstado color="var(--color-cel)" etiqueta="Extrajudicial" valor={n.causas.extrajudiciales} total={n.causas.total} />
-              <FilaEstado color="var(--color-gray)" etiqueta="Cerrada" valor={n.causas.cerradas} total={n.causas.total} />
+              <FilaEstado color="var(--color-series-1)" etiqueta="Judicial" valor={n.causas.judiciales} total={n.causas.total} />
+              <FilaEstado color="var(--color-series-2)" etiqueta="Extrajudicial" valor={n.causas.extrajudiciales} total={n.causas.total} />
+              <FilaEstado color="var(--color-donut-3)" etiqueta="Cerrada" valor={n.causas.cerradas} total={n.causas.total} />
             </ul>
           </div>
         </Card>
@@ -432,7 +545,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
       </div>
 
       <SeccionEncabezado sub="Plazos, gastos y tiempos">Gestión</SeccionEncabezado>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
         <Tile titulo="Plazos cumplidos a tiempo" sub={`${n.gestion.plazosTotal90} plazos en los últimos 90 días`}
           valor={plazosPct === null ? "—" : `${plazosPct}%`}
           extra={<>{plazosPct !== null && <BarraProgreso pct={plazosPct} />}<div className="mt-2 text-[12px] text-muted">{n.gestion.plazosVencidosSinCumplir90} vencieron sin cumplir</div></>} />
@@ -540,7 +653,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
             etiquetas={{ barras: "Barras", ondas: "Ondas" }} />} sub="Últimos 6 meses">Causas nuevas por mes</Titulo>
           {estilo === "barras"
             ? <BarrasVerticales meses={meses} valores={nuevasPorMes} />
-            : <Ondas meses={meses} series={[{ valores: nuevasPorMes, color: "var(--color-blue)", posicion: "arriba" }]} formato={(v) => String(Math.round(v))} />}
+            : <Ondas meses={meses} series={[{ valores: nuevasPorMes, color: "var(--color-series-1)", posicion: "arriba" }]} formato={(v) => String(Math.round(v))} />}
         </Card>
         <div className="flex flex-col gap-3">
           <Card className="flex flex-1 flex-col justify-center">
@@ -555,34 +668,36 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
             </div>
           </Card>
           <Card className="flex flex-1 flex-col justify-center">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex min-w-0 flex-col items-start gap-2">
-                <div className="text-[14px] font-semibold text-text">Causas cerradas con resultado</div>
-                <div className="text-[12px] text-muted">{n.gestion.exito.total} causas · últimos 2 años</div>
-                <Dona sinLeyenda segmentos={[
-                  { etiqueta: "Ganadas", valor: n.gestion.exito.ganadas, color: "var(--color-blue)" },
-                  { etiqueta: "Transadas", valor: n.gestion.exito.transadas, color: "var(--color-cel)" },
-                  { etiqueta: "Perdidas", valor: n.gestion.exito.perdidas, color: "var(--color-gray)" },
-                ]} />
-              </div>
-              <ul className="flex flex-col justify-center gap-3 text-[13px]">
+            <div className="mb-3">
+              <div className="text-[14px] font-semibold text-text">Causas cerradas con resultado</div>
+              <div className="text-[12px] text-muted">Últimos 2 años</div>
+            </div>
+            <div className="grid grid-cols-2 items-center gap-3">
+              <ul className="flex min-w-0 flex-col justify-center gap-3 text-[13px]">
                 {[
-                  { etiqueta: "Ganadas", valor: n.gestion.exito.ganadas, color: "var(--color-blue)" },
-                  { etiqueta: "Transadas", valor: n.gestion.exito.transadas, color: "var(--color-cel)" },
-                  { etiqueta: "Perdidas", valor: n.gestion.exito.perdidas, color: "var(--color-gray)" },
+                  { etiqueta: "Ganadas", valor: n.gestion.exito.ganadas, color: "var(--color-series-1)" },
+                  { etiqueta: "Transadas", valor: n.gestion.exito.transadas, color: "var(--color-series-2)" },
+                  { etiqueta: "Perdidas", valor: n.gestion.exito.perdidas, color: "var(--color-donut-3)" },
                 ].map((f) => (
                   <li key={f.etiqueta} className="flex items-center gap-2 border-b border-border pb-2 last:border-0">
-                    <span className="flex flex-1 items-center gap-2 text-text">
+                    <span className="flex min-w-0 flex-1 items-center gap-2 truncate text-text">
                       <span className="inline-block h-[9px] w-[9px] shrink-0 rounded-full" style={{ background: f.color }} />
                       {f.etiqueta}
                     </span>
-                    <span className="flex items-center gap-3 tabular-nums">
+                    <span className="flex shrink-0 items-center gap-2 tabular-nums">
                       <b className="min-w-[18px] text-center text-text">{f.valor}</b>
                       <span className="min-w-[30px] text-right text-[11px] text-muted">{n.gestion.exito.total ? Math.round((f.valor / n.gestion.exito.total) * 100) : 0}%</span>
                     </span>
                   </li>
                 ))}
               </ul>
+              <div className="flex justify-center">
+                <Dona sinLeyenda segmentos={[
+                  { etiqueta: "Ganadas", valor: n.gestion.exito.ganadas, color: "var(--color-series-1)" },
+                  { etiqueta: "Transadas", valor: n.gestion.exito.transadas, color: "var(--color-series-2)" },
+                  { etiqueta: "Perdidas", valor: n.gestion.exito.perdidas, color: "var(--color-donut-3)" },
+                ]} />
+              </div>
             </div>
           </Card>
         </div>

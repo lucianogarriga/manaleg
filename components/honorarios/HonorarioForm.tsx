@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useMonedasJudiciales } from "@/store/monedasJudicialesStore";
+import { listarMonedasJudiciales } from "@/app/(app)/ajustes/actions";
 import { saveHonorario } from "@/app/(app)/causas/detailActions";
 import FormAlert from "@/components/auth/FormAlert";
 import { FormSection, TextField } from "@/components/ui/FormControls";
@@ -25,7 +27,7 @@ function Opcion({ activo, onClick, children }: { activo: boolean; onClick: () =>
       type="button"
       onClick={onClick}
       className={`rounded-[6px] border px-4 py-[6px] text-[13px] font-semibold transition-colors ${
-        activo ? "border-blue bg-blue text-bg" : "border-border bg-bg text-sub hover:border-blue"
+        activo ? "border-blue bg-blue text-on-primary" : "border-border bg-bg text-sub hover:border-blue"
       }`}
     >
       {children}
@@ -35,7 +37,37 @@ function Opcion({ activo, onClick, children }: { activo: boolean; onClick: () =>
 
 export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: HonorarioFormProps) {
   const { state, pending, onSubmit } = useFormAction(saveHonorario, (s) => onSaved(s.message ?? "Guardado."));
-  const [moneda, setMoneda] = useState<"ARS" | "USD">(honorario?.moneda ?? "ARS");
+  const monedasJud = useMonedasJudiciales((st) => st.monedas);
+  const monedasCargado = useMonedasJudiciales((st) => st.cargado);
+  const setMonedasJud = useMonedasJudiciales((st) => st.setMonedas);
+  useEffect(() => {
+    if (!monedasCargado) listarMonedasJudiciales().then(setMonedasJud);
+  }, [monedasCargado, setMonedasJud]);
+
+  // Clave de la moneda elegida: "ARS", "USD", "J:<id>" (moneda judicial del usuario) o "J:anterior" (ya no existe).
+  const nombreJudicialPrevio = honorario?.moneda === "JUS" ? (honorario.moneda_judicial_nombre ?? "JUS") : null;
+  const [monedaKey, setMonedaKey] = useState<string>(() => {
+    if (honorario) {
+      if (honorario.moneda === "USD") return "USD";
+      if (honorario.moneda === "JUS") return "J:anterior";
+      return "ARS";
+    }
+    return "ARS";
+  });
+  const judicialElegida = monedaKey.startsWith("J:") && monedaKey !== "J:anterior"
+    ? monedasJud.find((m) => `J:${m.id}` === monedaKey) ?? null
+    : null;
+  const etiquetaMonedaElegida = monedaKey === "ARS" || monedaKey === "USD"
+    ? monedaKey
+    : judicialElegida?.nombre ?? nombreJudicialPrevio ?? "JUS";
+  const matchJud = nombreJudicialPrevio ? monedasJud.find((m) => m.nombre === nombreJudicialPrevio) : undefined;
+  const claveActiva = monedaKey === "J:anterior" && matchJud ? `J:${matchJud.id}` : monedaKey;
+  const opcionesMoneda = [
+    { key: "ARS", label: "ARS" },
+    { key: "USD", label: "USD" },
+    ...monedasJud.map((m) => ({ key: `J:${m.id}`, label: m.nombre })),
+    ...(monedaKey === "J:anterior" && !matchJud ? [{ key: "J:anterior", label: nombreJudicialPrevio ?? "JUS" }] : []),
+  ];
   const conceptoInicial = honorario && CONCEPTOS_CON_OTRO.includes(honorario.concepto) ? honorario.concepto : honorario ? "Otro" : "Consulta";
   const [concepto, setConcepto] = useState(conceptoInicial);
   const [periodicidad, setPeriodicidad] = useState<"unico" | "mensual">(honorario?.periodicidad ?? "unico");
@@ -51,7 +83,8 @@ export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: 
       <form id="honorario-form" onSubmit={onSubmit}>
         <input type="hidden" name="causa_id" value={causaId} />
         {honorario && <input type="hidden" name="id" value={honorario.id} />}
-        <input type="hidden" name="moneda" value={moneda} />
+        <input type="hidden" name="moneda" value={monedaKey === "ARS" || monedaKey === "USD" ? monedaKey : "JUS"} />
+        <input type="hidden" name="moneda_judicial" value={judicialElegida?.id ?? ""} />
         <input type="hidden" name="periodicidad" value={periodicidad} />
         {state.error && (
           <div className="px-4 pt-3">
@@ -87,9 +120,9 @@ export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: 
           <div>
             <label className="mb-1 block text-[12px] font-semibold text-sub">Moneda</label>
             <div className="flex gap-2">
-              {(["ARS", "USD"] as const).map((m) => (
-                <Opcion key={m} activo={moneda === m} onClick={() => setMoneda(m)}>
-                  {m}
+              {opcionesMoneda.map((o) => (
+                <Opcion key={o.key} activo={claveActiva === o.key} onClick={() => setMonedaKey(o.key)}>
+                  {o.label}
                 </Opcion>
               ))}
             </div>
@@ -134,14 +167,24 @@ export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: 
           )}
 
           <TextField
-            label={periodicidad === "mensual" ? `Monto mensual (${moneda})` : `Monto acordado (${moneda})`}
+            label={periodicidad === "mensual" ? `Monto mensual (${etiquetaMonedaElegida})` : `Monto acordado (${etiquetaMonedaElegida})`}
             name="monto_acordado"
             inputMode="decimal"
             required
             autoFocus
             defaultValue={honorario?.monto_acordado ?? ""}
-            placeholder={moneda === "USD" ? "5000" : "840000"}
+            placeholder={monedaKey === "ARS" ? "840000" : monedaKey === "USD" ? "5000" : "1000"}
           />
+          {monedaKey === "J:anterior" && (
+            <p className="sm:col-span-2 text-[12px] text-muted">
+              Esta moneda ya no está en tus monedas judiciales: se conserva la cotización con la que se cargó.
+            </p>
+          )}
+          {monedasCargado && monedasJud.length === 0 && monedaKey !== "J:anterior" && (
+            <p className="sm:col-span-2 rounded-[6px] border border-amb-bd bg-amb-lt px-3 py-2 text-[12px] text-amb">
+              Para cargar honorarios en una moneda judicial (JUS, UMA u otra), primero agregala en Moneda judicial, en la parte superior del dashboard.
+            </p>
+          )}
           {periodicidad === "unico" && (
             <TextField
               label="Porcentaje (%)"
@@ -152,7 +195,7 @@ export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: 
             />
           )}
           <TextField
-            label={`Monto adicional fijo (${moneda})`}
+            label={`Monto adicional fijo (${etiquetaMonedaElegida})`}
             name="monto_adicional"
             inputMode="decimal"
             defaultValue={honorario?.monto_adicional ?? ""}

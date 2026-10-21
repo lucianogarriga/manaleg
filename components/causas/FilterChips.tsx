@@ -91,7 +91,7 @@ export default function FilterChips({
               type="button"
               onClick={() => setFilter(chip.value)}
               className={`inline-flex shrink-0 cursor-pointer items-center gap-1 whitespace-nowrap rounded-[20px] border px-[9px] py-[3px] text-[12px] font-medium transition-colors ${
-                on ? "border-blue bg-blue text-bg" : "border-border text-sub hover:bg-bg"
+                on ? "border-blue bg-blue text-on-primary" : "border-border text-sub hover:bg-bg"
               }`}
             >
               {chip.label}
@@ -121,7 +121,7 @@ export default function FilterChips({
         >
           Filtrar
           {activeCount > 0 && (
-            <span className="flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-blue px-[3px] text-[9px] font-bold leading-none text-bg">
+            <span className="flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-blue px-[3px] text-[9px] font-bold leading-none text-on-primary">
               {activeCount}
             </span>
           )}

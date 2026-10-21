@@ -1,9 +1,7 @@
 "use client";
 
-import { useGlobalLoading } from "@/hooks/useGlobalLoading";
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { Calendar, CheckCircle2, Circle, Clock, MapPin, Pencil, Plus, Trash2, X } from "lucide-react";
-import { useRouter } from "next/navigation";
 import {
   createVencimiento,
   deleteVencimiento,
@@ -17,6 +15,7 @@ import FormAlert from "@/components/auth/FormAlert";
 import { formatDate } from "@/utils/formatters";
 import { ANTICIPACION_ALERTA, TIPOS_AVISO } from "@/utils/constants";
 import type { FormState, Vencimiento } from "@/types";
+import DateInput from "@/components/ui/DateInput";
 
 const TIPOS = TIPOS_AVISO;
 const ANTICIPACIONES = ANTICIPACION_ALERTA;
@@ -43,7 +42,6 @@ function VencimientoFormRow({ causaId, editTarget, onClose, onDone }: FormRowPro
   const action = editTarget ? updateVencimiento : createVencimiento;
   const [state, dispatch, pending] = useActionState<FormState, FormData>(action, {});
   const [, startT] = useTransition();
-  useGlobalLoading(pending);
   const [tipo, setTipo] = useState<string>(editTarget?.tipo ?? "Vencimiento");
 
   useEffect(() => {
@@ -85,9 +83,9 @@ function VencimientoFormRow({ causaId, editTarget, onClose, onDone }: FormRowPro
 
         <div className="flex flex-col gap-1">
           <label className="text-[11px] font-semibold text-sub">Fecha</label>
-          <input
-            type="date"
+          <DateInput
             name="fecha"
+            aria-label="Fecha"
             defaultValue={editTarget?.fecha ?? ""}
             required
             className={inputCls}
@@ -186,7 +184,7 @@ function VencimientoFormRow({ causaId, editTarget, onClose, onDone }: FormRowPro
         <button
           type="submit"
           disabled={pending}
-          className="cursor-pointer rounded-[6px] bg-blue px-4 py-[5px] text-[13px] font-semibold text-bg hover:opacity-90 disabled:opacity-60"
+          className="cursor-pointer rounded-[6px] bg-blue px-4 py-[5px] text-[13px] font-semibold text-on-primary hover:opacity-90 disabled:opacity-60"
         >
           {pending ? "Guardando…" : editTarget ? "Actualizar" : "Agregar"}
         </button>
@@ -196,26 +194,23 @@ function VencimientoFormRow({ causaId, editTarget, onClose, onDone }: FormRowPro
 }
 
 export default function VencimientosSection({ causaId, esTitular }: Props) {
-  const router = useRouter();
   const showToast = useUIStore((s) => s.showToast);
   const { data: vencimientos, reload } = useVencimientos(causaId);
   const { request: confirmRequest, dialog: confirmDialog } = useConfirm();
   const [addOpen, setAddOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [toggling, startToggle] = useTransition();
-  useGlobalLoading(toggling);
 
   const done = (msg: string) => {
     showToast({ message: msg });
     reload();
-    router.refresh();
   };
 
   const handleToggle = (v: Vencimiento) => {
     startToggle(async () => {
       const r = await toggleVencimientoCompletado(v.id, !v.completado);
       if (r.error) showToast({ message: r.error });
-      else { reload(); router.refresh(); }
+      else reload();
     });
   };
 
@@ -229,7 +224,7 @@ export default function VencimientosSection({ causaId, esTitular }: Props) {
     if (!ok) return;
     const r = await deleteVencimiento(v.id);
     showToast({ message: r.error ?? r.message ?? "Listo." });
-    if (!r.error) { reload(); router.refresh(); }
+    if (!r.error) reload();
   };
 
   return (

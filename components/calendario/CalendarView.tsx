@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { useRouter } from "next/navigation";
-import { Bell, CalendarClock, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import { Bell, CalendarClock, ChevronLeft, ChevronRight, ListTodo, Trash2 } from "lucide-react";
 import { deleteDiaInhabil } from "@/app/(app)/calendario/actions";
 import OpenCausaButton from "@/components/causas/OpenCausaButton";
 import { useUIStore } from "@/store/uiStore";
@@ -63,7 +63,7 @@ export default function CalendarView({ hoy, avisos, inhabiles, userId }: Calenda
   const prefijo = monthKey(year, month);
   const avisosDelMes = avisos.filter((a) => a.fecha.startsWith(prefijo));
   const inhabilesDelMes = inhabiles.filter((d) => d.fecha.startsWith(prefijo) && !isWeekend(d.fecha));
-  const vencimientos = avisosDelMes.filter((a) => a.tipo !== "Recordatorio").length;
+  const vencimientos = avisosDelMes.filter((a) => a.tipo !== "Recordatorio" && !a.esTarea).length;
   const alertas = avisosDelMes.length - vencimientos;
 
   const cambiarMes = (delta: number) => {
@@ -156,7 +156,7 @@ export default function CalendarView({ hoy, avisos, inhabiles, userId }: Calenda
                 <span
                   className={`flex h-[24px] min-w-[24px] items-center justify-center rounded-full px-1 text-[13px] font-semibold ${
                     esHoy
-                      ? "bg-blue text-bg"
+                      ? "bg-blue text-on-primary"
                       : !delMes
                       ? "text-muted opacity-40"
                       : finde
@@ -173,11 +173,11 @@ export default function CalendarView({ hoy, avisos, inhabiles, userId }: Calenda
                 )}
                 {evs.length > 0 && (
                   <span className="mt-auto flex flex-wrap gap-[3px]">
-                    {evs.slice(0, 4).map((e) => (
+                    {evs.slice(0, 4).map((e, i) => (
                       <span
-                        key={e.causaId}
-                        title={`${e.tipo ?? "Vencimiento"}: ${e.caratula}`}
-                        className={`h-[9px] w-[9px] rounded-full ${e.tipo === "Recordatorio" ? "bg-amb" : "bg-red"}`}
+                        key={`${e.causaId}-${i}`}
+                        title={`${e.esTarea ? "Tarea" : e.tipo ?? "Vencimiento"}: ${e.caratula}`}
+                        className={`h-[9px] w-[9px] rounded-full ${e.esTarea ? "bg-blue" : e.tipo === "Recordatorio" ? "bg-amb" : "bg-red"}`}
                       />
                     ))}
                     {evs.length > 4 && <span className="text-[11px] leading-[9px] font-bold text-sub">+{evs.length - 4}</span>}
@@ -222,8 +222,8 @@ export default function CalendarView({ hoy, avisos, inhabiles, userId }: Calenda
             {(inhabilesPorDia.get(selected) ?? []).map((d) => (
               <InhabilRow key={d.id} dia={d} propio={d.user_id === userId} onDelete={borrarInhabil} />
             ))}
-            {(avisosPorDia.get(selected) ?? []).map((a) => (
-              <AvisoRow key={a.causaId} aviso={a} />
+            {(avisosPorDia.get(selected) ?? []).map((a, i) => (
+              <AvisoRow key={`${a.causaId}-${i}`} aviso={a} />
             ))}
             {!(inhabilesPorDia.get(selected)?.length) && !(avisosPorDia.get(selected)?.length) && (
               <p className="px-3 py-3 text-[13.5px] text-muted">
@@ -244,8 +244,8 @@ export default function CalendarView({ hoy, avisos, inhabiles, userId }: Calenda
             <p className="px-3 py-3 text-[13.5px] text-muted">No hay alertas, vencimientos ni feriados este mes.</p>
           )}
 
-          {avisosDelMes.map((a) => (
-            <AvisoRow key={a.causaId} aviso={a} conFecha />
+          {avisosDelMes.map((a, i) => (
+            <AvisoRow key={`${a.causaId}-${i}`} aviso={a} conFecha />
           ))}
           {inhabilesDelMes.map((d) => (
             <InhabilRow key={d.id} dia={d} propio={d.user_id === userId} onDelete={borrarInhabil} conFecha />
@@ -295,16 +295,22 @@ function Resumen({ n, label, tone }: { n: number; label: string; tone: string })
 
 function AvisoRow({ aviso, conFecha }: { aviso: AlertaItem; conFecha?: boolean }) {
   const esAlerta = aviso.tipo === "Recordatorio";
-  const Icon = esAlerta ? Bell : CalendarClock;
+  const Icon = aviso.esTarea ? ListTodo : esAlerta ? Bell : CalendarClock;
+  const colorIcono = aviso.esTarea ? "text-blue" : esAlerta ? "text-amb" : "text-red";
+  const titulo = "block max-w-full truncate text-[14px] font-semibold text-text hover:text-blue";
   return (
     <div className="flex items-start gap-2 border-b border-border px-3 py-[9px] last:border-b-0">
-      <Icon size={15} className={`mt-[3px] shrink-0 ${esAlerta ? "text-amb" : "text-red"}`} />
+      <Icon size={15} className={`mt-[3px] shrink-0 ${colorIcono}`} />
       <div className="min-w-0 flex-1">
-        <OpenCausaButton causaId={aviso.causaId} className="block max-w-full truncate text-[14px] font-semibold text-text hover:text-blue">
-          {aviso.caratula}
-        </OpenCausaButton>
+        {aviso.causaId ? (
+          <OpenCausaButton causaId={aviso.causaId} className={titulo}>
+            {aviso.caratula}
+          </OpenCausaButton>
+        ) : (
+          <div className="truncate text-[14px] font-semibold text-text">{aviso.caratula}</div>
+        )}
         <div className="text-[13px] text-sub">
-          {aviso.tipo ?? "Vencimiento"}
+          {aviso.esTarea ? "Tarea" : aviso.tipo ?? "Vencimiento"}
           {aviso.motivo ? ` — ${aviso.motivo}` : ""}
         </div>
       </div>

@@ -7,11 +7,12 @@ import StatCard from "@/components/ui/StatCard";
 import { createClient } from "@/services/supabase/server";
 import type { Honorario } from "@/types";
 import { formatCurrency } from "@/utils/formatters";
+import { etiquetaMoneda } from "@/utils/honorarios";
 
 type HonorarioConCausa = Honorario & { causa: { id: string; caratula: string } | null };
 
 interface TotalFila {
-  moneda: "ARS" | "USD";
+  moneda: string;
   acordado: number;
   cobrado: number;
   saldo: number;
@@ -64,7 +65,7 @@ export default async function HonorariosPage({ searchParams }: { searchParams: P
                 <StatCard label="Total acordado" value={formatCurrency(t.acordado, t.moneda)} tone="blue" small />
               </div>
               <div className="fade-in-up" style={{ animationDelay: "80ms" }}>
-                <StatCard label="Cobrado" value={formatCurrency(t.cobrado, t.moneda)} hint={`${percent}% del total`} tone="grn" small />
+                <StatCard label="Cobrado" value={formatCurrency(t.cobrado, t.moneda)} aside={`${percent}%`} tone="grn" small />
               </div>
               <div className="fade-in-up" style={{ animationDelay: "160ms" }}>
                 <StatCard label="Saldo pendiente" value={formatCurrency(t.saldo, t.moneda)} tone="amb" small />
@@ -108,7 +109,7 @@ export default async function HonorariosPage({ searchParams }: { searchParams: P
 
 function filasDePagina(items: HonorarioConCausa[]) {
   return items.map((h) => {
-    const moneda = h.moneda === "USD" ? "USD" : "ARS";
+    const moneda = etiquetaMoneda(h);
     const esMensual = h.periodicidad === "mensual";
     return (
       <div key={h.id} className={`border-b border-slate-100 px-[13px] py-[10px] last:border-b-0 ${h.anulado ? "opacity-60" : ""}`}>

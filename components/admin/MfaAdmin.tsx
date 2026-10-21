@@ -104,7 +104,7 @@ export default function MfaAdmin() {
           <button
             type="submit"
             disabled={cargando || codigo.length !== 6}
-            className="cursor-pointer rounded-[6px] bg-blue px-4 py-2 text-[14px] font-semibold text-bg hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="cursor-pointer rounded-[6px] bg-blue px-4 py-2 text-[14px] font-semibold text-on-primary hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {cargando ? "Verificando…" : "Verificar"}
           </button>

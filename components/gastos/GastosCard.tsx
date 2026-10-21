@@ -1,9 +1,7 @@
 "use client";
 
-import { useGlobalLoading } from "@/hooks/useGlobalLoading";
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
-import { useRouter } from "next/navigation";
 import { ExternalLink, Pencil, Trash2 } from "lucide-react";
 import { createGasto, deleteGasto, updateGasto } from "@/app/(app)/causas/gastoActions";
 import { TIPOS_GASTO } from "@/utils/constants";
@@ -15,6 +13,7 @@ import { useUIStore } from "@/store/uiStore";
 import { formatCurrency, formatDate } from "@/utils/formatters";
 import { safeHref } from "@/utils/urls";
 import type { FormState, Gasto } from "@/types";
+import DateInput from "@/components/ui/DateInput";
 
 function GastoForm({
   causaId,
@@ -30,7 +29,6 @@ function GastoForm({
   const action = gasto ? updateGasto : createGasto;
   const [state, dispatch, pending] = useActionState<FormState, FormData>(action, {});
   const [, startSubmit] = useTransition();
-  useGlobalLoading(pending);
 
   useEffect(() => {
     if (state.message) onSaved(state.message);
@@ -55,7 +53,7 @@ function GastoForm({
             Cancelar
           </button>
           <button type="submit" form="gasto-form" disabled={pending}
-            className="cursor-pointer rounded-[6px] bg-blue px-4 py-[6px] text-[14px] font-semibold text-bg hover:opacity-90 disabled:opacity-60">
+            className="cursor-pointer rounded-[6px] bg-blue px-4 py-[6px] text-[14px] font-semibold text-on-primary hover:opacity-90 disabled:opacity-60">
             {pending ? "Guardando…" : gasto ? "Guardar cambios" : "Registrar"}
           </button>
         </div>
@@ -86,7 +84,7 @@ function GastoForm({
 
           <div>
             <label className="block text-[12px] font-semibold text-sub mb-1">Fecha</label>
-            <input name="fecha" type="date" defaultValue={gasto?.fecha ?? ""}
+            <DateInput name="fecha" aria-label="Fecha" defaultValue={gasto?.fecha ?? ""}
               className="w-full rounded-[6px] border border-border bg-bg px-3 py-[7px] text-[13px] text-text outline-none focus:border-blue" />
           </div>
 
@@ -118,7 +116,6 @@ function GastoForm({
 }
 
 export default function GastosCard({ causaId, naked = false }: { causaId: string; naked?: boolean }) {
-  const router = useRouter();
   const { data: gastos, loading, error, reload } = useGastos(causaId);
   const [formOpen, setFormOpen] = useState(false);
   const [editingGasto, setEditingGasto] = useState<Gasto | null>(null);
@@ -130,7 +127,6 @@ export default function GastosCard({ causaId, naked = false }: { causaId: string
     setEditingGasto(null);
     showToast({ message: msg });
     reload();
-    router.refresh();
   };
 
   const onDelete = async (id: string) => {
@@ -140,7 +136,6 @@ export default function GastosCard({ causaId, naked = false }: { causaId: string
     if (result.error) return showToast({ message: result.error });
     showToast({ message: result.message ?? "Gasto eliminado." });
     reload();
-    router.refresh();
   };
 
   const total = gastos.reduce((s, g) => s + (g.monto ?? 0), 0);

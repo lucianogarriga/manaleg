@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
-import { useRouter } from "next/navigation";
 import { ExternalLink, Trash2 } from "lucide-react";
 import { anularHonorario, anularPago, deleteHonorario, deletePago } from "@/app/(app)/causas/detailActions";
 import CardSection, { CardAction } from "@/components/ui/CardSection";
@@ -11,7 +10,7 @@ import { useUIStore } from "@/store/uiStore";
 import type { HonorarioConPagos } from "@/types";
 import { formatCurrency, formatDate } from "@/utils/formatters";
 import { safeHref } from "@/utils/urls";
-import { monedasPresentes, totalesPorMoneda, type MonedaHonorario } from "@/utils/honorarios";
+import { etiquetaMoneda, monedasPresentes, totalesPorMoneda, type MonedaHonorario } from "@/utils/honorarios";
 import AnularForm from "./AnularForm";
 import HonorarioForm from "./HonorarioForm";
 import PagoForm from "./PagoForm";
@@ -32,7 +31,6 @@ function etiquetaPeriodicidad(h: HonorarioConPagos): string {
 }
 
 export default function HonorariosCard({ causaId, naked = false }: { causaId: string; naked?: boolean }) {
-  const router = useRouter();
   const { data: honorarios, loading, error, reload } = useHonorarios(causaId);
   const [modal, setModal] = useState<Modal>(null);
   const showToast = useUIStore((s) => s.showToast);
@@ -42,7 +40,6 @@ export default function HonorariosCard({ causaId, naked = false }: { causaId: st
     setModal(null);
     showToast({ message });
     reload();
-    router.refresh();
   };
 
   const onDeletePago = async (id: string) => {
@@ -94,7 +91,7 @@ export default function HonorariosCard({ causaId, naked = false }: { causaId: st
       </div>
 
       {lista.map((h) => {
-        const moneda = h.moneda === "USD" ? "USD" : "ARS";
+        const moneda = etiquetaMoneda(h);
         const esMensual = h.periodicidad === "mensual";
         const percent = !esMensual && h.monto_acordado > 0 ? (h.monto_cobrado / h.monto_acordado) * 100 : 0;
         const pagos = h.pagos ?? [];
@@ -204,7 +201,7 @@ export default function HonorariosCard({ causaId, naked = false }: { causaId: st
         <PagoForm
           causaId={causaId}
           honorarioId={modal.honorario.id}
-          moneda={modal.honorario.moneda === "USD" ? "USD" : "ARS"}
+          moneda={etiquetaMoneda(modal.honorario)}
           saldo={modal.honorario.periodicidad === "unico" ? modal.honorario.saldo_pendiente : null}
           onClose={() => setModal(null)}
           onSaved={() => afterChange("Pago registrado.")}

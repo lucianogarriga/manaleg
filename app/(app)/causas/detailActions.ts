@@ -17,6 +17,11 @@ async function getAuthUserId() {
 // RLS valida el acceso a la causa; acá se valida el formato de los datos.
 
 const refresh = () => revalidatePath("/", "layout");
+// Honorarios y pagos no afectan al layout (alertas, contadores): basta con las páginas que los muestran.
+const refreshFinanzas = () => {
+  revalidatePath("/honorarios");
+  revalidatePath("/", "page");
+};
 
 // ─── MOVIMIENTOS ───
 
@@ -95,7 +100,9 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
   const monto = parseMonto(text(formData, "monto_acordado"));
   const porcentajeRaw = text(formData, "porcentaje");
   const fechaPacto = text(formData, "fecha_pacto");
-  const moneda = text(formData, "moneda") === "USD" ? "USD" : "ARS";
+  const monedaRaw = text(formData, "moneda");
+  const moneda = monedaRaw === "USD" || monedaRaw === "JUS" ? monedaRaw : "ARS";
+  const monedaJudicialId = text(formData, "moneda_judicial");
   const montoAdicionalRaw = text(formData, "monto_adicional");
   const notasHonorarios = text(formData, "notas_honorarios") || null;
   const conceptoElegido = text(formData, "concepto");
@@ -131,7 +138,34 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
     monto_adicional = v;
   }
 
+  const supabase = await createClient();
+  // Moneda judicial: se guarda su nombre y el valor vigente al cargar el honorario (cotización).
+  // Al editar un honorario ya cargado en moneda judicial sin elegir otra, se conserva la cotización original.
+  let snapshot: { cotizacion_ars: number; moneda_judicial_nombre: string } | null | undefined = null;
+  if (moneda === "JUS") {
+    if (monedaJudicialId) {
+      const { data: mj } = await supabase
+        .from("monedas_judiciales")
+        .select("nombre, valor")
+        .eq("id", monedaJudicialId)
+        .maybeSingle<{ nombre: string; valor: number }>();
+      if (!mj) return { error: "La moneda judicial elegida ya no existe. Volvé a cargarla en el dashboard." };
+      snapshot = { cotizacion_ars: mj.valor, moneda_judicial_nombre: mj.nombre };
+    } else {
+      const previo = id
+        ? await supabase.from("honorarios").select("moneda, cotizacion_ars, moneda_judicial_nombre").eq("id", id)
+            .maybeSingle<{ moneda: string; cotizacion_ars: number | null; moneda_judicial_nombre: string | null }>()
+        : null;
+      const conserva = previo?.data?.moneda === "JUS" && previo.data.cotizacion_ars;
+      if (!conserva) return { error: "Elegí la moneda judicial del honorario." };
+      snapshot = undefined;
+    }
+  } else {
+    snapshot = null;
+  }
+
   const values = {
+    ...(snapshot !== undefined ? (snapshot ?? { cotizacion_ars: null, moneda_judicial_nombre: null }) : {}),
     concepto,
     periodicidad,
     cuotas_mensuales: periodicidad === "mensual" ? cuotasMensuales : null,
@@ -142,7 +176,6 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
     monto_adicional,
     notas_honorarios: notasHonorarios,
   };
-  const supabase = await createClient();
   if (id) {
     const { data, error } = await supabase.from("honorarios").update(values).eq("id", id).select("id");
     if (error) return { error: `No se pudieron guardar los honorarios: ${error.message}` };
@@ -152,7 +185,7 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
     if (error) return { error: `No se pudieron guardar los honorarios: ${error.message}` };
   }
 
-  refresh();
+  refreshFinanzas();
   return { message: id ? "Honorarios actualizados." : "Honorarios definidos." };
 }
 
@@ -163,7 +196,7 @@ export async function deleteHonorario(id: string): Promise<FormState> {
   if (error) return { error: `No se pudo eliminar el honorario: ${error.message}` };
   if (!data || data.length === 0) return { error: "No se encontró el honorario o no tenés acceso." };
 
-  refresh();
+  refreshFinanzas();
   return { message: "Honorario eliminado." };
 }
 
@@ -180,7 +213,7 @@ async function anular(tabla: "honorarios" | "pagos", id: string, motivo: string 
   if (error) return { error: `No se pudo anular: ${error.message}` };
   if (!data || data.length === 0) return { error: "No se encontró el registro o no tenés permiso para anularlo." };
 
-  refresh();
+  refreshFinanzas();
   return { message: tabla === "pagos" ? "Pago anulado." : "Honorario anulado." };
 }
 
@@ -220,7 +253,7 @@ export async function createPago(_prev: FormState, formData: FormData): Promise<
   });
   if (error) return { error: `No se pudo registrar el pago: ${error.message}` };
 
-  refresh();
+  refreshFinanzas();
   return { message: "Pago registrado." };
 }
 
@@ -355,6 +388,6 @@ export async function deletePago(id: string): Promise<FormState> {
   if (error) return { error: `No se pudo eliminar el pago: ${error.message}` };
   if (!data || data.length === 0) return { error: "No se pudo eliminar el pago." };
 
-  refresh();
+  refreshFinanzas();
   return { message: "Pago eliminado." };
 }

@@ -1,9 +1,11 @@
 "use server";
 
 import { createClient } from "@/services/supabase/server";
-import { revalidatePath } from "next/cache";
 import { escapeHtml, sendEmail } from "@/services/email/resend";
 import { dentroDelLimite } from "@/services/security/limites";
+import { esPaletaValida } from "@/utils/paletas";
+import { todayISO } from "@/utils/formatters";
+import type { MonedaJudicial } from "@/types";
 
 export async function toggleNotificacionesEmail(enabled: boolean): Promise<{ error?: string }> {
   const supabase = await createClient();
@@ -16,7 +18,22 @@ export async function toggleNotificacionesEmail(enabled: boolean): Promise<{ err
     .eq("id", user.id);
 
   if (error) return { error: error.message };
-  revalidatePath("/", "layout");
+  return {};
+}
+
+export async function guardarPaleta(paleta: string): Promise<{ error?: string }> {
+  if (!esPaletaValida(paleta)) return { error: "Paleta no válida." };
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "No autenticado." };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ paleta })
+    .eq("id", user.id);
+
+  if (error) return { error: error.message };
   return {};
 }
 
@@ -56,4 +73,48 @@ export async function enviarFeedback(mensaje: string): Promise<{ error?: string 
   </div>
 </body></html>`,
   });
+}
+
+export async function listarMonedasJudiciales(): Promise<MonedaJudicial[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("monedas_judiciales")
+    .select("id, nombre, referencia, valor, valor_fecha")
+    .order("nombre", { ascending: true })
+    .returns<MonedaJudicial[]>();
+  return data ?? [];
+}
+
+export async function guardarMonedaJudicial(input: {
+  id?: string;
+  nombre: string;
+  referencia: string;
+  valor: number;
+}): Promise<{ error?: string; moneda?: MonedaJudicial }> {
+  const nombre = input.nombre.trim();
+  const referencia = input.referencia.trim();
+  if (!nombre || nombre.length > 30) return { error: "El nombre de la moneda tiene que tener entre 1 y 30 caracteres." };
+  if (referencia.length > 60) return { error: "La referencia es demasiado larga (máx. 60 caracteres)." };
+  if (!Number.isFinite(input.valor) || input.valor <= 0) return { error: "El valor tiene que ser mayor a cero." };
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "No autenticado." };
+
+  const datos = { nombre, referencia: referencia || null, valor: input.valor, valor_fecha: todayISO() };
+  const consulta = input.id
+    ? supabase.from("monedas_judiciales").update(datos).eq("id", input.id)
+    : supabase.from("monedas_judiciales").insert({ ...datos, user_id: user.id });
+  const { data, error } = await consulta.select("id, nombre, referencia, valor, valor_fecha").single<MonedaJudicial>();
+  if (error) {
+    return { error: error.code === "23505" ? `Ya tenés una moneda llamada "${nombre}".` : error.message };
+  }
+  return { moneda: data };
+}
+
+export async function eliminarMonedaJudicial(id: string): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("monedas_judiciales").delete().eq("id", id);
+  if (error) return { error: error.message };
+  return {};
 }

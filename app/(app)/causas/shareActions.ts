@@ -45,6 +45,11 @@ export async function shareCausa(_prev: FormState, formData: FormData): Promise<
   const expiraAt = new Date(Date.now() + DIAS_VIGENCIA * 86400000).toISOString();
 
   const admin = createAdminClient();
+  const { data: destino } = await admin
+    .from("profiles")
+    .select("id")
+    .ilike("email", email.replace(/[\\%_]/g, "\\$&"))
+    .maybeSingle<{ id: string }>();
   const { error } = await admin.from("invitaciones").insert({
     causa_id: causaId,
     invitado_por_id: user.id,
@@ -55,6 +60,12 @@ export async function shareCausa(_prev: FormState, formData: FormData): Promise<
   if (error) {
     console.error("[shareCausa] no se pudo guardar la invitación:", error.message);
     return { message: MENSAJE_INVITACION };
+  }
+
+  // Si ya tiene cuenta, la invitación aparece en Manaleg para aceptarla ahí, sin email.
+  if (destino) {
+    revalidatePath("/", "layout");
+    return { message: "Listo. Tu colega verá la invitación al ingresar a Manaleg." };
   }
 
   const h = await headers();
