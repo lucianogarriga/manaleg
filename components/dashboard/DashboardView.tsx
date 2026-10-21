@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { useCausasStore } from "@/store/causasStore";
 import { recargarNovedades, guardarPreferenciaGraficos } from "@/app/(app)/novedadesActions";
 import { toggleTodo } from "@/app/(app)/causas/todoActions";
 import { formatCurrency, todayISO } from "@/utils/formatters";
@@ -10,7 +9,7 @@ import type { Moneda, NovedadesCompletas, Periodo, Novedades } from "@/services/
 import {
   Badge, BadgeHoy, BarraProgreso, BarrasAgrupadas, BarrasH, BarrasVerticales, Calendario, Card, Dona,
   EtiquetaPlazo, FilaLista, KpiCard, MONEDAS, Montos, Ondas, SeccionEncabezado, Segmentado, Tile, Titulo,
-  textoVariacion, variacion, type Tono,
+  variacion, type Tono,
 } from "./partes";
 
 const NOMBRE_MES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
@@ -32,8 +31,6 @@ function nombrePeriodo(periodo: Periodo, d: Novedades["periodo"]): { nombre: str
   }
   return { nombre: `Ene – ${ABREV_MES[mh - 1]} ${yh}`, comparacion: `vs. mismo período ${yp}` };
 }
-
-const ETIQUETA_PERIODO: Record<Periodo, string> = { mes: "Mes", trim: "Trimestre", anio: "Año" };
 
 const DUR_PERIODO: Record<Periodo, string> = { mes: "Mes", trim: "Trimestre", anio: "Año" };
 
@@ -74,7 +71,6 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
   const [moneda, setMoneda] = useState<Moneda>("ARS");
   const [base, setBase] = useState<"activas" | "todas">("activas");
   const [tareas, setTareas] = useState(inicial?.tareas ?? []);
-  const abrirAltaCausa = () => useCausasStore.getState().openCreate();
 
   const cambiarPeriodo = (p: Periodo) => {
     setPeriodo(p);

@@ -1,7 +1,6 @@
 "use server";
 
 import { createClient } from "@/services/supabase/server";
-import { revalidatePath } from "next/cache";
 import { escapeHtml, sendEmail } from "@/services/email/resend";
 import { dentroDelLimite } from "@/services/security/limites";
 import { esPaletaValida } from "@/utils/paletas";
