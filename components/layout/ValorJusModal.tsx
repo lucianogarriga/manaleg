@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Modal from "@/components/ui/Modal";
 import { TextField } from "@/components/ui/FormControls";
-import { guardarValorJus } from "@/app/(app)/ajustes/actions";
+import { actualizarValorJusCordoba, guardarValorJus } from "@/app/(app)/ajustes/actions";
 import { useAuthStore } from "@/store/authStore";
 import { useUIStore } from "@/store/uiStore";
 
@@ -21,6 +21,22 @@ export default function ValorJusModal({ onClose }: { onClose: () => void }) {
   const [valor, setValor] = useState(profile?.jus_valor != null ? String(profile.jus_valor) : "");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  const traerDelColegio = () => {
+    setError(null);
+    startTransition(async () => {
+      const r = await actualizarValorJusCordoba();
+      if (r.error || r.valor === undefined) {
+        setError(r.error ?? "No se pudo actualizar el valor.");
+        return;
+      }
+      if (profile) {
+        setProfile({ ...profile, jus_referencia: "Córdoba", jus_valor: r.valor, jus_valor_fecha: r.fecha ?? null });
+      }
+      showToast({ message: "Valor del JUS actualizado desde el Colegio de Abogados de Córdoba." });
+      onClose();
+    });
+  };
 
   const guardar = () => {
     const n = parseValor(valor);
@@ -49,7 +65,12 @@ export default function ValorJusModal({ onClose }: { onClose: () => void }) {
       title="Valor del JUS"
       onClose={onClose}
       footer={
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <button type="button" onClick={traerDelColegio} disabled={pending}
+            className="cursor-pointer rounded-[6px] border border-blue px-3 py-[6px] text-[12.5px] font-semibold text-blue hover:bg-blue-lt disabled:opacity-50">
+            Actualizar desde el Colegio (Córdoba)
+          </button>
+          <div className="flex items-center gap-2">
           <button type="button" onClick={onClose} className="cursor-pointer rounded-[6px] px-3 py-[6px] text-[13px] text-sub hover:text-text">
             Cancelar
           </button>
@@ -57,6 +78,7 @@ export default function ValorJusModal({ onClose }: { onClose: () => void }) {
             className="cursor-pointer rounded-[6px] bg-blue px-4 py-[6px] text-[13px] font-semibold text-on-primary hover:opacity-90 disabled:opacity-50">
             {pending ? "Guardando…" : "Guardar"}
           </button>
+          </div>
         </div>
       }
     >

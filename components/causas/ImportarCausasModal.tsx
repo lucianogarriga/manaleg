@@ -1,41 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { FileSpreadsheet } from "lucide-react";
+import { ChevronDown, FileSpreadsheet } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import { confirmarCausas, previsualizarCausas, type VistaPreviaCausas } from "@/app/(app)/causas/importActions";
 import { COLUMNAS_CAUSA, MAX_FILAS_IMPORTACION } from "@/services/csv/importarCausas";
-import { escribirCsv } from "@/utils/csv";
-
-// Plantilla con el encabezado y una fila de ejemplo que el usuario puede reemplazar.
-const EJEMPLO = {
-  caratula: "Pérez c/ García s/ Daños y perjuicios",
-  nro_expediente: "EXP-1234/2026",
-  fuero: "Civil y Comercial",
-  tipo_juicio: "Daños y perjuicios",
-  juzgado_camara: "Juzgado Civil 3",
-  fecha_inicio: "15/03/2026",
-  monto_reclamado: "150000,50",
-  link_drive: "https://drive.google.com/drive/folders/ejemplo",
-  parte_actora: "Pérez, Carlos",
-  parte_demandada: "García, Ana",
-  estado: "Iniciada",
-  notas: "Fila de ejemplo: borrarla antes de importar",
-};
-
-function descargarPlantilla() {
-  const filas = [
-    [...COLUMNAS_CAUSA],
-    COLUMNAS_CAUSA.map((c) => EJEMPLO[c] ?? ""),
-  ];
-  const blob = new Blob([escribirCsv(filas)], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "plantilla-causas.csv";
-  a.click();
-  URL.revokeObjectURL(url);
-}
 
 interface Props {
   open: boolean;
@@ -187,19 +156,11 @@ export default function ImportarCausasModal({ open, onClose, onImported }: Props
           Solo caratula es obligatoria. Fechas como DD/MM/AAAA. Hasta {MAX_FILAS_IMPORTACION} filas, 1 MB.
         </p>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={descargarPlantilla}
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-[6px] border border-grn/40 px-3 py-1.5 text-[12.5px] font-semibold text-grn transition-colors hover:bg-grn/10"
-          >
-            <FileSpreadsheet size={15} strokeWidth={1.8} />
-            Descargar plantilla CSV
-          </button>
-        </div>
-
-        <details className="rounded-lg border border-border bg-bg/60 px-3 py-2 text-[12.5px]">
-          <summary className="cursor-pointer font-semibold text-blue">¿Cómo guardo mi planilla de Excel como CSV?</summary>
+        <details className="group rounded-lg border border-border bg-bg/60 px-3 py-2 text-[12px]">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-semibold text-blue [&::-webkit-details-marker]:hidden">
+            ¿Cómo guardo mi planilla de Excel como CSV?
+            <ChevronDown size={14} strokeWidth={2} className="shrink-0 transition-transform group-open:rotate-180" />
+          </summary>
           <div className="mt-2 flex flex-col gap-2 text-sub">
             <p><strong>En Excel:</strong> Archivo → Guardar como → en <em>Tipo</em> elegí <strong>CSV UTF-8 (delimitado por comas)</strong>. Si no aparece, elegí <strong>CSV (delimitado por comas)</strong>. Aceptá los avisos de Excel.</p>
             <p><strong>En Google Sheets:</strong> Archivo → Descargar → <strong>Valores separados por comas (.csv)</strong>.</p>
@@ -221,11 +182,11 @@ export default function ImportarCausasModal({ open, onClose, onImported }: Props
           />
           <label
             htmlFor="archivo-csv-causas"
-            className={`inline-flex w-fit items-center gap-2 rounded-[6px] border border-border bg-card px-3.5 py-[7px] text-[13.5px] font-semibold text-text transition-colors hover:bg-bg ${
+            className={`inline-flex w-fit items-center gap-2.5 rounded-[8px] border-2 border-blue bg-blue-lt px-5 py-2.5 text-[15px] font-semibold text-blue transition-colors hover:bg-blue/20 ${
               cargando ? "pointer-events-none opacity-50" : "cursor-pointer"
             }`}
           >
-            <FileSpreadsheet size={15} strokeWidth={1.8} className="text-grn" />
+            <FileSpreadsheet size={18} strokeWidth={1.8} />
             Elegir archivo
           </label>
           <span className="text-[12px] text-muted">
