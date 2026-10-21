@@ -209,7 +209,7 @@ export function BarrasH({ filas, formato = (n: number) => String(n) }: {
 // Dona de estados de causas.
 export function Dona({ segmentos, sinLeyenda = false }: { segmentos: { etiqueta: string; valor: number; color: string }[]; sinLeyenda?: boolean }) {
   const total = segmentos.reduce((a, s) => a + s.valor, 0);
-  const r = 52, ri = 33, c = 60;
+  const r = 52, ri = 42, c = 60;
   let angulo = -Math.PI / 2;
   const punto = (radio: number, a: number) => [c + radio * Math.cos(a), c + radio * Math.sin(a)];
   return (

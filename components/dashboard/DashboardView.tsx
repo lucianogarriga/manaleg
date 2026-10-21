@@ -222,7 +222,7 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
           valor={<Montos valores={n.financiero.cobrado} />}
           sub={`${per.nombre} · ${per.comparacion}`}
           serie={d.tendencias.cobrado}
-          badge={<div className="flex flex-col items-end gap-1">{badgesVariacion(n.financiero.cobrado, n.financiero.cobradoPrev, true)}</div>}
+          badge={(() => { const bs = badgesVariacion(n.financiero.cobrado, n.financiero.cobradoPrev, true); return bs.length > 0 ? <div className="flex flex-col items-end gap-1">{bs}</div> : undefined; })()}
         />
         <KpiCard
           titulo={`Pendiente del ${DUR_PERIODO[periodo].toLowerCase()}`}
