@@ -1,7 +1,6 @@
 export const PALETAS = [
   { id: "opcion1", label: "Navy", muestra: ["#1A1A18", "#8DC1E3", "#5DB8DC"] },
   { id: "claude", label: "Coral", muestra: ["#D97757", "#B85A39", "#F0EEE6"] },
-  { id: "pastel", label: "Pastel", muestra: ["#A8D5C8", "#E8B9A0", "#F2C57C"] },
 ] as const;
 
 export type PaletaId = (typeof PALETAS)[number]["id"];
