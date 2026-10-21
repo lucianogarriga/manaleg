@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAuthStore } from "@/store/authStore";
 import { saveHonorario } from "@/app/(app)/causas/detailActions";
 import FormAlert from "@/components/auth/FormAlert";
 import { FormSection, TextField } from "@/components/ui/FormControls";
@@ -40,6 +41,7 @@ export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: 
   const [concepto, setConcepto] = useState(conceptoInicial);
   const [periodicidad, setPeriodicidad] = useState<"unico" | "mensual">(honorario?.periodicidad ?? "unico");
   const [cuotasFijas, setCuotasFijas] = useState(Boolean(honorario?.cuotas_mensuales));
+  const valorJusPerfil = useAuthStore((s) => s.profile?.jus_valor ?? null);
 
   return (
     <Modal
@@ -142,6 +144,19 @@ export default function HonorarioForm({ causaId, honorario, onClose, onSaved }: 
             defaultValue={honorario?.monto_acordado ?? ""}
             placeholder={moneda === "ARS" ? "840000" : moneda === "USD" ? "5000" : "1000"}
           />
+          {moneda === "JUS" && (
+            <div className="sm:col-span-2">
+              <TextField
+                label="Cotización del JUS (ARS por JUS)"
+                name="cotizacion_ars"
+                inputMode="decimal"
+                required
+                defaultValue={honorario?.cotizacion_ars ?? valorJusPerfil ?? ""}
+                placeholder="45000"
+              />
+              <p className="mt-1 text-[11px] text-muted">Se carga a mano. Los pesos de este honorario suman en los indicadores del dashboard.</p>
+            </div>
+          )}
           {periodicidad === "unico" && (
             <TextField
               label="Porcentaje (%)"

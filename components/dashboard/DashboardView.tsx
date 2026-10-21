@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { recargarNovedades, guardarPreferenciaGraficos } from "@/app/(app)/novedadesActions";
 import { toggleTodo } from "@/app/(app)/causas/todoActions";
-import { formatCurrency, todayISO } from "@/utils/formatters";
+import { formatCurrency, formatDate, todayISO } from "@/utils/formatters";
+import { useAuthStore } from "@/store/authStore";
 import type { Moneda, NovedadesCompletas, Periodo, Novedades } from "@/services/supabase/novedades";
 import {
   Badge, BadgeHoy, BarraProgreso, BarrasAgrupadas, BarrasH, BarrasVerticales, Calendario, Card, Dona,
@@ -94,6 +95,10 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
   };
 
   const hoy = todayISO();
+  const jusValor = useAuthStore((s) => s.profile?.jus_valor ?? null);
+  const jusRef = useAuthStore((s) => s.profile?.jus_referencia ?? null);
+  const jusFecha = useAuthStore((s) => s.profile?.jus_valor_fecha ?? null);
+  const jusDias = jusFecha ? Math.floor((Date.parse(hoy) - Date.parse(jusFecha)) / 86400000) : null;
 
   return (
     <div className="flex flex-col gap-3 px-4 pb-6 md:px-6">
@@ -105,6 +110,17 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
         <div className="flex flex-wrap items-center gap-2.5">
         </div>
       </div>
+
+      {jusValor != null && (
+        <div className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border px-4 py-2 text-[13px] ${
+          jusDias !== null && jusDias > 60 ? "border-amb-bd bg-amb-lt text-amb" : "border-border bg-card text-sub"
+        }`}>
+          <span>Valor del JUS{jusRef ? ` en ${jusRef}` : ""}: <b className="tabular-nums text-text">{formatCurrency(jusValor, "ARS")}</b></span>
+          <span className="text-[12px] text-muted">
+            {jusFecha ? `Actualizado ${formatDate(jusFecha)}` : ""}{jusDias !== null && jusDias > 60 ? " · conviene actualizarlo" : ""}
+          </span>
+        </div>
+      )}
 
       {/* ── Pestañas + período ── */}
       <div className="flex items-center gap-[18px] border-b border-border">

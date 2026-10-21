@@ -137,7 +137,15 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
     monto_adicional = v;
   }
 
+  let cotizacion_ars: number | null = null;
+  if (moneda === "JUS") {
+    const c = parseMonto(text(formData, "cotizacion_ars"));
+    if (c === null || c === "invalid" || c <= 0) return { error: "Ingresá la cotización del JUS en pesos." };
+    cotizacion_ars = c;
+  }
+
   const values = {
+    cotizacion_ars,
     concepto,
     periodicidad,
     cuotas_mensuales: periodicidad === "mensual" ? cuotasMensuales : null,

@@ -5,11 +5,12 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   ArrowLeft, Bell, BellOff, Bug, Check, ChevronRight, ExternalLink,
-  FileText, LogOut, Mail, MessageSquare, Palette, ShieldCheck, Zap,
+  Coins, FileText, LogOut, Mail, MessageSquare, Palette, ShieldCheck, Zap,
 } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { guardarPaleta, toggleNotificacionesEmail } from "@/app/(app)/ajustes/actions";
 import { PALETAS, type PaletaId } from "@/utils/paletas";
+import ValorJusModal from "./ValorJusModal";
 import { useUIStore } from "@/store/uiStore";
 import { getInitials } from "@/utils/formatters";
 import FeedbackModal from "./FeedbackModal";
@@ -48,6 +49,7 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
   const [paletaTop, setPaletaTop] = useState(0);
   const paletaRef = useRef<HTMLDivElement>(null);
   const paletaRowRef = useRef<HTMLButtonElement>(null);
+  const [valorJusOpen, setValorJusOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [pos, setPos] = useState<DropdownPos | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -165,6 +167,13 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
             <span className="ml-[2px] h-[11px] w-[11px] rounded-full bg-white shadow-sm transition-transform duration-200"
               style={{ transform: emailEnabled ? "translateX(11px)" : "translateX(0)" }} />
           </span>
+        </button>
+
+        {/* Valor del JUS (referencia para honorarios en JUS y el dashboard) */}
+        <button type="button" onClick={() => { setOpen(false); setValorJusOpen(true); }} className={rowCls} {...rowStyle}>
+          <Coins size={13} strokeWidth={1.8} className={`shrink-0 text-muted ${ico}`} />
+          <span className={`flex-1 text-sub ${txt}`}>Valor del JUS</span>
+          <span className="text-[11px] text-muted">{profile.jus_valor != null ? `$${Math.round(profile.jus_valor).toLocaleString("es-AR")}` : "Sin cargar"}</span>
         </button>
 
         {/* Paleta de colores por usuario: submenú a la derecha */}
@@ -367,6 +376,7 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
       {typeof document !== "undefined" && createPortal(dropdown, document.body)}
       {typeof document !== "undefined" && createPortal(submenu, document.body)}
       {typeof document !== "undefined" && createPortal(submenuPaleta, document.body)}
+      {valorJusOpen && <ValorJusModal onClose={() => setValorJusOpen(false)} />}
     </>
   );
 }

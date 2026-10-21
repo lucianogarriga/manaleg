@@ -4,6 +4,7 @@ import { createClient } from "@/services/supabase/server";
 import { escapeHtml, sendEmail } from "@/services/email/resend";
 import { dentroDelLimite } from "@/services/security/limites";
 import { esPaletaValida } from "@/utils/paletas";
+import { todayISO } from "@/utils/formatters";
 
 export async function toggleNotificacionesEmail(enabled: boolean): Promise<{ error?: string }> {
   const supabase = await createClient();
@@ -71,4 +72,23 @@ export async function enviarFeedback(mensaje: string): Promise<{ error?: string 
   </div>
 </body></html>`,
   });
+}
+
+export async function guardarValorJus(input: { referencia: string; valor: number | null }): Promise<{ error?: string; fecha?: string | null }> {
+  const referencia = input.referencia.trim();
+  if (referencia.length > 60) return { error: "La jurisdicción es demasiado larga (máx. 60 caracteres)." };
+  if (input.valor !== null && (!Number.isFinite(input.valor) || input.valor <= 0)) return { error: "El valor del JUS no es válido." };
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "No autenticado." };
+
+  const fecha = input.valor === null ? null : todayISO();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ jus_referencia: referencia || null, jus_valor: input.valor, jus_valor_fecha: fecha })
+    .eq("id", user.id);
+
+  if (error) return { error: error.message };
+  return { fecha };
 }
