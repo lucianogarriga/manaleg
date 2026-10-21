@@ -175,7 +175,7 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
             </button>
 
             {monedasAbierto && (
-              <div className="absolute right-0 top-full z-30 mt-1 w-[380px] max-w-[calc(100vw-24px)] rounded-[10px] border border-border bg-card p-2 shadow-[0_8px_24px_rgba(0,0,0,.18)]">
+              <div className="absolute right-0 top-full z-30 mt-1 w-[310px] max-w-[calc(100vw-24px)] rounded-[10px] border border-border bg-card p-2 shadow-[0_8px_24px_rgba(0,0,0,.18)]">
                 <div className="flex items-center justify-between px-1.5 pb-1.5 pt-0.5">
                   <span className="text-[10.5px] font-bold uppercase tracking-[.5px] text-muted">Monedas judiciales</span>
                   <span className="group/info relative inline-flex h-[16px] w-[16px] cursor-help items-center justify-center rounded-full border border-muted text-[10px] font-bold text-muted" tabIndex={0} aria-label="¿Qué es la moneda judicial?">
