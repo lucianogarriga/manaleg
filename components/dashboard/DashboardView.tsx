@@ -5,7 +5,7 @@ import Link from "next/link";
 import { recargarNovedades, guardarPreferenciaGraficos } from "@/app/(app)/novedadesActions";
 import { toggleTodo } from "@/app/(app)/causas/todoActions";
 import { formatCurrency, formatDate, todayISO } from "@/utils/formatters";
-import MonedasJudicialesModal from "@/components/layout/MonedasJudicialesModal";
+import FormularioMoneda from "@/components/layout/FormularioMoneda";
 import { useMonedasJudiciales } from "@/store/monedasJudicialesStore";
 import { eliminarMonedaJudicial, listarMonedasJudiciales } from "@/app/(app)/ajustes/actions";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
@@ -110,8 +110,7 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
   const diaUno = hoy.slice(8, 10) === "01";
   const algunaVencida = monedasJud.some((m) => Date.parse(hoy) - Date.parse(m.valor_fecha) > 60 * 86400000);
   const alertaJud = diaUno || algunaVencida;
-  const [valorJusOpen, setValorJusOpen] = useState(false);
-  const [editarMonedaId, setEditarMonedaId] = useState<string | null>(null);
+  const [formMoneda, setFormMoneda] = useState<{ moneda: MonedaJudicial | null } | null>(null);
   const [monedasAbierto, setMonedasAbierto] = useState(false);
   const monedasRef = useRef<HTMLDivElement>(null);
   const { request: confirmRequest, dialog: confirmDialog } = useConfirm();
@@ -126,11 +125,6 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
     return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); };
   }, [monedasAbierto]);
 
-  const abrirModalMoneda = (id: string | null) => {
-    setEditarMonedaId(id);
-    setValorJusOpen(true);
-    setMonedasAbierto(false);
-  };
 
   const borrarMoneda = async (m: MonedaJudicial) => {
     const ok = await confirmRequest({
@@ -172,55 +166,75 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
         ))}
         <div className="ml-auto flex flex-wrap items-center justify-end gap-2 pb-[6px]">
           <div ref={monedasRef} className="relative">
-            <div className={`group relative flex items-center gap-2 rounded-[8px] border px-2.5 py-[5px] text-[12px] ${
-              alertaJud ? "border-amb-bd bg-amb-lt text-amb" : "border-border bg-card text-sub"
-            }`}>
-              <button type="button" onClick={() => setMonedasAbierto((v) => !v)} aria-expanded={monedasAbierto}
-                className="flex cursor-pointer items-center gap-1.5 font-semibold text-text">
-                Moneda judicial
-                <ChevronDown size={14} strokeWidth={2} className={`transition-transform ${monedasAbierto ? "rotate-180" : ""}`} />
-              </button>
-              <span className="tabular-nums text-muted">{monedasJud.length > 0 ? `${monedasJud.length} ${monedasJud.length === 1 ? "moneda" : "monedas"}` : "sin cargar"}</span>
-              <span className="flex h-[16px] w-[16px] shrink-0 items-center justify-center rounded-full border border-muted text-[10px] font-bold text-muted" aria-hidden>i</span>
-              <div className="pointer-events-none absolute right-0 top-full z-20 mt-1 hidden w-[280px] rounded-[8px] border border-border bg-card p-3 text-[12px] text-sub shadow-[0_8px_24px_rgba(0,0,0,.18)] group-hover:block">
-                <p>Valor de referencia de uso judicial, con el que se expresan honorarios y montos.</p>
-                <p className="mt-1.5 text-muted">Ejemplos: JUS de Córdoba, UMA de Buenos Aires, u otra moneda propia.</p>
-                {alertaJud && <p className="mt-1.5 font-semibold text-amb">{diaUno ? "Día 1 del mes: conviene actualizar los valores." : "Hay valores con más de 60 días: conviene actualizarlos."}</p>}
-              </div>
-            </div>
+            <button type="button" onClick={() => setMonedasAbierto((v) => !v)} aria-expanded={monedasAbierto}
+              className={`flex cursor-pointer items-center gap-1.5 rounded-[8px] border px-3 py-[5px] text-[12px] font-semibold text-text ${
+                alertaJud ? "border-amb-bd bg-amb-lt text-amb" : "border-border bg-card"
+              }`}>
+              Monedas judiciales
+              <ChevronDown size={14} strokeWidth={2} className={`transition-transform ${monedasAbierto ? "rotate-180" : ""}`} />
+            </button>
 
             {monedasAbierto && (
-              <div className="absolute right-0 top-full z-30 mt-1 w-[300px] rounded-[10px] border border-border bg-card p-1.5 shadow-[0_8px_24px_rgba(0,0,0,.18)]">
-                {monedasJud.length === 0 ? (
-                  <p className="px-2 py-2 text-[12px] text-muted">Todavía no cargaste monedas judiciales.</p>
-                ) : (
+              <div className="absolute right-0 top-full z-30 mt-1 w-[380px] max-w-[calc(100vw-24px)] rounded-[10px] border border-border bg-card p-2 shadow-[0_8px_24px_rgba(0,0,0,.18)]">
+                <div className="flex items-center justify-between px-1.5 pb-1.5 pt-0.5">
+                  <span className="text-[10.5px] font-bold uppercase tracking-[.5px] text-muted">Monedas judiciales</span>
+                  <span className="group/info relative inline-flex h-[16px] w-[16px] cursor-help items-center justify-center rounded-full border border-muted text-[10px] font-bold text-muted" tabIndex={0} aria-label="¿Qué es la moneda judicial?">
+                    i
+                    <span className="pointer-events-none absolute right-0 top-full z-40 mt-1 hidden w-[280px] rounded-[8px] border border-border bg-card p-3 text-[12px] font-normal text-sub normal-case tracking-normal shadow-[0_8px_24px_rgba(0,0,0,.18)] group-hover/info:block group-focus/info:block">
+                      <span className="block">Valor de referencia de uso judicial, con el que se expresan honorarios y montos.</span>
+                      <span className="mt-1.5 block text-muted">Ejemplos: JUS de Córdoba, UMA de Buenos Aires, u otra moneda propia.</span>
+                      {alertaJud && <span className="mt-1.5 block font-semibold text-amb">{diaUno ? "Día 1 del mes: conviene actualizar los valores." : "Hay valores con más de 60 días: conviene actualizarlos."}</span>}
+                    </span>
+                  </span>
+                </div>
+
+                {monedasJud.length === 0 && !formMoneda && (
+                  <p className="px-2 py-2 text-[13px] text-muted">Todavía no cargaste monedas judiciales.</p>
+                )}
+
+                {monedasJud.length > 0 && (
                   <ul className="flex flex-col">
                     {monedasJud.map((m) => (
-                      <li key={m.id} className="flex items-center gap-2 rounded-[6px] px-2 py-1.5 hover:bg-panel2">
+                      <li key={m.id} className="flex items-center gap-2 rounded-[6px] px-2 py-2 hover:bg-panel2">
                         <div className="min-w-0 flex-1">
-                          <div className="truncate text-[12.5px] font-semibold text-text">
+                          <div className="truncate text-[14px] font-semibold text-text">
                             {m.nombre}{m.referencia ? <span className="font-normal text-muted"> · {m.referencia}</span> : null}
                           </div>
-                          <div className="text-[11.5px] tabular-nums text-muted">{formatCurrency(m.valor, "ARS")} · {formatDate(m.valor_fecha)}</div>
+                          <div className="text-[12.5px] tabular-nums text-sub">{formatCurrency(m.valor, "ARS")} <span className="text-muted">· {formatDate(m.valor_fecha)}</span></div>
                         </div>
                         <button type="button" aria-label={`Editar ${m.nombre}`} title="Editar"
-                          onClick={() => abrirModalMoneda(m.id)}
-                          className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-[6px] text-sub hover:bg-bg hover:text-blue">
-                          <Pencil size={13} strokeWidth={1.8} />
+                          onClick={() => setFormMoneda({ moneda: m })}
+                          className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-[6px] text-sub hover:bg-bg hover:text-blue">
+                          <Pencil size={14} strokeWidth={1.8} />
                         </button>
                         <button type="button" aria-label={`Eliminar ${m.nombre}`} title="Eliminar"
                           onClick={() => borrarMoneda(m)}
-                          className="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-[6px] text-sub hover:bg-bg hover:text-red">
-                          <Trash2 size={13} strokeWidth={1.8} />
+                          className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-[6px] text-sub hover:bg-bg hover:text-red">
+                          <Trash2 size={14} strokeWidth={1.8} />
                         </button>
                       </li>
                     ))}
                   </ul>
                 )}
-                <button type="button" onClick={() => abrirModalMoneda(null)}
-                  className="mt-1 w-full cursor-pointer rounded-[6px] px-2 py-1.5 text-left text-[12.5px] font-semibold text-blue hover:bg-panel2">
-                  + Agregar moneda
-                </button>
+
+                {formMoneda ? (
+                  <div className="mt-2 rounded-[8px] border border-border p-3">
+                    <div className="mb-2.5 text-[12px] font-bold uppercase tracking-[.4px] text-sub">
+                      {formMoneda.moneda ? "Editar moneda" : "Agregar moneda"}
+                    </div>
+                    <FormularioMoneda
+                      key={formMoneda.moneda?.id ?? "nueva"}
+                      inicial={formMoneda.moneda}
+                      onHecho={() => setFormMoneda(null)}
+                      onCancelar={() => setFormMoneda(null)}
+                    />
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => setFormMoneda({ moneda: null })}
+                    className="mt-1 w-full cursor-pointer rounded-[6px] px-2 py-2 text-left text-[13.5px] font-semibold text-blue hover:bg-panel2">
+                    + Agregar moneda
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -235,12 +249,6 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
         </div>
       </div>
 
-      {valorJusOpen && (
-        <MonedasJudicialesModal
-          editarId={editarMonedaId}
-          onClose={() => { setValorJusOpen(false); setEditarMonedaId(null); }}
-        />
-      )}
       {confirmDialog}
 
       {error && (
