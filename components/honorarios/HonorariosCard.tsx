@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
-import { useRouter } from "next/navigation";
 import { ExternalLink, Trash2 } from "lucide-react";
 import { anularHonorario, anularPago, deleteHonorario, deletePago } from "@/app/(app)/causas/detailActions";
 import CardSection, { CardAction } from "@/components/ui/CardSection";
@@ -32,7 +31,6 @@ function etiquetaPeriodicidad(h: HonorarioConPagos): string {
 }
 
 export default function HonorariosCard({ causaId, naked = false }: { causaId: string; naked?: boolean }) {
-  const router = useRouter();
   const { data: honorarios, loading, error, reload } = useHonorarios(causaId);
   const [modal, setModal] = useState<Modal>(null);
   const showToast = useUIStore((s) => s.showToast);
@@ -42,7 +40,6 @@ export default function HonorariosCard({ causaId, naked = false }: { causaId: st
     setModal(null);
     showToast({ message });
     reload();
-    router.refresh();
   };
 
   const onDeletePago = async (id: string) => {

@@ -3,7 +3,6 @@
 import { useGlobalLoading } from "@/hooks/useGlobalLoading";
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
-import { useRouter } from "next/navigation";
 import { ExternalLink, Pencil, Trash2 } from "lucide-react";
 import { createGasto, deleteGasto, updateGasto } from "@/app/(app)/causas/gastoActions";
 import { TIPOS_GASTO } from "@/utils/constants";
@@ -119,7 +118,6 @@ function GastoForm({
 }
 
 export default function GastosCard({ causaId, naked = false }: { causaId: string; naked?: boolean }) {
-  const router = useRouter();
   const { data: gastos, loading, error, reload } = useGastos(causaId);
   const [formOpen, setFormOpen] = useState(false);
   const [editingGasto, setEditingGasto] = useState<Gasto | null>(null);
@@ -131,7 +129,6 @@ export default function GastosCard({ causaId, naked = false }: { causaId: string
     setEditingGasto(null);
     showToast({ message: msg });
     reload();
-    router.refresh();
   };
 
   const onDelete = async (id: string) => {
@@ -141,7 +138,6 @@ export default function GastosCard({ causaId, naked = false }: { causaId: string
     if (result.error) return showToast({ message: result.error });
     showToast({ message: result.message ?? "Gasto eliminado." });
     reload();
-    router.refresh();
   };
 
   const total = gastos.reduce((s, g) => s + (g.monto ?? 0), 0);

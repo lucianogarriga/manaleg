@@ -18,6 +18,11 @@ async function getAuthUserId() {
 // RLS valida el acceso a la causa; acá se valida el formato de los datos.
 
 const refresh = () => revalidatePath("/", "layout");
+// Honorarios y pagos no afectan al layout (alertas, contadores): basta con las páginas que los muestran.
+const refreshFinanzas = () => {
+  revalidatePath("/honorarios");
+  revalidatePath("/", "page");
+};
 
 // ─── MOVIMIENTOS ───
 
@@ -153,7 +158,7 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
     if (error) return { error: `No se pudieron guardar los honorarios: ${error.message}` };
   }
 
-  refresh();
+  refreshFinanzas();
   return { message: id ? "Honorarios actualizados." : "Honorarios definidos." };
 }
 
@@ -164,7 +169,7 @@ export async function deleteHonorario(id: string): Promise<FormState> {
   if (error) return { error: `No se pudo eliminar el honorario: ${error.message}` };
   if (!data || data.length === 0) return { error: "No se encontró el honorario o no tenés acceso." };
 
-  refresh();
+  refreshFinanzas();
   return { message: "Honorario eliminado." };
 }
 
@@ -181,7 +186,7 @@ async function anular(tabla: "honorarios" | "pagos", id: string, motivo: string 
   if (error) return { error: `No se pudo anular: ${error.message}` };
   if (!data || data.length === 0) return { error: "No se encontró el registro o no tenés permiso para anularlo." };
 
-  refresh();
+  refreshFinanzas();
   return { message: tabla === "pagos" ? "Pago anulado." : "Honorario anulado." };
 }
 
@@ -221,7 +226,7 @@ export async function createPago(_prev: FormState, formData: FormData): Promise<
   });
   if (error) return { error: `No se pudo registrar el pago: ${error.message}` };
 
-  refresh();
+  refreshFinanzas();
   return { message: "Pago registrado." };
 }
 
@@ -356,6 +361,6 @@ export async function deletePago(id: string): Promise<FormState> {
   if (error) return { error: `No se pudo eliminar el pago: ${error.message}` };
   if (!data || data.length === 0) return { error: "No se pudo eliminar el pago." };
 
-  refresh();
+  refreshFinanzas();
   return { message: "Pago eliminado." };
 }
