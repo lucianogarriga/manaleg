@@ -19,18 +19,20 @@ function parseValor(texto: string): number {
   return Number(texto.trim().replace(/\./g, "").replace(",", "."));
 }
 
-export default function MonedasJudicialesModal({ onClose }: { onClose: () => void }) {
+export default function MonedasJudicialesModal({ onClose, editarId = null }: { onClose: () => void; editarId?: string | null }) {
   const monedas = useMonedasJudiciales((s) => s.monedas);
   const cargado = useMonedasJudiciales((s) => s.cargado);
   const setMonedas = useMonedasJudiciales((s) => s.setMonedas);
   const showToast = useUIStore((s) => s.showToast);
   const { request: confirmRequest, dialog: confirmDialog } = useConfirm();
 
-  const [editandoId, setEditandoId] = useState<string | null>(null);
-  const [tipo, setTipo] = useState("JUS");
-  const [nombre, setNombre] = useState("JUS");
-  const [referencia, setReferencia] = useState(PRESETS.JUS.referencia);
-  const [valor, setValor] = useState("");
+  // Si se abre desde el desplegable para editar, el formulario arranca con esa moneda cargada.
+  const inicial = editarId ? monedas.find((m) => m.id === editarId) ?? null : null;
+  const [editandoId, setEditandoId] = useState<string | null>(inicial?.id ?? null);
+  const [tipo, setTipo] = useState(inicial ? (PRESETS[inicial.nombre] ? inicial.nombre : "Otro") : "JUS");
+  const [nombre, setNombre] = useState(inicial?.nombre ?? "JUS");
+  const [referencia, setReferencia] = useState(inicial ? (inicial.referencia ?? "") : PRESETS.JUS.referencia);
+  const [valor, setValor] = useState(inicial ? String(inicial.valor) : "");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
