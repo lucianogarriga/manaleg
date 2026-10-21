@@ -100,7 +100,6 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
   const jusRef = useAuthStore((s) => s.profile?.jus_referencia ?? null);
   const jusFecha = useAuthStore((s) => s.profile?.jus_valor_fecha ?? null);
   const [valorJusOpen, setValorJusOpen] = useState(false);
-  const [infoJusOpen, setInfoJusOpen] = useState(false);
   const jusDias = jusFecha ? Math.floor((Date.parse(hoy) - Date.parse(jusFecha)) / 86400000) : null;
 
   return (
@@ -129,11 +128,11 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
           </button>
         ))}
         <div className="ml-auto flex flex-wrap items-center justify-end gap-2 pb-[6px]">
-          <div className="relative">
+          <div className="group relative">
             <div className={`flex items-center gap-2 rounded-[8px] border px-2.5 py-[5px] text-[12px] ${
               jusDias !== null && jusDias > 60 ? "border-amb-bd bg-amb-lt text-amb" : "border-border bg-card text-sub"
             }`}>
-              <button type="button" onClick={() => setInfoJusOpen((v) => !v)} aria-label="¿Qué es la moneda judicial?"
+              <button type="button" aria-label="¿Qué es la moneda judicial?"
                 className="flex h-[16px] w-[16px] cursor-pointer items-center justify-center rounded-full border border-muted text-[10px] font-bold text-muted">
                 i
               </button>
@@ -148,13 +147,11 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
                 {jusValor != null ? "Modificar" : "Cargar"}
               </button>
             </div>
-            {infoJusOpen && (
-              <div className="absolute right-0 top-full z-20 mt-1 w-[260px] rounded-[8px] border border-border bg-card p-3 text-[12px] text-sub shadow-[0_8px_24px_rgba(0,0,0,.18)]">
+            <div className="pointer-events-none absolute right-0 top-full z-20 mt-1 hidden w-[260px] group-focus-within:block group-hover:block rounded-[8px] border border-border bg-card p-3 text-[12px] text-sub shadow-[0_8px_24px_rgba(0,0,0,.18)]">
                 <p>Valor de referencia de uso judicial, con el que se expresan honorarios y montos.</p>
                 <p className="mt-1.5 text-muted">Ejemplos: JUS de Córdoba, UMA de Buenos Aires.</p>
                 {jusFecha && <p className="mt-1.5 text-muted">Actualizado {formatDate(jusFecha)}{jusDias !== null && jusDias > 60 ? " · conviene actualizarlo (más de 60 días)" : ""}</p>}
               </div>
-            )}
           </div>
           <Segmentado
             titulo="Período"
