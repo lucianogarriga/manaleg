@@ -7,6 +7,7 @@ import { useTodosGlobal } from "@/hooks/useCausaData";
 import { useUIStore } from "@/store/uiStore";
 import { formatDate, getDaysUntil } from "@/utils/formatters";
 import type { EstadoTarea, TodoConCausa } from "@/types";
+import DateInput from "@/components/ui/DateInput";
 
 // ── Columnas del Kanban ──────────────────────────────────────────────────────
 
@@ -131,8 +132,7 @@ function TareaCard({
           aria-label="Modificar tarea"
           className="w-full resize-none bg-transparent text-[13px] text-text outline-none"
         />
-        <input
-          type="date"
+        <DateInput
           value={fecha}
           onChange={(e) => setFecha(e.target.value)}
           aria-label="Fecha límite"
@@ -274,9 +274,9 @@ function NuevaTareaForm({
           <option key={c.id} value={c.id}>{c.caratula}</option>
         ))}
       </select>
-      <input
+      <DateInput
         name="fecha_limite"
-        type="date"
+        aria-label="Fecha límite"
         className="mt-2 w-full rounded-[5px] border border-border bg-bg px-2 py-[5px] text-[11.5px] text-sub outline-none focus:border-blue"
       />
       {error && <p className="mt-1 text-[11px] text-red">{error}</p>}

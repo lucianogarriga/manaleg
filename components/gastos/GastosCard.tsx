@@ -15,6 +15,7 @@ import { useUIStore } from "@/store/uiStore";
 import { formatCurrency, formatDate } from "@/utils/formatters";
 import { safeHref } from "@/utils/urls";
 import type { FormState, Gasto } from "@/types";
+import DateInput from "@/components/ui/DateInput";
 
 function GastoForm({
   causaId,
@@ -86,7 +87,7 @@ function GastoForm({
 
           <div>
             <label className="block text-[12px] font-semibold text-sub mb-1">Fecha</label>
-            <input name="fecha" type="date" defaultValue={gasto?.fecha ?? ""}
+            <DateInput name="fecha" aria-label="Fecha" defaultValue={gasto?.fecha ?? ""}
               className="w-full rounded-[6px] border border-border bg-bg px-3 py-[7px] text-[13px] text-text outline-none focus:border-blue" />
           </div>
 

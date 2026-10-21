@@ -1,4 +1,5 @@
 import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
+import DateInput from "@/components/ui/DateInput";
 
 const CONTROL =
   "w-full rounded-[6px] border border-border bg-bg px-[10px] py-[6px] text-[14px] text-text outline-none transition-colors placeholder:text-muted focus:border-blue focus:bg-card";
@@ -16,6 +17,29 @@ function Label({ label, required, children }: { label: string; required?: boolea
 }
 
 export function TextField({ label, ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
+  if (props.type === "date") {
+    const { type: _type, ...resto } = props;
+    return (
+      <Label label={label} required={props.required}>
+        <div className="relative">
+          <DateInput
+            name={resto.name}
+            id={resto.id}
+            value={resto.value as string | undefined}
+            defaultValue={resto.defaultValue as string | undefined}
+            onChange={resto.onChange as ((e: { target: { value: string } }) => void) | undefined}
+            required={resto.required}
+            min={resto.min as string | undefined}
+            max={resto.max as string | undefined}
+            autoFocus={resto.autoFocus}
+            disabled={resto.disabled}
+            aria-label={label}
+            className={CONTROL}
+          />
+        </div>
+      </Label>
+    );
+  }
   return (
     <Label label={label} required={props.required}>
       <input className={CONTROL} {...props} />

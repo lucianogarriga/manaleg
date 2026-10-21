@@ -17,6 +17,7 @@ import FormAlert from "@/components/auth/FormAlert";
 import { formatDate } from "@/utils/formatters";
 import { ANTICIPACION_ALERTA, TIPOS_AVISO } from "@/utils/constants";
 import type { FormState, Vencimiento } from "@/types";
+import DateInput from "@/components/ui/DateInput";
 
 const TIPOS = TIPOS_AVISO;
 const ANTICIPACIONES = ANTICIPACION_ALERTA;
@@ -85,9 +86,9 @@ function VencimientoFormRow({ causaId, editTarget, onClose, onDone }: FormRowPro
 
         <div className="flex flex-col gap-1">
           <label className="text-[11px] font-semibold text-sub">Fecha</label>
-          <input
-            type="date"
+          <DateInput
             name="fecha"
+            aria-label="Fecha"
             defaultValue={editTarget?.fecha ?? ""}
             required
             className={inputCls}
