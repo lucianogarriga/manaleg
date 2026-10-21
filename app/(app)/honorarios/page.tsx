@@ -65,7 +65,7 @@ export default async function HonorariosPage({ searchParams }: { searchParams: P
                 <StatCard label="Total acordado" value={formatCurrency(t.acordado, t.moneda)} tone="blue" small />
               </div>
               <div className="fade-in-up" style={{ animationDelay: "80ms" }}>
-                <StatCard label="Cobrado" value={formatCurrency(t.cobrado, t.moneda)} hint={`${percent}% del total`} tone="grn" small />
+                <StatCard label="Cobrado" value={formatCurrency(t.cobrado, t.moneda)} aside={`${percent}%`} tone="grn" small />
               </div>
               <div className="fade-in-up" style={{ animationDelay: "160ms" }}>
                 <StatCard label="Saldo pendiente" value={formatCurrency(t.saldo, t.moneda)} tone="amb" small />

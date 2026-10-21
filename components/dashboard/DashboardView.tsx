@@ -7,6 +7,7 @@ import { toggleTodo } from "@/app/(app)/causas/todoActions";
 import { formatCurrency, formatDate, todayISO } from "@/utils/formatters";
 import { useAuthStore } from "@/store/authStore";
 import { useUIStore } from "@/store/uiStore";
+import ValorJusModal from "@/components/layout/ValorJusModal";
 import { actualizarValorJusCordoba } from "@/app/(app)/ajustes/actions";
 import type { Moneda, NovedadesCompletas, Periodo, Novedades } from "@/services/supabase/novedades";
 import {
@@ -101,6 +102,7 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
   const jusRef = useAuthStore((s) => s.profile?.jus_referencia ?? null);
   const jusFecha = useAuthStore((s) => s.profile?.jus_valor_fecha ?? null);
   const [actualizandoJus, startActualizarJus] = useTransition();
+  const [valorJusOpen, setValorJusOpen] = useState(false);
   const actualizarJus = () => startActualizarJus(async () => {
     const r = await actualizarValorJusCordoba();
     if (r.error || r.valor === undefined) {
@@ -124,20 +126,27 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
         </div>
       </div>
 
-      {jusValor != null && (
-        <div className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border px-4 py-2 text-[13px] ${
-          jusDias !== null && jusDias > 60 ? "border-amb-bd bg-amb-lt text-amb" : "border-border bg-card text-sub"
-        }`}>
+      <div className={`flex flex-wrap items-center justify-between gap-2 rounded-xl border px-4 py-2 text-[13px] ${
+        jusDias !== null && jusDias > 60 ? "border-amb-bd bg-amb-lt text-amb" : "border-border bg-card text-sub"
+      }`}>
+        {jusValor != null ? (
           <span>Valor del JUS{jusRef ? ` en ${jusRef}` : ""}: <b className="tabular-nums text-text">{formatCurrency(jusValor, "ARS")}</b></span>
-          <span className="flex items-center gap-3 text-[12px] text-muted">
-            {jusFecha ? `Actualizado ${formatDate(jusFecha)}` : ""}{jusDias !== null && jusDias > 60 ? " · conviene actualizarlo" : ""}
-            <button type="button" onClick={actualizarJus} disabled={actualizandoJus}
-              className="cursor-pointer rounded-[6px] border border-blue px-2.5 py-[3px] text-[12px] font-semibold text-blue hover:bg-blue-lt disabled:opacity-50">
-              {actualizandoJus ? "Actualizando…" : "Actualizar valor JUS"}
-            </button>
-          </span>
-        </div>
-      )}
+        ) : (
+          <span>Valor del JUS: <span className="text-muted">sin cargar</span></span>
+        )}
+        <span className="flex flex-wrap items-center gap-3 text-[12px] text-muted">
+          {jusFecha ? `Actualizado ${formatDate(jusFecha)}` : ""}{jusDias !== null && jusDias > 60 ? " · conviene actualizarlo" : ""}
+          <button type="button" onClick={() => setValorJusOpen(true)}
+            className="cursor-pointer rounded-[6px] px-2.5 py-[3px] text-[12px] font-semibold text-blue hover:underline">
+            {jusValor != null ? "Editar" : "Cargar valor del JUS"}
+          </button>
+          <button type="button" onClick={actualizarJus} disabled={actualizandoJus}
+            className="cursor-pointer rounded-[6px] border border-blue px-2.5 py-[3px] text-[12px] font-semibold text-blue hover:bg-blue-lt disabled:opacity-50">
+            {actualizandoJus ? "Actualizando…" : "Actualizar desde el Colegio"}
+          </button>
+        </span>
+      </div>
+      {valorJusOpen && <ValorJusModal onClose={() => setValorJusOpen(false)} />}
 
       {/* ── Pestañas + período ── */}
       <div className="flex items-center gap-[18px] border-b border-border">
