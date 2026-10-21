@@ -309,6 +309,7 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
   const [dragging, setDragging] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<EstadoTarea | null>(null);
   const [aterrizaje, setAterrizaje] = useState<string | null>(null);
+  const [rebote, setRebote] = useState<EstadoTarea | null>(null);
   const dragId = useRef<string | null>(null);
 
   const filtered = todos.filter((t) =>
@@ -331,7 +332,9 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
     setDragging(null);
     setDragOver(null);
     setAterrizaje(id);
-    setTimeout(() => setAterrizaje((actual) => (actual === id ? null : actual)), 700);
+    setRebote(targetEstado);
+    setTimeout(() => setAterrizaje((actual) => (actual === id ? null : actual)), 900);
+    setTimeout(() => setRebote(null), 500);
     patch(id, { estado: targetEstado, completado: targetEstado === "Completado" });
 
     const result = await updateTodoEstado(id, targetEstado);
@@ -396,7 +399,7 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
                 <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: color }} />
                 <span className="flex-1 text-[12.5px] font-semibold text-text">{label}</span>
                 <span
-                  className="rounded-full px-[7px] py-px text-[10px] font-bold"
+                  className={`rounded-full px-[7px] py-px text-[10px] font-bold ${rebote === estado ? "kanban-bump" : ""}`}
                   style={{ background: light, color }}
                 >
                   {items.length}
