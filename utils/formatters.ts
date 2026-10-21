@@ -59,10 +59,10 @@ export function formatRelative(iso: string): string {
 }
 
 // 4200000 → "$4.200.000" · USD 5000.5 → "US$5.000,50"
-export function formatCurrency(value: number | null | undefined, moneda: "ARS" | "USD" | "JUS" = "ARS"): string {
+export function formatCurrency(value: number | null | undefined, moneda: string = "ARS"): string {
   if (value === null || value === undefined) return "—";
-  if (moneda === "JUS") {
-    return `JUS ${new Intl.NumberFormat("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)}`;
+  if (moneda !== "ARS" && moneda !== "USD") {
+    return `${moneda} ${new Intl.NumberFormat("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)}`;
   }
   return new Intl.NumberFormat("es-AR", {
     style: "currency",

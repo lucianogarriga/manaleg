@@ -11,7 +11,7 @@ import { formatCurrency, todayISO } from "@/utils/formatters";
 interface PagoFormProps {
   causaId: string;
   honorarioId: string;
-  moneda: "ARS" | "USD" | "JUS";
+  moneda: string;
   saldo: number | null; // ayuda visual: cuánto falta cobrar (null en honorarios mensuales)
   onClose: () => void;
   onSaved: () => void;

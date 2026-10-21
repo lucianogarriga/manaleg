@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { recargarNovedades, guardarPreferenciaGraficos } from "@/app/(app)/novedadesActions";
 import { toggleTodo } from "@/app/(app)/causas/todoActions";
 import { formatCurrency, formatDate, todayISO } from "@/utils/formatters";
-import { useAuthStore } from "@/store/authStore";
-import ValorJusModal from "@/components/layout/ValorJusModal";
+import MonedasJudicialesModal from "@/components/layout/MonedasJudicialesModal";
+import { useMonedasJudiciales } from "@/store/monedasJudicialesStore";
+import { listarMonedasJudiciales } from "@/app/(app)/ajustes/actions";
 import type { Moneda, NovedadesCompletas, Periodo, Novedades } from "@/services/supabase/novedades";
 import {
   Badge, BadgeHoy, BarraProgreso, BarrasAgrupadas, BarrasH, BarrasVerticales, Calendario, Card, Dona,
@@ -96,11 +97,16 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
   };
 
   const hoy = todayISO();
-  const jusValor = useAuthStore((s) => s.profile?.jus_valor ?? null);
-  const jusRef = useAuthStore((s) => s.profile?.jus_referencia ?? null);
-  const jusFecha = useAuthStore((s) => s.profile?.jus_valor_fecha ?? null);
+  const monedasJud = useMonedasJudiciales((st) => st.monedas);
+  const monedasCargado = useMonedasJudiciales((st) => st.cargado);
+  const setMonedasJud = useMonedasJudiciales((st) => st.setMonedas);
+  useEffect(() => {
+    if (!monedasCargado) listarMonedasJudiciales().then(setMonedasJud);
+  }, [monedasCargado, setMonedasJud]);
+  const diaUno = hoy.slice(8, 10) === "01";
+  const algunaVencida = monedasJud.some((m) => Date.parse(hoy) - Date.parse(m.valor_fecha) > 60 * 86400000);
+  const alertaJud = diaUno || algunaVencida;
   const [valorJusOpen, setValorJusOpen] = useState(false);
-  const jusDias = jusFecha ? Math.floor((Date.parse(hoy) - Date.parse(jusFecha)) / 86400000) : null;
 
   return (
     <div className="flex flex-col gap-3 px-4 pb-6 md:px-6">
@@ -129,29 +135,31 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
         ))}
         <div className="ml-auto flex flex-wrap items-center justify-end gap-2 pb-[6px]">
           <div className="group relative">
-            <div className={`flex items-center gap-2 rounded-[8px] border px-2.5 py-[5px] text-[12px] ${
-              jusDias !== null && jusDias > 60 ? "border-amb-bd bg-amb-lt text-amb" : "border-border bg-card text-sub"
+            <div className={`flex max-w-[360px] items-center gap-2 rounded-[8px] border px-2.5 py-[5px] text-[12px] ${
+              alertaJud ? "border-amb-bd bg-amb-lt text-amb" : "border-border bg-card text-sub"
             }`}>
               <button type="button" aria-label="¿Qué es la moneda judicial?"
-                className="flex h-[16px] w-[16px] cursor-pointer items-center justify-center rounded-full border border-muted text-[10px] font-bold text-muted">
+                className="flex h-[16px] w-[16px] shrink-0 cursor-pointer items-center justify-center rounded-full border border-muted text-[10px] font-bold text-muted">
                 i
               </button>
-              <span className="font-semibold text-text">Moneda judicial</span>
-              {jusValor != null ? (
-                <span className="tabular-nums text-text">{jusRef ? `${jusRef}: ` : ""}{formatCurrency(jusValor, "ARS")}</span>
+              <span className="shrink-0 font-semibold text-text">Moneda judicial</span>
+              {monedasJud.length > 0 ? (
+                <span className="truncate tabular-nums text-text">
+                  {monedasJud.map((m) => `${m.nombre} ${formatCurrency(m.valor, "ARS")}`).join(" · ")}
+                </span>
               ) : (
                 <span className="text-muted">sin cargar</span>
               )}
               <button type="button" onClick={() => setValorJusOpen(true)}
-                className="cursor-pointer font-semibold text-blue hover:underline">
-                {jusValor != null ? "Modificar" : "Cargar"}
+                className="shrink-0 cursor-pointer font-semibold text-blue hover:underline">
+                {monedasJud.length > 0 ? "Modificar" : "Cargar"}
               </button>
             </div>
-            <div className="pointer-events-none absolute right-0 top-full z-20 mt-1 hidden w-[260px] group-focus-within:block group-hover:block rounded-[8px] border border-border bg-card p-3 text-[12px] text-sub shadow-[0_8px_24px_rgba(0,0,0,.18)]">
-                <p>Valor de referencia de uso judicial, con el que se expresan honorarios y montos.</p>
-                <p className="mt-1.5 text-muted">Ejemplos: JUS de Córdoba, UMA de Buenos Aires.</p>
-                {jusFecha && <p className="mt-1.5 text-muted">Actualizado {formatDate(jusFecha)}{jusDias !== null && jusDias > 60 ? " · conviene actualizarlo (más de 60 días)" : ""}</p>}
-              </div>
+            <div className="pointer-events-none absolute right-0 top-full z-20 mt-1 hidden w-[280px] rounded-[8px] border border-border bg-card p-3 text-[12px] text-sub shadow-[0_8px_24px_rgba(0,0,0,.18)] group-focus-within:block group-hover:block">
+              <p>Valor de referencia de uso judicial, con el que se expresan honorarios y montos.</p>
+              <p className="mt-1.5 text-muted">Ejemplos: JUS de Córdoba, UMA de Buenos Aires, u otra moneda propia.</p>
+              {alertaJud && <p className="mt-1.5 font-semibold text-amb">{diaUno ? "Día 1 del mes: conviene actualizar los valores." : "Hay valores con más de 60 días: conviene actualizarlos."}</p>}
+            </div>
           </div>
           <Segmentado
             titulo="Período"
@@ -164,7 +172,7 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
         </div>
       </div>
 
-      {valorJusOpen && <ValorJusModal onClose={() => setValorJusOpen(false)} />}
+      {valorJusOpen && <MonedasJudicialesModal onClose={() => setValorJusOpen(false)} />}
 
       {error && (
         <div className="flex items-center justify-between gap-3 rounded-xl border border-amb-bd bg-amb-lt px-4 py-3 text-[13px] text-amb">

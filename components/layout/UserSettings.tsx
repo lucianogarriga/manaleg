@@ -8,9 +8,10 @@ import {
   Coins, FileText, LogOut, Mail, MessageSquare, Palette, ShieldCheck, Zap,
 } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
-import { guardarPaleta, toggleNotificacionesEmail } from "@/app/(app)/ajustes/actions";
+import { guardarPaleta, listarMonedasJudiciales, toggleNotificacionesEmail } from "@/app/(app)/ajustes/actions";
 import { PALETAS, type PaletaId } from "@/utils/paletas";
-import ValorJusModal from "./ValorJusModal";
+import MonedasJudicialesModal from "./MonedasJudicialesModal";
+import { useMonedasJudiciales } from "@/store/monedasJudicialesStore";
 import { useUIStore } from "@/store/uiStore";
 import { getInitials } from "@/utils/formatters";
 import FeedbackModal from "./FeedbackModal";
@@ -50,6 +51,12 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
   const paletaRef = useRef<HTMLDivElement>(null);
   const paletaRowRef = useRef<HTMLButtonElement>(null);
   const [valorJusOpen, setValorJusOpen] = useState(false);
+  const monedasJud = useMonedasJudiciales((st) => st.monedas);
+  const monedasCargado = useMonedasJudiciales((st) => st.cargado);
+  const setMonedasJud = useMonedasJudiciales((st) => st.setMonedas);
+  useEffect(() => {
+    if (!monedasCargado) listarMonedasJudiciales().then(setMonedasJud);
+  }, [monedasCargado, setMonedasJud]);
   const [isPending, startTransition] = useTransition();
   const [pos, setPos] = useState<DropdownPos | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -173,7 +180,7 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
         <button type="button" onClick={() => { setOpen(false); setValorJusOpen(true); }} className={rowCls} {...rowStyle}>
           <Coins size={13} strokeWidth={1.8} className={`shrink-0 text-muted ${ico}`} />
           <span className={`flex-1 text-sub ${txt}`}>Moneda judicial</span>
-          <span className="text-[11px] text-muted">{profile.jus_valor != null ? `$${Math.round(profile.jus_valor).toLocaleString("es-AR")}` : "Sin cargar"}</span>
+          <span className="text-[11px] text-muted">{monedasJud.length > 0 ? `${monedasJud.length} ${monedasJud.length === 1 ? "moneda" : "monedas"}` : "Sin cargar"}</span>
         </button>
 
         {/* Paleta de colores por usuario: submenú a la derecha */}
@@ -376,7 +383,7 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
       {typeof document !== "undefined" && createPortal(dropdown, document.body)}
       {typeof document !== "undefined" && createPortal(submenu, document.body)}
       {typeof document !== "undefined" && createPortal(submenuPaleta, document.body)}
-      {valorJusOpen && <ValorJusModal onClose={() => setValorJusOpen(false)} />}
+      {valorJusOpen && <MonedasJudicialesModal onClose={() => setValorJusOpen(false)} />}
     </>
   );
 }

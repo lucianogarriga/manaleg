@@ -6,7 +6,6 @@ import { TIPOS_MOVIMIENTO } from "@/utils/constants";
 import { isISODate, oneOf, parseMonto, text } from "@/utils/formData";
 import { todayISO } from "@/utils/formatters";
 import type { FormState } from "@/types";
-import { monedaDeHonorario } from "@/utils/honorarios";
 
 async function getAuthUserId() {
   const supabase = await createClient();
@@ -101,7 +100,9 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
   const monto = parseMonto(text(formData, "monto_acordado"));
   const porcentajeRaw = text(formData, "porcentaje");
   const fechaPacto = text(formData, "fecha_pacto");
-  const moneda = monedaDeHonorario(text(formData, "moneda"));
+  const monedaRaw = text(formData, "moneda");
+  const moneda = monedaRaw === "USD" || monedaRaw === "JUS" ? monedaRaw : "ARS";
+  const monedaJudicialId = text(formData, "moneda_judicial");
   const montoAdicionalRaw = text(formData, "monto_adicional");
   const notasHonorarios = text(formData, "notas_honorarios") || null;
   const conceptoElegido = text(formData, "concepto");
@@ -138,23 +139,33 @@ export async function saveHonorario(_prev: FormState, formData: FormData): Promi
   }
 
   const supabase = await createClient();
-  // La cotización es la moneda judicial cargada en el perfil. Al editar un honorario JUS ya cotizado se conserva.
-  let cotizacion_ars: number | null | undefined = null;
+  // Moneda judicial: se guarda su nombre y el valor vigente al cargar el honorario (cotización).
+  // Al editar un honorario ya cargado en moneda judicial sin elegir otra, se conserva la cotización original.
+  let snapshot: { cotizacion_ars: number; moneda_judicial_nombre: string } | null | undefined = null;
   if (moneda === "JUS") {
-    cotizacion_ars = undefined;
-    const previo = id
-      ? await supabase.from("honorarios").select("moneda, cotizacion_ars").eq("id", id).maybeSingle<{ moneda: string; cotizacion_ars: number | null }>()
-      : null;
-    if (!(previo?.data?.moneda === "JUS" && previo.data.cotizacion_ars)) {
-      const perfil = await supabase.from("profiles").select("jus_valor").single<{ jus_valor: number | null }>();
-      const valor = perfil.data?.jus_valor;
-      if (!valor) return { error: "Primero cargá la moneda judicial (JUS) en el dashboard, arriba a la derecha." };
-      cotizacion_ars = valor;
+    if (monedaJudicialId) {
+      const { data: mj } = await supabase
+        .from("monedas_judiciales")
+        .select("nombre, valor")
+        .eq("id", monedaJudicialId)
+        .maybeSingle<{ nombre: string; valor: number }>();
+      if (!mj) return { error: "La moneda judicial elegida ya no existe. Volvé a cargarla en el dashboard." };
+      snapshot = { cotizacion_ars: mj.valor, moneda_judicial_nombre: mj.nombre };
+    } else {
+      const previo = id
+        ? await supabase.from("honorarios").select("moneda, cotizacion_ars, moneda_judicial_nombre").eq("id", id)
+            .maybeSingle<{ moneda: string; cotizacion_ars: number | null; moneda_judicial_nombre: string | null }>()
+        : null;
+      const conserva = previo?.data?.moneda === "JUS" && previo.data.cotizacion_ars;
+      if (!conserva) return { error: "Elegí la moneda judicial del honorario." };
+      snapshot = undefined;
     }
+  } else {
+    snapshot = null;
   }
 
   const values = {
-    ...(cotizacion_ars !== undefined ? { cotizacion_ars } : {}),
+    ...(snapshot !== undefined ? (snapshot ?? { cotizacion_ars: null, moneda_judicial_nombre: null }) : {}),
     concepto,
     periodicidad,
     cuotas_mensuales: periodicidad === "mensual" ? cuotasMensuales : null,

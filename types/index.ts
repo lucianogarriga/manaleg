@@ -74,9 +74,6 @@ export interface Profile {
   es_admin: boolean;
   preferencia_graficos: "barras" | "ondas";
   paleta: "opcion1" | "claude";
-  jus_referencia: string | null;
-  jus_valor: number | null;
-  jus_valor_fecha: string | null;
   notificaciones_email: boolean;
   tyc_accepted_at: string | null;
   tyc_version: string | null;
@@ -253,6 +250,7 @@ export interface Honorario {
   fecha_pacto: string | null;
   moneda: "ARS" | "USD" | "JUS";
   cotizacion_ars: number | null;
+  moneda_judicial_nombre: string | null;
   consulta_cobrada: boolean;
   monto_consulta: number | null;
   notas_honorarios: string | null;
@@ -314,4 +312,12 @@ export interface FormState {
   message?: string;
   // Valores a re-mostrar si hay error (React 19 resetea el form tras el submit)
   values?: Record<string, string>;
+}
+
+export interface MonedaJudicial {
+  id: string;
+  nombre: string;
+  referencia: string | null;
+  valor: number;
+  valor_fecha: string;
 }

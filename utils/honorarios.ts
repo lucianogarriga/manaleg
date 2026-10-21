@@ -1,11 +1,14 @@
 import type { Honorario } from "@/types";
 
 export const CONCEPTOS_HONORARIO = ["Consulta", "Asesoría", "Patrocinio", "Mensual", "Otro"] as const;
-export const MONEDAS_HONORARIO = ["ARS", "USD", "JUS"] as const;
-export type MonedaHonorario = (typeof MONEDAS_HONORARIO)[number];
 
-export function monedaDeHonorario(valor: string | null | undefined): MonedaHonorario {
-  return valor === "USD" || valor === "JUS" ? valor : "ARS";
+// Etiqueta de la moneda: "ARS", "USD" o el nombre de la moneda judicial usada (JUS, UMA, etc.).
+export type MonedaHonorario = string;
+
+export function etiquetaMoneda(h: { moneda: string; moneda_judicial_nombre?: string | null }): MonedaHonorario {
+  if (h.moneda === "USD") return "USD";
+  if (h.moneda === "JUS") return h.moneda_judicial_nombre || "JUS";
+  return "ARS";
 }
 
 export interface Totales {
@@ -16,14 +19,11 @@ export interface Totales {
 
 // Totales separados por moneda. Los mensuales no suman saldo: su cobrado no tiene techo.
 export function totalesPorMoneda(items: Honorario[]): Record<MonedaHonorario, Totales> {
-  const t: Record<MonedaHonorario, Totales> = {
-    ARS: { acordado: 0, cobrado: 0, saldo: 0 },
-    USD: { acordado: 0, cobrado: 0, saldo: 0 },
-    JUS: { acordado: 0, cobrado: 0, saldo: 0 },
-  };
+  const t: Record<MonedaHonorario, Totales> = {};
   for (const h of items) {
     if (h.anulado) continue;
-    const moneda = monedaDeHonorario(h.moneda);
+    const moneda = etiquetaMoneda(h);
+    t[moneda] ??= { acordado: 0, cobrado: 0, saldo: 0 };
     t[moneda].cobrado += h.monto_cobrado;
     if (h.periodicidad === "unico") {
       t[moneda].acordado += h.monto_acordado;
@@ -33,7 +33,11 @@ export function totalesPorMoneda(items: Honorario[]): Record<MonedaHonorario, To
   return t;
 }
 
+export function ordenarMonedas(monedas: Iterable<MonedaHonorario>): MonedaHonorario[] {
+  const orden = (m: string) => (m === "ARS" ? 0 : m === "USD" ? 1 : 2);
+  return [...new Set(monedas)].sort((a, b) => orden(a) - orden(b) || a.localeCompare(b, "es"));
+}
+
 export function monedasPresentes(items: Honorario[]): MonedaHonorario[] {
-  const set = new Set(items.map((h) => monedaDeHonorario(h.moneda)));
-  return MONEDAS_HONORARIO.filter((m) => set.has(m));
+  return ordenarMonedas(items.filter((h) => !h.anulado).map((h) => etiquetaMoneda(h)));
 }
