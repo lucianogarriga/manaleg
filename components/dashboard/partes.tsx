@@ -11,6 +11,9 @@ export const MONEDAS: Moneda[] = ["ARS", "USD"];
 export const numero = (n: number) => Math.round(n).toLocaleString("es-AR");
 
 // Porcentaje de variación: null cuando no hay base de comparación.
+// Índice de aparición de un elemento del gráfico (los CSS usan --i para escalonar izquierda a derecha)
+const ind = (n: number) => ({ "--i": n } as CSSProperties);
+
 export function variacion(actual: number, previo: number): number | null {
   if (previo === 0) return actual > 0 ? 100 : null;
   return Math.round(((actual - previo) / previo) * 100);
@@ -122,8 +125,9 @@ export function Tendencia({ serie }: { serie: number[] }) {
         return (
           <span
             key={i}
-            className="w-[12px] rounded-[4px]"
+            className="chart-bar w-[12px] rounded-[4px]"
             style={{
+              ...ind(i),
               height: `${Math.max(10, (v / max) * 100)}%`,
               background: ultima ? "var(--color-blue)" : "var(--color-gray)",
               opacity: ultima ? 1 : 0.45,
@@ -197,11 +201,11 @@ export function BarrasH({ filas, formato = (n: number) => String(n) }: {
   const max = Math.max(...filas.map((f) => f.valor), 1);
   return (
     <div className="flex flex-col gap-2">
-      {filas.map((f) => (
+      {filas.map((f, i) => (
         <div key={f.etiqueta} className="grid grid-cols-[minmax(0,120px)_1fr_auto] items-center gap-2 text-[12px]">
           <span className="truncate text-muted">{f.etiqueta}</span>
           <div className="h-[9px] overflow-hidden rounded-[5px] bg-panel2">
-            <div className="h-full rounded-[5px] bg-blue" style={{ width: `${(f.valor / max) * 100}%` }} />
+            <div className="chart-hbar h-full rounded-[5px] bg-blue" style={{ width: `${(f.valor / max) * 100}%`, ...ind(i) }} />
           </div>
           <span className="whitespace-nowrap text-right font-semibold tabular-nums text-text">{formato(f.valor)}</span>
         </div>
@@ -218,7 +222,7 @@ export function Dona({ segmentos, sinLeyenda = false }: { segmentos: { etiqueta:
   const punto = (radio: number, a: number) => [c + radio * Math.cos(a), c + radio * Math.sin(a)];
   return (
     <div className="flex flex-wrap items-center gap-5">
-      <svg width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="Estado de causas" className="shrink-0">
+      <svg width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="Estado de causas" className="chart-wipe shrink-0">
         {total === 0 && (
           <circle cx={c} cy={c} r={(r + ri) / 2} fill="none" strokeWidth={r - ri} style={{ stroke: "var(--color-panel2)" }} />
         )}
@@ -286,12 +290,12 @@ export function BarrasAgrupadas({ meses, cobrado, pendiente, moneda }: {
         const ultimo = i === meses.length - 1;
         return (
           <g key={m}>
-            <rect x={x0} y={y(cobrado[i])} width={bw} height={pt + ih - y(cobrado[i])} rx="3" style={{ fill: "var(--color-blue)" }} />
-            <rect x={x0 + bw + gp} y={y(pendiente[i])} width={bw} height={pt + ih - y(pendiente[i])} rx="3" style={{ fill: "var(--color-pur)" }} />
-            <text x={x0 + bw / 2} y={y(cobrado[i]) - 4} textAnchor="middle" fontSize="9" style={{ fill: "var(--color-muted)" }}>{cobrado[i] ? numero(cobrado[i]) : ""}</text>
-            <text x={x0 + bw + gp + bw / 2} y={y(pendiente[i]) - 4} textAnchor="middle" fontSize="9" style={{ fill: "var(--color-muted)" }}>{pendiente[i] ? numero(pendiente[i]) : ""}</text>
-            <text x={x0 + bw + gp / 2} y={vh - 6} textAnchor="middle" fontSize="10"
-              style={{ fill: ultimo ? "var(--color-text)" : "var(--color-muted)" }} fontWeight={ultimo ? 700 : 400}>{m}</text>
+            <rect className="chart-bar" x={x0} y={y(cobrado[i])} width={bw} height={pt + ih - y(cobrado[i])} rx="3" style={{ fill: "var(--color-blue)", ...ind(i * 2) }} />
+            <rect className="chart-bar" x={x0 + bw + gp} y={y(pendiente[i])} width={bw} height={pt + ih - y(pendiente[i])} rx="3" style={{ fill: "var(--color-pur)", ...ind(i * 2 + 1) }} />
+            <text className="chart-fade" x={x0 + bw / 2} y={y(cobrado[i]) - 4} textAnchor="middle" fontSize="9" style={{ fill: "var(--color-muted)", ...ind(i * 2) }}>{cobrado[i] ? numero(cobrado[i]) : ""}</text>
+            <text className="chart-fade" x={x0 + bw + gp + bw / 2} y={y(pendiente[i]) - 4} textAnchor="middle" fontSize="9" style={{ fill: "var(--color-muted)", ...ind(i * 2 + 1) }}>{pendiente[i] ? numero(pendiente[i]) : ""}</text>
+            <text className="chart-fade" x={x0 + bw + gp / 2} y={vh - 6} textAnchor="middle" fontSize="10"
+              style={{ fill: ultimo ? "var(--color-text)" : "var(--color-muted)", ...ind(i * 2) }} fontWeight={ultimo ? 700 : 400}>{m}</text>
           </g>
         );
       })}
@@ -332,9 +336,9 @@ export function Ondas({ meses, series, moneda, formato }: {
         const dy = s.posicion === "abajo" ? 13 : -7;
         return (
           <g key={k}>
-            <path d={d} fill="none" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" opacity=".85" style={{ stroke: s.color }} />
+            <path d={d} pathLength={1} fill="none" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" opacity=".85" className="chart-draw" style={{ stroke: s.color, ...ind(k) }} />
             {pts.map(([px, py], i) => (
-              <g key={i}>
+              <g key={i} className="chart-fade" style={ind(i + 2)}>
                 <circle cx={px} cy={py} r="2.5" style={{ fill: s.color }} />
                 <text x={px} y={py + dy} textAnchor="middle" fontSize="9" style={{ fill: "var(--color-muted)" }}>{s.valores[i] ? numero(s.valores[i]) : ""}</text>
               </g>
@@ -367,8 +371,8 @@ export function BarrasVerticales({ meses, valores }: { meses: string[]; valores:
         const ultimo = i === meses.length - 1;
         return (
           <g key={m}>
-            <rect x={x} y={pt + ih - h} width={bw} height={h} rx="3" style={{ fill: ultimo ? "var(--color-pur)" : "var(--color-blue)" }} />
-            <text x={x + bw / 2} y={pt + ih - h - 5} textAnchor="middle" fontSize="11" fontWeight="600" style={{ fill: "var(--color-text)" }}>{valores[i]}</text>
+            <rect className="chart-bar" x={x} y={pt + ih - h} width={bw} height={h} rx="3" style={{ fill: ultimo ? "var(--color-pur)" : "var(--color-blue)", ...ind(i) }} />
+            <text className="chart-fade" x={x + bw / 2} y={pt + ih - h - 5} textAnchor="middle" fontSize="11" fontWeight="600" style={{ fill: "var(--color-text)", ...ind(i) }}>{valores[i]}</text>
             <text x={x + bw / 2} y={vh - 6} textAnchor="middle" fontSize="10"
               style={{ fill: ultimo ? "var(--color-text)" : "var(--color-muted)" }}>{m}</text>
           </g>
