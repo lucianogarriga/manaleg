@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useUIStore, loadPin } from "@/store/uiStore";
 import { useCausasStore } from "@/store/causasStore";
 import type { Profile } from "@/types";
@@ -31,7 +31,7 @@ interface NavLinkProps {
   active: boolean;
   expanded: boolean;
   badge: React.ReactNode;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
 function NavLink({ item, active, expanded, badge, onClick }: NavLinkProps) {
@@ -89,6 +89,7 @@ interface SidebarProps {
 
 export default function Sidebar({ profile, counts }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { sidebarOpen, closeSidebar, sidebarPinned, toggleSidebarPin } = useUIStore();
   const selectCausa = useCausasStore((s) => s.select);
   const [hovered, setHovered] = useState(false);
@@ -118,6 +119,25 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
     const id = requestAnimationFrame(() => setListo(true));
     return () => { window.removeEventListener("resize", medirActivo); cancelAnimationFrame(id); };
   }, []);
+
+  // Transición entre secciones: la vista actual se desvanece, luego navega (el loader muestra la carga)
+  const navegar = (href: string, e: React.MouseEvent<HTMLAnchorElement>) => {
+    closeSidebar();
+    if (href === "/causas") selectCausa(null);
+    const esClicSimple = e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
+    if (!esClicSimple || href === pathname) return;
+    e.preventDefault();
+    const sinMovimiento =
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      document.documentElement.dataset.motion === "off";
+    const vista = document.querySelector<HTMLElement>("[data-page]");
+    if (sinMovimiento || !vista) {
+      router.push(href);
+      return;
+    }
+    vista.classList.add("vista-salida");
+    setTimeout(() => router.push(href), 190);
+  };
 
   const pillFor = (item: NavItem) => {
     if (!exp) return null;
@@ -250,10 +270,7 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
                         active={active}
                         expanded={exp}
                         badge={pillFor(item)}
-                        onClick={() => {
-                          closeSidebar();
-                          if (item.href === "/causas") selectCausa(null);
-                        }}
+                        onClick={(e) => navegar(item.href, e)}
                       />
                     );
                   })}
