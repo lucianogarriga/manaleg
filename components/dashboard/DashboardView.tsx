@@ -619,22 +619,17 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase,
         <Tile titulo="Gastos sin reintegrar" valor={formatCurrency(n.gestion.gastosSinReintegrar.monto, "ARS")}
           sub={`en ${n.gestion.gastosSinReintegrar.causas} causas${n.gestion.gastosSinReintegrar.monto > 0 ? ` · peritajes: ${Math.round((n.gestion.gastosSinReintegrar.peritajes / n.gestion.gastosSinReintegrar.monto) * 100)}% del total` : ""}`} />
         <Card>
-          <Titulo sub="Causas cerradas, últimos 2 años">Duración promedio</Titulo>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="min-w-0">
-              <div className="text-[11px] font-bold uppercase tracking-[.4px] text-muted">Judiciales</div>
-              <div className="mt-1 text-[22px] font-bold tabular-nums text-text">{n.gestion.duracionMesesJudicial.promedio === null ? "—" : `${Math.round(n.gestion.duracionMesesJudicial.promedio)} meses`}</div>
-              <div className="text-[12px] text-muted">{n.gestion.duracionMesesJudicial.n} {n.gestion.duracionMesesJudicial.n === 1 ? "causa" : "causas"}</div>
-              {Object.keys(n.gestion.duracionMesesJudicial.porFuero).length > 0 && (
-                <div className="mt-1.5 text-[12px] text-sub">{Object.entries(n.gestion.duracionMesesJudicial.porFuero).map(([f, m]) => `${f} ${Math.round(m)} m`).join(" · ")}</div>
-              )}
-            </div>
-            <div className="min-w-0 border-l border-border pl-3">
-              <div className="text-[11px] font-bold uppercase tracking-[.4px] text-muted">Extrajudiciales / administrativas</div>
-              <div className="mt-1 text-[22px] font-bold tabular-nums text-text">{n.gestion.duracionMesesExtrajudicial.promedio === null ? "—" : `${Math.round(n.gestion.duracionMesesExtrajudicial.promedio)} meses`}</div>
-              <div className="text-[12px] text-muted">{n.gestion.duracionMesesExtrajudicial.n} {n.gestion.duracionMesesExtrajudicial.n === 1 ? "causa" : "causas"}</div>
-            </div>
-          </div>
+          <Titulo sub="Causas judiciales cerradas, últimos 2 años">Duración judicial</Titulo>
+          <div className="text-[22px] font-bold tabular-nums text-text">{n.gestion.duracionMesesJudicial.promedio === null ? "—" : `${Math.round(n.gestion.duracionMesesJudicial.promedio)} meses`}</div>
+          <div className="text-[12px] text-muted">{n.gestion.duracionMesesJudicial.n} {n.gestion.duracionMesesJudicial.n === 1 ? "causa" : "causas"}</div>
+          {Object.keys(n.gestion.duracionMesesJudicial.porFuero).length > 0 && (
+            <div className="mt-1.5 text-[12px] text-sub">{Object.entries(n.gestion.duracionMesesJudicial.porFuero).map(([f, m]) => `${f} ${Math.round(m)} m`).join(" · ")}</div>
+          )}
+        </Card>
+        <Card>
+          <Titulo sub="Extrajudiciales y administrativas cerradas, últimos 2 años">Duración extrajudicial</Titulo>
+          <div className="text-[22px] font-bold tabular-nums text-text">{n.gestion.duracionMesesExtrajudicial.promedio === null ? "—" : `${Math.round(n.gestion.duracionMesesExtrajudicial.promedio)} meses`}</div>
+          <div className="text-[12px] text-muted">{n.gestion.duracionMesesExtrajudicial.n} {n.gestion.duracionMesesExtrajudicial.n === 1 ? "causa" : "causas"}</div>
         </Card>
         <Tile titulo="Días promedio por etapa" sub={cuello ? `Cuello de botella: ${cuello[0]}` : "Sin historial todavía"}
           valor={cuello ? `${cuello[1]} d` : "—"}
@@ -688,14 +683,14 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase,
           <Titulo derecha={
             <Segmentado titulo="Base del promedio" valores={["activas", "todas"] as const} actual={base} onChange={setBase}
               etiquetas={{ activas: "s/ activas", todas: "s/ todas" }} />
-          } sub={base === "activas" ? "Sobre causas activas" : "Sobre todas las causas"}>Honorario promedio por causa</Titulo>
+          }>Honorario promedio por causa</Titulo>
           <div className="flex flex-col gap-1 text-[20px] font-bold tabular-nums text-text">
             <Montos valores={Object.fromEntries(MONEDAS.map((m) => [m, cantidadBase ? (acordadoBase[m] ?? 0) / cantidadBase : 0]))} />
           </div>
         </Card>
         <Card>
           <Titulo
-            sub="Honorarios pendientes por días desde el pacto"
+            sub="Honorarios pendientes"
             derecha={
               <Segmentado titulo="Moneda" valores={["ARS", "USD"] as Moneda[]} actual={monedaDeuda} onChange={setMonedaDeuda}
                 etiquetas={{ ARS: "$", USD: "US$" }} />
