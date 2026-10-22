@@ -13,7 +13,8 @@ import UserSettings from "./UserSettings";
 
 // Los íconos ocupan siempre la misma columna (centro en x=24), abierto o cerrado:
 // lo único que cambia al expandir es el ancho del panel y la aparición del texto.
-const ICON_LEFT = 14;
+const ICON_LEFT = 14; // ítems fuera de la tarjeta de navegación (pin)
+const NAV_ICON_LEFT = 6; // ítems dentro de la tarjeta de navegación (padding px-2 de la tarjeta)
 const ICON_BOX = 20;
 const DUR = "260ms cubic-bezier(0.4,0,0.2,1)";
 const SPRING = "520ms cubic-bezier(.34,1.3,.64,1)";
@@ -43,9 +44,9 @@ function NavLink({ item, active, expanded, badge, onClick }: NavLinkProps) {
       aria-current={active ? "page" : undefined}
       data-nav
       data-active={active}
-      className="relative z-[1] flex h-[36px] items-center overflow-hidden rounded-[10px]"
+      className="relative z-[1] flex h-[30px] items-center overflow-hidden rounded-[9px]"
       style={{
-        paddingLeft: ICON_LEFT,
+        paddingLeft: NAV_ICON_LEFT,
         paddingRight: 10,
         color: lit ? "var(--sb-act-fg)" : "var(--sb-fg)",
         transition: "color 160ms ease",
@@ -148,12 +149,12 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        <div className="flex h-full min-h-0 flex-col justify-between gap-0 md:gap-2">
+        <div className="flex h-full min-h-0 flex-col justify-center gap-0 md:gap-2">
           {/* ── Grupo 1: logo ─────────────────────────────────────── */}
           <div className="sb-card flex h-[52px] shrink-0 items-center overflow-hidden">
-            <div className="flex shrink-0 items-center pl-[10px]">
+            <div className="flex shrink-0 items-center pl-[8px]">
               <div
-                className="flex h-[28px] w-[28px] items-center justify-center rounded-[8px] text-[14px] font-bold text-white"
+                className="flex h-[32px] w-[32px] items-center justify-center rounded-[9px] text-[15px] font-bold text-white"
                 style={{ background: "var(--sb-accent)" }}
               >
                 M
@@ -180,7 +181,7 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
           <nav className="sb-card flex min-h-0 shrink flex-col overflow-y-auto overflow-x-hidden">
             <div
               ref={navRef}
-              className="relative px-2 py-2"
+              className="relative px-2 py-1.5"
               onPointerOver={(e) => {
                 const el = (e.target as Element).closest<HTMLElement>("[data-nav]");
                 if (el && navRef.current?.contains(el)) setHoverPill(medidaDe(el));
@@ -223,9 +224,9 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
               </span>
 
               {NAV_SECTIONS.map((section, i) => (
-                <div key={section.title} className={i > 0 ? "mt-1" : undefined}>
+                <div key={section.title}>
                   {/* Encabezado de sección: misma altura abierto o cerrado; cerrado muestra un separador */}
-                  <div className="relative flex h-[26px] items-center px-[14px]">
+                  <div className="relative flex h-[20px] items-center px-[14px]">
                     <span
                       aria-hidden
                       className="absolute inset-x-[14px] top-1/2 h-px -translate-y-1/2 bg-border"
