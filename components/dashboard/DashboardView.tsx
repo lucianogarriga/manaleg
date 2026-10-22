@@ -327,6 +327,15 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
   tareas: NovedadesCompletas["tareas"];
   marcarTarea: (id: string, completado: boolean) => void;
 }) {
+  // Controles del gráfico de honorarios por mes (se muestran en el header en desktop y debajo en mobile)
+  const controlesHonorariosMes = (
+    <>
+      <Segmentado titulo="Moneda" valores={["ARS", "USD"] as Moneda[]} actual={moneda} onChange={setMoneda}
+        etiquetas={{ ARS: "$", USD: "US$" }} />
+      <Segmentado titulo="Gráfico" valores={["barras", "ondas"] as const} actual={estilo} onChange={setEstilo}
+        etiquetas={{ barras: "Barras", ondas: "Ondas" }} />
+    </>
+  );
   const n = d.datos;
   const per = nombrePeriodo(periodo, n.periodo);
   const vencAll = n.vencimientos.vencidos + n.vencimientos.urgentes + n.vencimientos.proximos;
@@ -396,11 +405,8 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
           <Titulo
             sub="Cobrado vs. pendiente · últimos 6 meses"
             derecha={
-              <div className="flex flex-wrap justify-end gap-2">
-                <Segmentado titulo="Moneda" valores={["ARS", "USD"] as Moneda[]} actual={moneda} onChange={setMoneda}
-                  etiquetas={{ ARS: "$", USD: "US$" }} />
-                <Segmentado titulo="Gráfico" valores={["barras", "ondas"] as const} actual={estilo} onChange={setEstilo}
-                  etiquetas={{ barras: "Barras", ondas: "Ondas" }} />
+              <div className="hidden flex-wrap justify-end gap-2 md:flex">
+                {controlesHonorariosMes}
               </div>
             }
           >
@@ -412,6 +418,10 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
                 { valores: cobrados, color: "var(--color-series-1)", posicion: "arriba" },
                 { valores: pendientes, color: "var(--color-pur)", posicion: "abajo" },
               ]} />}
+          {/* En mobile los controles van debajo del gráfico para no comprimir el título */}
+          <div className="mt-3 flex flex-wrap justify-end gap-2 md:hidden">
+            {controlesHonorariosMes}
+          </div>
           <div className="mt-2 flex gap-4 text-[12px] text-muted">
             <span className="inline-flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm bg-blue" />Cobrado</span>
             <span className="inline-flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm bg-pur" />Pendiente</span>
