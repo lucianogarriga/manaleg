@@ -127,7 +127,7 @@ export async function enviarAvisos({ dryRun = false } = {}): Promise<ResumenAvis
     .select(`id, causa_id, tipo, fecha, motivo, anticipacion, ${CAUSA_EMBED}`)
     .eq("completado", false)
     .in("tipo", ["Vencimiento", "Audiencia"])
-    .gt("fecha", hoy)
+    .gte("fecha", hoy)
     .lte("fecha", horizonte)
     .neq("causa.estado", "Cerrada")
     .returns<FilaVencimiento[]>();
@@ -136,7 +136,7 @@ export async function enviarAvisos({ dryRun = false } = {}): Promise<ResumenAvis
   const { data: eventos, error: eError } = await admin
     .from("eventos")
     .select(`id, causa_id, tipo, titulo, fecha, hora, ${CAUSA_EMBED}`)
-    .gt("fecha", hoy)
+    .gte("fecha", hoy)
     .lte("fecha", horizonte)
     .neq("causa.estado", "Cerrada")
     .returns<FilaEvento[]>();
@@ -146,7 +146,7 @@ export async function enviarAvisos({ dryRun = false } = {}): Promise<ResumenAvis
   const { data: legacy, error: lError } = await admin
     .from("causas")
     .select("id, caratula, nro_expediente, proximo_vencimiento, tipo_vencimiento, motivo_vencimiento, anticipacion_alerta, user_id, causa_shares(shared_with_user_id)")
-    .gt("proximo_vencimiento", hoy)
+    .gte("proximo_vencimiento", hoy)
     .lte("proximo_vencimiento", horizonte)
     .neq("estado", "Cerrada")
     .or("tipo_vencimiento.is.null,tipo_vencimiento.in.(Vencimiento,Audiencia)")
@@ -304,7 +304,9 @@ function limiteAviso(anticipacion: string, hoy: string, proximoHabil: string): s
 // "mañana" si es el día siguiente; si no, el día (ej. "el lun 05/10")
 function cuando(fecha: string, hoy: string, hora: string | null): string {
   const dia =
-    fecha === addDaysISO(hoy, 1)
+    fecha === hoy
+      ? "hoy"
+      : fecha === addDaysISO(hoy, 1)
       ? "mañana"
       : `el ${formatLongDate(fecha).split(" ").slice(0, 2).join(" ").toLowerCase()} (${formatDate(fecha).slice(0, 5)})`;
   return hora ? `${dia} a las ${hora.slice(0, 5)}` : dia;

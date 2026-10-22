@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ChevronDown, FileSpreadsheet } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import { confirmarCausas, previsualizarCausas, type VistaPreviaCausas } from "@/app/(app)/causas/importActions";
-import { COLUMNAS_CAUSA, MAX_FILAS_IMPORTACION } from "@/services/csv/importarCausas";
+import { COLUMNAS_CAUSA } from "@/services/csv/importarCausas";
 
 interface Props {
   open: boolean;
@@ -153,7 +153,7 @@ export default function ImportarCausasModal({ open, onClose, onImported }: Props
           </div>
         </div>
         <p className="text-[11.5px] italic text-muted">
-          Solo caratula es obligatoria. Fechas como DD/MM/AAAA. Hasta {MAX_FILAS_IMPORTACION} filas, 1 MB.
+          Solo caratula es obligatoria. Fechas como DD/MM/AAAA.
         </p>
 
         <details className="group rounded-lg border border-border bg-bg/60 px-3 py-2 text-[12px]">

@@ -327,23 +327,26 @@
 }
 
 @keyframes page-enter {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: none; }
-}
-
-.page-enter {
-  animation: page-enter 200ms cubic-bezier(.2,.7,.2,1) both;
-}
-
-
-@keyframes rvIn {
-  from { opacity: 0; transform: translateY(22px) scale(.97); filter: blur(6px); }
+  from { opacity: 0; transform: translateY(12px); filter: blur(3px); }
   to   { opacity: 1; transform: none; filter: blur(0); }
 }
 
+.page-enter {
+  animation: page-enter 420ms cubic-bezier(.16,1,.3,1) both;
+}
+
+
+/* Fade-up: sube desde abajo, se enfoca y termina con una leve desaceleración */
+@keyframes rvIn {
+  0%   { opacity: 0; transform: translate3d(0, 34px, 0) scale(.965); filter: blur(10px); }
+  55%  { filter: blur(0); }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+
 .rv {
-  animation: rvIn .8s cubic-bezier(.16,1,.3,1) backwards;
+  animation: rvIn 920ms cubic-bezier(.16,1,.3,1) backwards;
   animation-delay: var(--rv-delay, 0ms);
+  will-change: transform, opacity;
 }
 
 @keyframes kanban-land {
@@ -484,10 +487,6 @@ button[type="submit"]:not(:disabled):hover::after {
   50%      { transform: scale(1.06); box-shadow: 0 0 0 12px transparent; }
 }
 @keyframes sp-shimmer { from { background-position: 150% 0; } to { background-position: -50% 0; } }
-@keyframes sp-bar {
-  0%, 100% { transform: scaleY(.3); opacity: .35; }
-  50%      { transform: scaleY(1); opacity: 1; }
-}
 .sp-orb { position: relative; width: 64px; height: 64px; animation: sp-pop 600ms cubic-bezier(.34,1.56,.64,1) both; }
 .sp-ring { position: absolute; inset: 0; border-radius: 50%; }
 .sp-ring-track { border: 2px dashed var(--color-border); animation: sp-spin 14s linear infinite; }
@@ -534,17 +533,7 @@ button[type="submit"]:not(:disabled):hover::after {
   color: transparent;
   animation: sp-shimmer 1.8s linear infinite;
 }
-.sp-bars { display: flex; align-items: flex-end; gap: 4px; height: 14px; margin-top: 10px; }
-.sp-bars span {
-  width: 4px;
-  height: 14px;
-  border-radius: 2px;
-  background: var(--color-blue);
-  transform-origin: bottom;
-  animation: sp-bar 1s ease-in-out infinite;
-}
-.sp-bars span:nth-child(2) { animation-delay: .15s; }
-.sp-bars span:nth-child(3) { animation-delay: .3s; }
+
 
 /* Preferencia "Reducir movimiento" del perfil (data-motion="off") y reducción del sistema: sin animaciones ni transiciones largas */
 html[data-motion="off"] *,

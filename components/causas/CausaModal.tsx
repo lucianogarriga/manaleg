@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import Link from "next/link";
 import { X, Share2, Pencil } from "lucide-react";
@@ -116,7 +117,7 @@ export default function CausaModal({ causa, userId }: Props) {
   ];
   if (causa.notas) datos.push({ label: "Notas", value: causa.notas, full: true });
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
@@ -128,7 +129,7 @@ export default function CausaModal({ causa, userId }: Props) {
       {/* Modal: 97vh en mobile, 95vh en desktop — siempre flotando sobre el backdrop */}
       <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => select(null)}>
         <div
-          className="modal-panel relative flex h-[92dvh] w-[calc(100%-16px)] flex-col overflow-hidden rounded-xl bg-bg shadow-2xl md:w-[95%] md:rounded-2xl"
+          className="modal-panel relative flex h-[92dvh] w-[calc(100%-16px)] flex-col overflow-hidden overscroll-contain rounded-xl bg-bg shadow-2xl md:w-[95%] md:rounded-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header fijo */}
@@ -183,21 +184,21 @@ export default function CausaModal({ causa, userId }: Props) {
 
               {/* Avatares de presencia — otros usuarios viendo esta causa */}
               <AvataresEnLinea users={onlineUsers} />
-              <label
-                className="flex cursor-pointer items-start gap-1.5 text-[12px] leading-tight text-sub"
-                title="Si lo activás, quienes comparten esta causa ven que estás dentro."
-              >
-                <input
-                  type="checkbox"
-                  checked={presenciaVisible}
-                  onChange={(e) => cambiarPresencia(e.target.checked)}
-                  className="mt-[2px] h-[13px] w-[13px] shrink-0 accent-blue"
-                />
-                <span className="flex flex-col">
+              {/* Solo aplica si la causa tiene colegas: si no está compartida, no hay a quién mostrarle la presencia */}
+              {(!esTitular || shares.length > 0) && (
+                <label
+                  className="flex cursor-pointer items-start gap-1.5 text-[12px] leading-tight text-sub"
+                  title="Si lo activás, quienes comparten esta causa ven que estás dentro."
+                >
+                  <input
+                    type="checkbox"
+                    checked={presenciaVisible}
+                    onChange={(e) => cambiarPresencia(e.target.checked)}
+                    className="mt-[2px] h-[13px] w-[13px] shrink-0 accent-blue"
+                  />
                   <span>Mostrar que estoy dentro de la causa</span>
-                  <span className="text-[10.5px] text-muted">No queda historial.</span>
-                </span>
-              </label>
+                </label>
+              )}
 
               {/* Acciones */}
               <span className="ml-auto flex items-center gap-4">
@@ -320,6 +321,7 @@ export default function CausaModal({ causa, userId }: Props) {
         />
       )}
       {confirmDialog}
-    </>
+    </>,
+    document.body,
   );
 }

@@ -17,7 +17,9 @@ const ICON_LEFT = 14; // ítems fuera de la tarjeta de navegación (pin)
 const NAV_ICON_LEFT = 6; // ítems dentro de la tarjeta de navegación (padding px-2 de la tarjeta)
 const ICON_BOX = 20;
 const DUR = "260ms cubic-bezier(0.4,0,0.2,1)";
-const SPRING = "520ms cubic-bezier(.34,1.3,.64,1)";
+// Pastilla de sección activa: desliza con un leve resorte. La de hover sigue al cursor sin rebote.
+const SPRING = "560ms cubic-bezier(.34,1.15,.64,1)";
+const FOLLOW = "320ms cubic-bezier(.22,1,.36,1)";
 const TEXT_DELAY_OPEN = "80ms";
 
 interface Medida { top: number; height: number }
@@ -44,12 +46,12 @@ function NavLink({ item, active, expanded, badge, onClick }: NavLinkProps) {
       aria-current={active ? "page" : undefined}
       data-nav
       data-active={active}
-      className="relative z-[1] flex h-[30px] items-center overflow-hidden rounded-[9px]"
+      className="relative z-[1] flex h-[30px] items-center overflow-hidden rounded-[9px] transition-transform duration-150 active:scale-[.96]"
       style={{
         paddingLeft: NAV_ICON_LEFT,
         paddingRight: 10,
         color: lit ? "var(--sb-act-fg)" : "var(--sb-fg)",
-        transition: "color 160ms ease",
+        transition: "color 220ms ease",
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -197,7 +199,7 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
                   opacity: hoverPill ? 1 : 0,
                   background: "var(--sb-act-bg)",
                   transition: listo
-                    ? `top ${SPRING}, height ${SPRING}, opacity 200ms ease`
+                    ? `top ${FOLLOW}, height ${FOLLOW}, opacity 200ms ease`
                     : "none",
                 }}
               />

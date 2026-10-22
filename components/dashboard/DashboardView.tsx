@@ -15,7 +15,7 @@ import type { MonedaJudicial } from "@/types";
 import { ChevronDown, Pencil, Trash2 } from "lucide-react";
 import type { Moneda, NovedadesCompletas, Periodo, Novedades, VencimientoFila } from "@/services/supabase/novedades";
 import {
-  Badge, BadgeHoy, BarraProgreso, BarrasAgrupadas, BarrasH, BarrasVerticales, Calendario, Card, Dona,
+  Badge, BadgeHoy, BarrasAgrupadas, BarrasH, BarrasVerticales, Calendario, Card, Dona,
   EtiquetaPlazo, FilaLista, KpiCard, MONEDAS, Montos, Ondas, SeccionEncabezado, Segmentado, Tile, Titulo,
   variacion, type Tono,
 } from "./partes";
@@ -70,7 +70,7 @@ interface Props {
 export default function DashboardView({ inicial, preferencia, nombre }: Props) {
   // Solo el primer nombre, nunca el apellido.
   const primerNombre = nombre.trim().split(/\s+/)[0] ?? "";
-  const [tab, setTab] = useState<"novedades" | "kpis">("novedades");
+  const [tab, setTab] = useState<Pestana>("novedades");
   const [periodo, setPeriodo] = useState<Periodo>("mes");
   const [datos, setDatos] = useState<NovedadesCompletas | null>(inicial);
   const [error, setError] = useState<string | null>(inicial ? null : "No pudimos cargar los indicadores.");
@@ -153,16 +153,16 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
 
       {/* ── Pestañas + período ── */}
       <div className="flex items-center gap-[18px] border-b border-border">
-        {(["novedades", "kpis"] as const).map((t) => (
+        {PESTANAS.map(({ id, label }) => (
           <button
-            key={t}
+            key={id}
             type="button"
-            onClick={() => setTab(t)}
+            onClick={() => setTab(id)}
             className={`-mb-px border-b-2 px-0.5 py-2 text-[14px] transition-colors ${
-              tab === t ? "border-accent font-semibold text-text" : "border-transparent text-muted hover:text-text"
+              tab === id ? "border-accent font-semibold text-text" : "border-transparent text-muted hover:text-text"
             }`}
           >
-            {t === "novedades" ? "Novedades" : "KPIs"}
+            {label}
           </button>
         ))}
         <div className="ml-auto flex flex-wrap items-center justify-end gap-2 pb-[6px]">
@@ -265,7 +265,7 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
             ? <Novedades d={datos} periodo={periodo} moneda={moneda} setMoneda={setMoneda} estilo={estilo} setEstilo={cambiarEstilo}
                 tareas={tareas} marcarTarea={marcarTarea} hoy={hoy} />
             : <Kpis d={datos} periodo={periodo} moneda={moneda} setMoneda={setMoneda} estilo={estilo} setEstilo={cambiarEstilo}
-                base={base} setBase={setBase} />}
+                base={base} setBase={setBase} seccion={tab} />}
         </div>
       )}
     </div>
@@ -311,6 +311,16 @@ function diasEntre(desde: string, hasta: string): number {
   return Math.floor((Date.parse(hasta) - Date.parse(desde)) / 86400000);
 }
 
+// Vistas del dashboard: Novedades, y las secciones de KPIs repartidas en pestañas
+type SeccionKpis = "kpis" | "gestion" | "clientes";
+type Pestana = "novedades" | SeccionKpis;
+const PESTANAS: { id: Pestana; label: string }[] = [
+  { id: "novedades", label: "Novedades" },
+  { id: "kpis", label: "KPIs" },
+  { id: "gestion", label: "Gestión" },
+  { id: "clientes", label: "Clientes y cobros" },
+];
+
 // ───────────────────────── Novedades ─────────────────────────
 
 interface VistaProps {
@@ -327,6 +337,15 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
   tareas: NovedadesCompletas["tareas"];
   marcarTarea: (id: string, completado: boolean) => void;
 }) {
+  // Controles del gráfico de honorarios por mes (se muestran en el header en desktop y debajo en mobile)
+  const controlesHonorariosMes = (
+    <>
+      <Segmentado titulo="Moneda" valores={["ARS", "USD"] as Moneda[]} actual={moneda} onChange={setMoneda}
+        etiquetas={{ ARS: "$", USD: "US$" }} />
+      <Segmentado titulo="Gráfico" valores={["barras", "ondas"] as const} actual={estilo} onChange={setEstilo}
+        etiquetas={{ barras: "Barras", ondas: "Ondas" }} />
+    </>
+  );
   const n = d.datos;
   const per = nombrePeriodo(periodo, n.periodo);
   const vencAll = n.vencimientos.vencidos + n.vencimientos.urgentes + n.vencimientos.proximos;
@@ -396,11 +415,8 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
           <Titulo
             sub="Cobrado vs. pendiente · últimos 6 meses"
             derecha={
-              <div className="flex flex-wrap justify-end gap-2">
-                <Segmentado titulo="Moneda" valores={["ARS", "USD"] as Moneda[]} actual={moneda} onChange={setMoneda}
-                  etiquetas={{ ARS: "$", USD: "US$" }} />
-                <Segmentado titulo="Gráfico" valores={["barras", "ondas"] as const} actual={estilo} onChange={setEstilo}
-                  etiquetas={{ barras: "Barras", ondas: "Ondas" }} />
+              <div className="hidden flex-wrap justify-end gap-2 md:flex">
+                {controlesHonorariosMes}
               </div>
             }
           >
@@ -412,6 +428,10 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
                 { valores: cobrados, color: "var(--color-series-1)", posicion: "arriba" },
                 { valores: pendientes, color: "var(--color-pur)", posicion: "abajo" },
               ]} />}
+          {/* En mobile los controles van debajo del gráfico para no comprimir el título */}
+          <div className="mt-3 flex flex-wrap justify-end gap-2 md:hidden">
+            {controlesHonorariosMes}
+          </div>
           <div className="mt-2 flex gap-4 text-[12px] text-muted">
             <span className="inline-flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm bg-blue" />Cobrado</span>
             <span className="inline-flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm bg-pur" />Pendiente</span>
@@ -519,7 +539,8 @@ function Vacio({ children }: { children: React.ReactNode }) {
 
 // ───────────────────────── KPIs ─────────────────────────
 
-function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase }: Omit<VistaProps, "hoy"> & {
+function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase, seccion }: Omit<VistaProps, "hoy"> & {
+  seccion: SeccionKpis;
   base: "activas" | "todas";
   setBase: (b: "activas" | "todas") => void;
 }) {
@@ -535,7 +556,6 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
     { etiqueta: "Cerrada", valor: n.causas.cerradas, color: "var(--color-donut-3)" },
   ];
 
-  const plazosPct = n.gestion.plazosTotal90 > 0 ? Math.round((n.gestion.plazosATiempo90 / n.gestion.plazosTotal90) * 100) : null;
   const etapas = Object.entries(n.gestion.diasPorEtapa).sort((a, b) => b[1] - a[1]);
   const cuello = etapas[0];
   const exitoPct = n.gestion.exito.total > 0 ? Math.round(((n.gestion.exito.ganadas + n.gestion.exito.transadas) / n.gestion.exito.total) * 100) : null;
@@ -564,6 +584,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
         <span>Período: {per.nombre} · {per.comparacion}</span>
       </div>
 
+      {seccion === "kpis" && (<>
       <SeccionEncabezado sub="Causas al día de hoy">Cartera</SeccionEncabezado>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <Card>
@@ -586,31 +607,25 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
           <BarrasH filas={Object.entries(n.causas.activasPorEtapa).map(([etiqueta, valor]) => ({ etiqueta, valor })).sort((a, b) => b.valor - a.valor)} />
         </Card>
       </div>
+      </>)}
 
+      {seccion === "gestion" && (<>
       <SeccionEncabezado sub="Plazos, gastos y tiempos">Gestión</SeccionEncabezado>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
-        <Tile titulo="Plazos cumplidos a tiempo" sub={`${n.gestion.plazosTotal90} plazos en los últimos 90 días`}
-          valor={plazosPct === null ? "—" : `${plazosPct}%`}
-          extra={<>{plazosPct !== null && <BarraProgreso pct={plazosPct} />}<div className="mt-2 text-[12px] text-muted">{n.gestion.plazosVencidosSinCumplir90} vencieron sin cumplir</div></>} />
         <Tile titulo="Gastos sin reintegrar" valor={formatCurrency(n.gestion.gastosSinReintegrar.monto, "ARS")}
           sub={`en ${n.gestion.gastosSinReintegrar.causas} causas${n.gestion.gastosSinReintegrar.monto > 0 ? ` · peritajes: ${Math.round((n.gestion.gastosSinReintegrar.peritajes / n.gestion.gastosSinReintegrar.monto) * 100)}% del total` : ""}`} />
         <Card>
-          <Titulo sub="Causas cerradas, últimos 2 años">Duración promedio</Titulo>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="min-w-0">
-              <div className="text-[11px] font-bold uppercase tracking-[.4px] text-muted">Judiciales</div>
-              <div className="mt-1 text-[22px] font-bold tabular-nums text-text">{n.gestion.duracionMesesJudicial.promedio === null ? "—" : `${Math.round(n.gestion.duracionMesesJudicial.promedio)} meses`}</div>
-              <div className="text-[12px] text-muted">{n.gestion.duracionMesesJudicial.n} {n.gestion.duracionMesesJudicial.n === 1 ? "causa" : "causas"}</div>
-              {Object.keys(n.gestion.duracionMesesJudicial.porFuero).length > 0 && (
-                <div className="mt-1.5 text-[12px] text-sub">{Object.entries(n.gestion.duracionMesesJudicial.porFuero).map(([f, m]) => `${f} ${Math.round(m)} m`).join(" · ")}</div>
-              )}
-            </div>
-            <div className="min-w-0 border-l border-border pl-3">
-              <div className="text-[11px] font-bold uppercase tracking-[.4px] text-muted">Extrajudiciales / administrativas</div>
-              <div className="mt-1 text-[22px] font-bold tabular-nums text-text">{n.gestion.duracionMesesExtrajudicial.promedio === null ? "—" : `${Math.round(n.gestion.duracionMesesExtrajudicial.promedio)} meses`}</div>
-              <div className="text-[12px] text-muted">{n.gestion.duracionMesesExtrajudicial.n} {n.gestion.duracionMesesExtrajudicial.n === 1 ? "causa" : "causas"}</div>
-            </div>
-          </div>
+          <Titulo sub="Causas judiciales cerradas, últimos 2 años">Duración judicial</Titulo>
+          <div className="text-[22px] font-bold tabular-nums text-text">{n.gestion.duracionMesesJudicial.promedio === null ? "—" : `${Math.round(n.gestion.duracionMesesJudicial.promedio)} meses`}</div>
+          <div className="text-[12px] text-muted">{n.gestion.duracionMesesJudicial.n} {n.gestion.duracionMesesJudicial.n === 1 ? "causa" : "causas"}</div>
+          {Object.keys(n.gestion.duracionMesesJudicial.porFuero).length > 0 && (
+            <div className="mt-1.5 text-[12px] text-sub">{Object.entries(n.gestion.duracionMesesJudicial.porFuero).map(([f, m]) => `${f} ${Math.round(m)} m`).join(" · ")}</div>
+          )}
+        </Card>
+        <Card>
+          <Titulo sub="Extrajudiciales y administrativas cerradas, últimos 2 años">Duración extrajudicial</Titulo>
+          <div className="text-[22px] font-bold tabular-nums text-text">{n.gestion.duracionMesesExtrajudicial.promedio === null ? "—" : `${Math.round(n.gestion.duracionMesesExtrajudicial.promedio)} meses`}</div>
+          <div className="text-[12px] text-muted">{n.gestion.duracionMesesExtrajudicial.n} {n.gestion.duracionMesesExtrajudicial.n === 1 ? "causa" : "causas"}</div>
         </Card>
         <Tile titulo="Días promedio por etapa" sub={cuello ? `Cuello de botella: ${cuello[0]}` : "Sin historial todavía"}
           valor={cuello ? `${cuello[1]} d` : "—"}
@@ -622,13 +637,17 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
           valor={n.audiencias.mes > 0 ? `${Math.round((n.audiencias.suspendidasMes / n.audiencias.mes) * 100)}%` : "—"}
           extra={<div className="mt-2 text-[12px] text-muted">Suspendidas o reprogramadas</div>} />
       </div>
+      </>)}
 
+      {seccion === "kpis" && (<>
       <SeccionEncabezado sub="Resultados y agenda">Audiencias</SeccionEncabezado>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <Tile titulo="Tasa de éxito por tipo de audiencia" sub="Éxito = objetivo cumplido · 12 meses" valor="—" grisada />
         <Tile titulo="Audiencias del mes" sub={`${n.audiencias.semana} esta semana · ${n.audiencias.proximos14} en los próximos 14 días`} valor={n.audiencias.mes} />
       </div>
+      </>)}
 
+      {seccion === "clientes" && (<>
       <SeccionEncabezado sub="Honorarios, cartera y captación">Clientes y cobro</SeccionEncabezado>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <Card>
@@ -660,14 +679,14 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
           <Titulo derecha={
             <Segmentado titulo="Base del promedio" valores={["activas", "todas"] as const} actual={base} onChange={setBase}
               etiquetas={{ activas: "s/ activas", todas: "s/ todas" }} />
-          } sub={base === "activas" ? "Sobre causas activas" : "Sobre todas las causas"}>Honorario promedio por causa</Titulo>
+          }>Honorario promedio por causa</Titulo>
           <div className="flex flex-col gap-1 text-[20px] font-bold tabular-nums text-text">
             <Montos valores={Object.fromEntries(MONEDAS.map((m) => [m, cantidadBase ? (acordadoBase[m] ?? 0) / cantidadBase : 0]))} />
           </div>
         </Card>
         <Card>
           <Titulo
-            sub="Honorarios pendientes por días desde el pacto"
+            sub="Honorarios pendientes"
             derecha={
               <Segmentado titulo="Moneda" valores={["ARS", "USD"] as Moneda[]} actual={monedaDeuda} onChange={setMonedaDeuda}
                 etiquetas={{ ARS: "$", USD: "US$" }} />
@@ -701,7 +720,9 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
         </Card>
         <Tile titulo="Clientes con saldo" sub="Con honorarios pendientes de cobro" valor={n.clientes.conSaldo} className="flex flex-col justify-center" />
       </div>
+      </>)}
 
+      {seccion === "kpis" && (<>
       <SeccionEncabezado sub="Entrada de causas">Actividad</SeccionEncabezado>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <Card className="md:col-span-2">
@@ -758,6 +779,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
           </Card>
         </div>
       </div>
+      </>)}
       <p className="text-[12px] text-muted">
         <Link href="/causas" className="text-blue hover:underline">Ver causas →</Link>
       </p>

@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/services/supabase/server";
 import { text } from "@/utils/formData";
-import type { FormState } from "@/types";
+import type { EstadoTarea, FormState } from "@/types";
+
+const ESTADOS: EstadoTarea[] = ["Pendiente", "En curso", "Esperando respuesta", "Completado"];
 
 const refresh = () => revalidatePath("/", "page");
 
@@ -11,6 +13,8 @@ export async function createTodo(_prev: FormState, formData: FormData): Promise<
   const causaId = text(formData, "causa_id");
   const texto = text(formData, "texto")?.trim();
   const fechaLimite = text(formData, "fecha_limite") || null;
+  const estadoElegido = text(formData, "estado");
+  const estado = ESTADOS.find((e) => e === estadoElegido) ?? "Pendiente";
 
   if (!texto) return { error: "Ingresá el texto de la tarea." };
   if (texto.length > 300) return { error: "La tarea es demasiado larga (máx. 300 caracteres)." };
@@ -23,7 +27,7 @@ export async function createTodo(_prev: FormState, formData: FormData): Promise<
     causa_id: causaId || null,
     user_id: user.id,
     texto,
-    estado: "Pendiente",
+    estado,
     fecha_limite: fechaLimite,
   });
 
