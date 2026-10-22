@@ -343,19 +343,9 @@
   100% { opacity: 1; transform: none; filter: none; }
 }
 
-/* Destello: una franja de luz cruza la card cuando termina de aparecer (fuera de vista en reposo) */
-@keyframes rvSheen {
-  from { background-position: 150% 0; }
-  to   { background-position: -50% 0; }
-}
-
 .rv {
-  background-image: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.2) 50%, transparent 60%);
-  background-size: 250% 100%;
-  background-repeat: no-repeat;
-  background-position: 150% 0;
-  animation: rvIn 920ms cubic-bezier(.16,1,.3,1) backwards, rvSheen 1100ms ease-out backwards;
-  animation-delay: var(--rv-delay, 0ms), calc(var(--rv-delay, 0ms) + 760ms);
+  animation: rvIn 920ms cubic-bezier(.16,1,.3,1) backwards;
+  animation-delay: var(--rv-delay, 0ms);
   will-change: transform, opacity;
 }
 
