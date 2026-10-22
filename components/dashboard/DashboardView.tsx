@@ -15,7 +15,7 @@ import type { MonedaJudicial } from "@/types";
 import { ChevronDown, Pencil, Trash2 } from "lucide-react";
 import type { Moneda, NovedadesCompletas, Periodo, Novedades, VencimientoFila } from "@/services/supabase/novedades";
 import {
-  Badge, BadgeHoy, BarraProgreso, BarrasAgrupadas, BarrasH, BarrasVerticales, Calendario, Card, Dona,
+  Badge, BadgeHoy, BarrasAgrupadas, BarrasH, BarrasVerticales, Calendario, Card, Dona,
   EtiquetaPlazo, FilaLista, KpiCard, MONEDAS, Montos, Ondas, SeccionEncabezado, Segmentado, Tile, Titulo,
   variacion, type Tono,
 } from "./partes";
@@ -556,7 +556,6 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase,
     { etiqueta: "Cerrada", valor: n.causas.cerradas, color: "var(--color-donut-3)" },
   ];
 
-  const plazosPct = n.gestion.plazosTotal90 > 0 ? Math.round((n.gestion.plazosATiempo90 / n.gestion.plazosTotal90) * 100) : null;
   const etapas = Object.entries(n.gestion.diasPorEtapa).sort((a, b) => b[1] - a[1]);
   const cuello = etapas[0];
   const exitoPct = n.gestion.exito.total > 0 ? Math.round(((n.gestion.exito.ganadas + n.gestion.exito.transadas) / n.gestion.exito.total) * 100) : null;
@@ -613,9 +612,6 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase,
       {seccion === "gestion" && (<>
       <SeccionEncabezado sub="Plazos, gastos y tiempos">Gestión</SeccionEncabezado>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
-        <Tile titulo="Plazos cumplidos a tiempo" sub={`${n.gestion.plazosTotal90} plazos en los últimos 90 días`}
-          valor={plazosPct === null ? "—" : `${plazosPct}%`}
-          extra={<>{plazosPct !== null && <BarraProgreso pct={plazosPct} />}<div className="mt-2 text-[12px] text-muted">{n.gestion.plazosVencidosSinCumplir90} vencieron sin cumplir</div></>} />
         <Tile titulo="Gastos sin reintegrar" valor={formatCurrency(n.gestion.gastosSinReintegrar.monto, "ARS")}
           sub={`en ${n.gestion.gastosSinReintegrar.causas} causas${n.gestion.gastosSinReintegrar.monto > 0 ? ` · peritajes: ${Math.round((n.gestion.gastosSinReintegrar.peritajes / n.gestion.gastosSinReintegrar.monto) * 100)}% del total` : ""}`} />
         <Card>
