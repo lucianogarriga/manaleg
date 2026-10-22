@@ -47,7 +47,7 @@ export function Card({ children, className = "", warn = false, style }: {
     <div
       data-reveal
       data-spot
-      className={`min-w-0 rounded-xl border border-border bg-card px-[18px] py-4 ${className}`}
+      className={`depth min-w-0 rounded-xl border border-border bg-card px-[18px] py-4 ${className}`}
       style={{
         ...(warn
           ? {
@@ -94,7 +94,7 @@ export function Badge({ tono, children }: { tono: Tono; children: ReactNode }) {
     nil: "bg-border text-muted",
   };
   return (
-    <span className={`inline-block whitespace-nowrap rounded-full px-2 py-[2px] text-[11px] font-semibold ${estilo[tono]}`}>
+    <span className={`depth-sm inline-block whitespace-nowrap rounded-full px-2 py-[2px] text-[11px] font-semibold ${estilo[tono]}`}>
       {children}
     </span>
   );

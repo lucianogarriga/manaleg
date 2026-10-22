@@ -54,8 +54,12 @@ export default function DominoReveal({ children }: { children: ReactNode }) {
       const card = (ultimo.target as Element).closest?.("[data-spot]") as HTMLElement | null;
       if (!card) return;
       const r = card.getBoundingClientRect();
-      card.style.setProperty("--mx", `${ultimo.clientX - r.left}px`);
-      card.style.setProperty("--my", `${ultimo.clientY - r.top}px`);
+      const x = ultimo.clientX - r.left, y = ultimo.clientY - r.top;
+      card.style.setProperty("--mx", `${x}px`);
+      card.style.setProperty("--my", `${y}px`);
+      // Inclinación 3D leve hacia el cursor (solo visible con .depth:hover)
+      card.style.setProperty("--ty", `${(x / r.width - 0.5) * 6}deg`);
+      card.style.setProperty("--tx", `${(y / r.height - 0.5) * -4}deg`);
     };
     const alMover = (e: PointerEvent) => {
       ultimo = e;
