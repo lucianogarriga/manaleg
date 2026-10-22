@@ -1,8 +1,20 @@
+// Loader de carga: anillo de trazo punteado, arco que gira, punto en órbita y núcleo con la marca.
+// Los estilos están en globals.css (sp-*).
 export default function Spinner({ label = "Cargando..." }: { label?: string }) {
   return (
-    <div className="mx-auto flex flex-col items-center gap-3 py-12" role="status" aria-label={label}>
-      <div className="h-[36px] w-[36px] animate-spin rounded-full border-[3px] border-border border-t-blue" />
-      <span className="text-[12px] font-semibold text-sub">{label}</span>
+    <div className="mx-auto flex flex-col items-center py-12" role="status" aria-label={label}>
+      <div className="sp-orb">
+        <span className="sp-ring sp-ring-track" />
+        <span className="sp-ring sp-ring-arc" />
+        <span className="sp-ring sp-ring-orbit" />
+        <span className="sp-core">M</span>
+      </div>
+      <span className="sp-label">{label}</span>
+      <div className="sp-bars" aria-hidden>
+        <span />
+        <span />
+        <span />
+      </div>
     </div>
   );
 }

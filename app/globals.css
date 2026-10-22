@@ -371,15 +371,16 @@
 
 /* Modales: entrada con resorte y fondo desenfocado */
 @keyframes modal-spring {
-  from { opacity: 0; transform: translateY(18px) scale(.96); }
-  to   { opacity: 1; transform: none; }
+  from { opacity: 0; transform: translateY(28px) scale(.92); filter: blur(6px); }
+  60%  { filter: blur(0); }
+  to   { opacity: 1; transform: none; filter: blur(0); }
 }
 @keyframes backdrop-in {
   from { opacity: 0; backdrop-filter: blur(0); }
-  to   { opacity: 1; backdrop-filter: blur(4px); }
+  to   { opacity: 1; backdrop-filter: blur(8px); }
 }
-.modal-backdrop { animation: backdrop-in 260ms ease both; }
-.modal-panel { animation: modal-spring 420ms cubic-bezier(.34,1.56,.64,1) both; }
+.modal-backdrop { animation: backdrop-in 360ms ease both; }
+.modal-panel { animation: modal-spring 560ms cubic-bezier(.34,1.45,.64,1) both; }
 
 /* Avisos: entrada con rebote y barra de progreso que se vacía */
 @keyframes toast-in {
@@ -455,6 +456,95 @@ button[type="submit"]:not(:disabled):hover::after {
   to   { transform: translateX(-50%) scaleX(1); }
 }
 .nav-bar-in { animation: nav-bar-in 380ms cubic-bezier(.34,1.56,.64,1) both; }
+
+/* Sidebar: en móvil una sola superficie; en desktop, tres tarjetas flotantes */
+.sb-surface { background: var(--sb-bg); }
+.sb-card { border-bottom: 1px solid var(--color-border); }
+.sb-pin { transition: color .16s ease; }
+.sb-pin:hover { color: var(--sb-act-fg); }
+@media (min-width: 768px) {
+  .sb-surface { background: transparent; }
+  .sb-card {
+    background: var(--sb-bg);
+    border: 0;
+    border-radius: 12px;
+    box-shadow: var(--sb-shadow);
+  }
+}
+
+/* Loader de carga */
+@keyframes sp-spin { to { transform: rotate(360deg); } }
+@keyframes sp-spin-rev { to { transform: rotate(-360deg); } }
+@keyframes sp-pop {
+  from { opacity: 0; transform: scale(.4) rotate(-40deg); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes sp-core {
+  0%, 100% { transform: scale(.9); box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-blue) 45%, transparent); }
+  50%      { transform: scale(1.06); box-shadow: 0 0 0 12px transparent; }
+}
+@keyframes sp-shimmer { from { background-position: 150% 0; } to { background-position: -50% 0; } }
+@keyframes sp-bar {
+  0%, 100% { transform: scaleY(.3); opacity: .35; }
+  50%      { transform: scaleY(1); opacity: 1; }
+}
+.sp-orb { position: relative; width: 64px; height: 64px; animation: sp-pop 600ms cubic-bezier(.34,1.56,.64,1) both; }
+.sp-ring { position: absolute; inset: 0; border-radius: 50%; }
+.sp-ring-track { border: 2px dashed var(--color-border); animation: sp-spin 14s linear infinite; }
+.sp-ring-arc {
+  border: 2.5px solid transparent;
+  border-top-color: var(--color-blue);
+  border-right-color: color-mix(in srgb, var(--color-blue) 35%, transparent);
+  animation: sp-spin 1s cubic-bezier(.6,.15,.4,.85) infinite;
+}
+.sp-ring-orbit { animation: sp-spin-rev 2.2s linear infinite; }
+.sp-ring-orbit::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  margin-left: -3.5px;
+  border-radius: 50%;
+  background: var(--color-blue);
+  box-shadow: 0 0 10px var(--color-blue);
+}
+.sp-core {
+  position: absolute;
+  inset: 17px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--color-blue);
+  color: var(--color-on-primary);
+  font-size: 14px;
+  font-weight: 800;
+  animation: sp-core 1.8s ease-in-out infinite;
+}
+.sp-label {
+  margin-top: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .6px;
+  background: linear-gradient(90deg, var(--color-sub) 0%, var(--color-text) 45%, var(--color-sub) 90%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: sp-shimmer 1.8s linear infinite;
+}
+.sp-bars { display: flex; align-items: flex-end; gap: 4px; height: 14px; margin-top: 10px; }
+.sp-bars span {
+  width: 4px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--color-blue);
+  transform-origin: bottom;
+  animation: sp-bar 1s ease-in-out infinite;
+}
+.sp-bars span:nth-child(2) { animation-delay: .15s; }
+.sp-bars span:nth-child(3) { animation-delay: .3s; }
 
 /* Preferencia "Reducir movimiento" del perfil (data-motion="off") y reducción del sistema: sin animaciones ni transiciones largas */
 html[data-motion="off"] *,

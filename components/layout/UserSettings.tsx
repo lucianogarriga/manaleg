@@ -379,7 +379,7 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
   // ── Trigger ────────────────────────────────────────────────────────────────
   const avatarCircle = (
     <div className={`flex shrink-0 items-center justify-center rounded-full font-bold tracking-[.5px] ${
-        isSidebar ? "h-[26px] w-[26px] text-[11px] md:h-[20px] md:w-[20px] md:text-[9px]" : "h-[20px] w-[20px] text-[9px]"
+        isSidebar ? "h-[24px] w-[24px] text-[10px]" : "h-[20px] w-[20px] text-[9px]"
       }`}
       style={{ color: "var(--sb-bg)", background: "var(--sb-fg)" }}>
       {initials}
