@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, type ReactNode } from "react";
 
-const PASO_MS = 90;
-const MAX_ESCALONES = 14;
+const PASO_MS = 85;
+const MAX_ESCALONES = 16;
 
 // Hace aparecer en cascada, de una en una, los elementos marcados con data-reveal
 // (también los que se agregan después, por ejemplo al cambiar de pestaña).

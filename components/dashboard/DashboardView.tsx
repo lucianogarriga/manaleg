@@ -70,7 +70,7 @@ interface Props {
 export default function DashboardView({ inicial, preferencia, nombre }: Props) {
   // Solo el primer nombre, nunca el apellido.
   const primerNombre = nombre.trim().split(/\s+/)[0] ?? "";
-  const [tab, setTab] = useState<"novedades" | "kpis">("novedades");
+  const [tab, setTab] = useState<Pestana>("novedades");
   const [periodo, setPeriodo] = useState<Periodo>("mes");
   const [datos, setDatos] = useState<NovedadesCompletas | null>(inicial);
   const [error, setError] = useState<string | null>(inicial ? null : "No pudimos cargar los indicadores.");
@@ -153,16 +153,16 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
 
       {/* ── Pestañas + período ── */}
       <div className="flex items-center gap-[18px] border-b border-border">
-        {(["novedades", "kpis"] as const).map((t) => (
+        {PESTANAS.map(({ id, label }) => (
           <button
-            key={t}
+            key={id}
             type="button"
-            onClick={() => setTab(t)}
+            onClick={() => setTab(id)}
             className={`-mb-px border-b-2 px-0.5 py-2 text-[14px] transition-colors ${
-              tab === t ? "border-accent font-semibold text-text" : "border-transparent text-muted hover:text-text"
+              tab === id ? "border-accent font-semibold text-text" : "border-transparent text-muted hover:text-text"
             }`}
           >
-            {t === "novedades" ? "Novedades" : "KPIs"}
+            {label}
           </button>
         ))}
         <div className="ml-auto flex flex-wrap items-center justify-end gap-2 pb-[6px]">
@@ -265,7 +265,7 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
             ? <Novedades d={datos} periodo={periodo} moneda={moneda} setMoneda={setMoneda} estilo={estilo} setEstilo={cambiarEstilo}
                 tareas={tareas} marcarTarea={marcarTarea} hoy={hoy} />
             : <Kpis d={datos} periodo={periodo} moneda={moneda} setMoneda={setMoneda} estilo={estilo} setEstilo={cambiarEstilo}
-                base={base} setBase={setBase} />}
+                base={base} setBase={setBase} seccion={tab} />}
         </div>
       )}
     </div>
@@ -310,6 +310,16 @@ function VencidosAntiguos({ items, hoy }: { items: VencimientoFila[]; hoy: strin
 function diasEntre(desde: string, hasta: string): number {
   return Math.floor((Date.parse(hasta) - Date.parse(desde)) / 86400000);
 }
+
+// Vistas del dashboard: Novedades, y las secciones de KPIs repartidas en pestañas
+type SeccionKpis = "kpis" | "gestion" | "clientes";
+type Pestana = "novedades" | SeccionKpis;
+const PESTANAS: { id: Pestana; label: string }[] = [
+  { id: "novedades", label: "Novedades" },
+  { id: "kpis", label: "KPIs" },
+  { id: "gestion", label: "Gestión" },
+  { id: "clientes", label: "Clientes y cobros" },
+];
 
 // ───────────────────────── Novedades ─────────────────────────
 
@@ -529,7 +539,8 @@ function Vacio({ children }: { children: React.ReactNode }) {
 
 // ───────────────────────── KPIs ─────────────────────────
 
-function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase }: Omit<VistaProps, "hoy"> & {
+function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase, seccion }: Omit<VistaProps, "hoy"> & {
+  seccion: SeccionKpis;
   base: "activas" | "todas";
   setBase: (b: "activas" | "todas") => void;
 }) {
@@ -574,6 +585,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
         <span>Período: {per.nombre} · {per.comparacion}</span>
       </div>
 
+      {seccion === "kpis" && (<>
       <SeccionEncabezado sub="Causas al día de hoy">Cartera</SeccionEncabezado>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <Card>
@@ -596,7 +608,9 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
           <BarrasH filas={Object.entries(n.causas.activasPorEtapa).map(([etiqueta, valor]) => ({ etiqueta, valor })).sort((a, b) => b.valor - a.valor)} />
         </Card>
       </div>
+      </>)}
 
+      {seccion === "gestion" && (<>
       <SeccionEncabezado sub="Plazos, gastos y tiempos">Gestión</SeccionEncabezado>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
         <Tile titulo="Plazos cumplidos a tiempo" sub={`${n.gestion.plazosTotal90} plazos en los últimos 90 días`}
@@ -632,13 +646,17 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
           valor={n.audiencias.mes > 0 ? `${Math.round((n.audiencias.suspendidasMes / n.audiencias.mes) * 100)}%` : "—"}
           extra={<div className="mt-2 text-[12px] text-muted">Suspendidas o reprogramadas</div>} />
       </div>
+      </>)}
 
+      {seccion === "kpis" && (<>
       <SeccionEncabezado sub="Resultados y agenda">Audiencias</SeccionEncabezado>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <Tile titulo="Tasa de éxito por tipo de audiencia" sub="Éxito = objetivo cumplido · 12 meses" valor="—" grisada />
         <Tile titulo="Audiencias del mes" sub={`${n.audiencias.semana} esta semana · ${n.audiencias.proximos14} en los próximos 14 días`} valor={n.audiencias.mes} />
       </div>
+      </>)}
 
+      {seccion === "clientes" && (<>
       <SeccionEncabezado sub="Honorarios, cartera y captación">Clientes y cobro</SeccionEncabezado>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <Card>
@@ -711,7 +729,9 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
         </Card>
         <Tile titulo="Clientes con saldo" sub="Con honorarios pendientes de cobro" valor={n.clientes.conSaldo} className="flex flex-col justify-center" />
       </div>
+      </>)}
 
+      {seccion === "kpis" && (<>
       <SeccionEncabezado sub="Entrada de causas">Actividad</SeccionEncabezado>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <Card className="md:col-span-2">
@@ -768,6 +788,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
           </Card>
         </div>
       </div>
+      </>)}
       <p className="text-[12px] text-muted">
         <Link href="/causas" className="text-blue hover:underline">Ver causas →</Link>
       </p>
