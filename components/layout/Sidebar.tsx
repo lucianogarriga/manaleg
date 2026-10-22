@@ -115,7 +115,6 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
     window.addEventListener("resize", medirActivo);
     const id = requestAnimationFrame(() => setListo(true));
     return () => { window.removeEventListener("resize", medirActivo); cancelAnimationFrame(id); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const pillFor = (item: NavItem) => {
