@@ -8,11 +8,12 @@ import { formatCurrency, formatDate, todayISO } from "@/utils/formatters";
 import FormularioMoneda from "@/components/layout/FormularioMoneda";
 import { useMonedasJudiciales } from "@/store/monedasJudicialesStore";
 import { eliminarMonedaJudicial, listarMonedasJudiciales } from "@/app/(app)/ajustes/actions";
+import { toggleVencimientoCompletado } from "@/app/(app)/causas/detailActions";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { useUIStore } from "@/store/uiStore";
 import type { MonedaJudicial } from "@/types";
 import { ChevronDown, Pencil, Trash2 } from "lucide-react";
-import type { Moneda, NovedadesCompletas, Periodo, Novedades } from "@/services/supabase/novedades";
+import type { Moneda, NovedadesCompletas, Periodo, Novedades, VencimientoFila } from "@/services/supabase/novedades";
 import {
   Badge, BadgeHoy, BarraProgreso, BarrasAgrupadas, BarrasH, BarrasVerticales, Calendario, Card, Dona,
   EtiquetaPlazo, FilaLista, KpiCard, MONEDAS, Montos, Ondas, SeccionEncabezado, Segmentado, Tile, Titulo,
@@ -271,6 +272,45 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
   );
 }
 
+function VencidosAntiguos({ items, hoy }: { items: VencimientoFila[]; hoy: string }) {
+  const [lista, setLista] = useState(items);
+  const [, startMarcar] = useTransition();
+  const showToast = useUIStore((st) => st.showToast);
+  useEffect(() => { setLista(items); }, [items]);
+  if (lista.length === 0) return null;
+  const marcar = (v: VencimientoFila) => startMarcar(async () => {
+    const r = await toggleVencimientoCompletado(v.id, true);
+    if (r.error) return showToast({ message: r.error });
+    setLista((prev) => prev.filter((x) => x.id !== v.id));
+  });
+  return (
+    <details className="group mt-2 border-t border-border pt-2 text-[12.5px]">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-semibold text-amb [&::-webkit-details-marker]:hidden">
+        Vencidos hace más de 30 días ({lista.length})
+        <ChevronDown size={14} strokeWidth={2} className="shrink-0 transition-transform group-open:rotate-180" />
+      </summary>
+      <ul className="mt-2 flex max-h-[260px] flex-col gap-1 overflow-y-auto">
+        {lista.map((v) => (
+          <li key={v.id} className="flex items-center gap-2 rounded-[6px] px-1.5 py-1 hover:bg-panel2">
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-text">{v.motivo || v.tipo}</div>
+              <div className="truncate text-[11.5px] text-muted">{v.causa} · {fechaCorta(v.fecha)} ({diasEntre(v.fecha, hoy)} días)</div>
+            </div>
+            <button type="button" onClick={() => marcar(v)} title="Marcar como cumplido"
+              className="shrink-0 cursor-pointer rounded-[6px] border border-border px-2 py-[3px] text-[11.5px] font-semibold text-sub hover:border-blue hover:text-blue">
+              Cumplido
+            </button>
+          </li>
+        ))}
+      </ul>
+    </details>
+  );
+}
+
+function diasEntre(desde: string, hasta: string): number {
+  return Math.floor((Date.parse(hasta) - Date.parse(desde)) / 86400000);
+}
+
 // ───────────────────────── Novedades ─────────────────────────
 
 interface VistaProps {
@@ -324,8 +364,8 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
       </div>
 
       <div className="mb-1 flex flex-wrap gap-2">
-        <BadgeHoy etiqueta="Plazos vencidos" valor={n.vencimientos.vencidos} rojo />
-        <BadgeHoy etiqueta="Plazos que vencen hoy" valor={n.vencimientos.hoy} />
+        <BadgeHoy etiqueta="Plazos vencidos" valor={n.vencimientos.vencidos} rojo href="/vencimientos" />
+        <BadgeHoy etiqueta="Plazos que vencen hoy" valor={n.vencimientos.hoy} href="/vencimientos" />
         <BadgeHoy etiqueta="Audiencias hoy" valor={n.audiencias.hoy} />
         <BadgeHoy etiqueta="Tareas hoy" valor={n.tareas.hoy} />
       </div>
@@ -396,6 +436,7 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
                 derecha={<><EtiquetaPlazo fecha={v.fecha} hoy={hoy} /><div className="mt-1">{fechaCorta(v.fecha)}</div></>} />
             ))}
           </Lista>
+          <VencidosAntiguos items={d.vencimientosAntiguos} hoy={hoy} />
           {d.vencimientosLejanos[0] && (
             <div className="mt-2 border-t border-border pt-2 text-[12px] text-muted">
               Fuera de los 7 días: {d.vencimientosLejanos[0].motivo || d.vencimientosLejanos[0].tipo} · {d.vencimientosLejanos[0].causa} ({fechaCorta(d.vencimientosLejanos[0].fecha)})
@@ -502,10 +543,12 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
   const cantidadBase = base === "activas" ? n.causas.activas : n.causas.total;
   const acordadoBase = base === "activas" ? n.financiero.acordadoActivas : n.financiero.acordadoTodas;
 
+  // Cobrado del período sobre lo cobrado + lo que queda pendiente en la cartera: siempre entre 0 y 100%.
   const cobroPct = (m: Moneda) => {
-    const f = n.financiero.facturado[m] ?? 0;
-    if (!f) return null;
-    return Math.round(((n.financiero.cobrado[m] ?? 0) / f) * 100);
+    const cobrado = n.financiero.cobrado[m] ?? 0;
+    const base = cobrado + (n.financiero.pendienteTotal[m] ?? 0);
+    if (!base) return null;
+    return Math.round((cobrado / base) * 100);
   };
 
   const facturacionFuero = Object.entries(n.financiero.facturacionPorFuero)
@@ -550,12 +593,25 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
           valor={plazosPct === null ? "—" : `${plazosPct}%`}
           extra={<>{plazosPct !== null && <BarraProgreso pct={plazosPct} />}<div className="mt-2 text-[12px] text-muted">{n.gestion.plazosVencidosSinCumplir90} vencieron sin cumplir</div></>} />
         <Tile titulo="Gastos sin reintegrar" valor={formatCurrency(n.gestion.gastosSinReintegrar.monto, "ARS")}
-          sub={`en ${n.gestion.gastosSinReintegrar.causas} causas${n.gestion.gastosSinReintegrar.monto > 0 ? ` · ${Math.round((n.gestion.gastosSinReintegrar.peritajes / n.gestion.gastosSinReintegrar.monto) * 100)}% son peritajes` : ""}`} />
-        <Tile titulo="Duración promedio" sub="Judiciales cerradas, últimos 2 años"
-          valor={n.gestion.duracionMesesJudicial.promedio === null ? "—" : `${Math.round(n.gestion.duracionMesesJudicial.promedio)} meses`}
-          extra={Object.keys(n.gestion.duracionMesesJudicial.porFuero).length > 0
-            ? <div className="mt-2 text-[12px] text-muted">{Object.entries(n.gestion.duracionMesesJudicial.porFuero).map(([f, m]) => `${f} ${Math.round(m)} m`).join(" · ")}</div>
-            : null} />
+          sub={`en ${n.gestion.gastosSinReintegrar.causas} causas${n.gestion.gastosSinReintegrar.monto > 0 ? ` · peritajes: ${Math.round((n.gestion.gastosSinReintegrar.peritajes / n.gestion.gastosSinReintegrar.monto) * 100)}% del total` : ""}`} />
+        <Card>
+          <Titulo sub="Causas cerradas, últimos 2 años">Duración promedio</Titulo>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="min-w-0">
+              <div className="text-[11px] font-bold uppercase tracking-[.4px] text-muted">Judiciales</div>
+              <div className="mt-1 text-[22px] font-bold tabular-nums text-text">{n.gestion.duracionMesesJudicial.promedio === null ? "—" : `${Math.round(n.gestion.duracionMesesJudicial.promedio)} meses`}</div>
+              <div className="text-[12px] text-muted">{n.gestion.duracionMesesJudicial.n} {n.gestion.duracionMesesJudicial.n === 1 ? "causa" : "causas"}</div>
+              {Object.keys(n.gestion.duracionMesesJudicial.porFuero).length > 0 && (
+                <div className="mt-1.5 text-[12px] text-sub">{Object.entries(n.gestion.duracionMesesJudicial.porFuero).map(([f, m]) => `${f} ${Math.round(m)} m`).join(" · ")}</div>
+              )}
+            </div>
+            <div className="min-w-0 border-l border-border pl-3">
+              <div className="text-[11px] font-bold uppercase tracking-[.4px] text-muted">Extrajudiciales / administrativas</div>
+              <div className="mt-1 text-[22px] font-bold tabular-nums text-text">{n.gestion.duracionMesesExtrajudicial.promedio === null ? "—" : `${Math.round(n.gestion.duracionMesesExtrajudicial.promedio)} meses`}</div>
+              <div className="text-[12px] text-muted">{n.gestion.duracionMesesExtrajudicial.n} {n.gestion.duracionMesesExtrajudicial.n === 1 ? "causa" : "causas"}</div>
+            </div>
+          </div>
+        </Card>
         <Tile titulo="Días promedio por etapa" sub={cuello ? `Cuello de botella: ${cuello[0]}` : "Sin historial todavía"}
           valor={cuello ? `${cuello[1]} d` : "—"}
           extra={etapas.length > 0 ? <div className="mt-2 text-[12px] text-muted">{etapas.map(([e, dd]) => `${e} ${dd}`).join(" · ")}</div> : null} />
@@ -577,7 +633,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <Card>
           <Titulo
-            sub={`Cobrado / facturado · ${DUR_PERIODO[periodo]}`}
+            sub={`Cobrado / (cobrado + pendiente) · ${DUR_PERIODO[periodo]}`}
             derecha={
               <Segmentado titulo="Moneda tasa" valores={["ARS", "USD"] as Moneda[]} actual={monedaTasa} onChange={setMonedaTasa}
                 etiquetas={{ ARS: "$", USD: "US$" }} small />

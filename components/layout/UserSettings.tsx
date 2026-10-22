@@ -383,7 +383,7 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
       {typeof document !== "undefined" && createPortal(dropdown, document.body)}
       {typeof document !== "undefined" && createPortal(submenu, document.body)}
       {typeof document !== "undefined" && createPortal(submenuPaleta, document.body)}
-      {valorJusOpen && <MonedasJudicialesModal onClose={() => setValorJusOpen(false)} />}
+      {valorJusOpen && typeof document !== "undefined" && createPortal(<MonedasJudicialesModal onClose={() => setValorJusOpen(false)} />, document.body)}
     </>
   );
 }
