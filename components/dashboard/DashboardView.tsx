@@ -366,8 +366,8 @@ function Novedades({ d, periodo, moneda, setMoneda, estilo, setEstilo, tareas, m
       <div className="mb-1 flex flex-wrap gap-2">
         <BadgeHoy etiqueta="Plazos vencidos" valor={n.vencimientos.vencidos} rojo href="/vencimientos" />
         <BadgeHoy etiqueta="Plazos que vencen hoy" valor={n.vencimientos.hoy} href="/vencimientos" />
-        <BadgeHoy etiqueta="Audiencias hoy" valor={n.audiencias.hoy} />
-        <BadgeHoy etiqueta="Tareas hoy" valor={n.tareas.hoy} />
+        <BadgeHoy etiqueta="Audiencias hoy" valor={n.audiencias.hoy} href="/calendario" />
+        <BadgeHoy etiqueta="Tareas hoy" valor={n.tareas.hoy} href="/kanban" />
       </div>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <KpiCard
