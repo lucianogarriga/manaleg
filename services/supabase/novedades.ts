@@ -25,7 +25,7 @@ export interface Novedades {
     inactivas30: number;
     nuevasSeisMeses: { mes: string; n: number }[];
   };
-  vencimientos: { vencidos: number; urgentes: number; proximos: number; hoy: number };
+  vencimientos: { vencidos: number; vencidosAntiguos: number; urgentes: number; proximos: number; hoy: number };
   audiencias: { hoy: number; semana: number; proximos14: number; mes: number; suspendidasMes: number };
   tareas: { hoy: number; vencidas: number };
   financiero: {
@@ -48,7 +48,8 @@ export interface Novedades {
     plazosVencidosSinCumplir90: number;
     gastosSinReintegrar: { monto: number; causas: number; peritajes: number };
     diasPorEtapa: Record<string, number>;
-    duracionMesesJudicial: { promedio: number | null; porFuero: Record<string, number> };
+    duracionMesesJudicial: { promedio: number | null; n: number; porFuero: Record<string, number> };
+    duracionMesesExtrajudicial: { promedio: number | null; n: number };
     exito: { total: number; ganadas: number; transadas: number; perdidas: number };
   };
   clientes: { total: number; activos: number; conSaldo: number };
@@ -84,6 +85,7 @@ export interface DiaCalendario {
   vencimientos: number;
   vencidos: number;
   tareas: number;
+  detalle: string[];
 }
 
 // Últimas 7 semanas (la más antigua primero), para las barras de tendencia.
@@ -103,6 +105,7 @@ export interface NovedadesCompletas {
   judicialesPorEstado: Record<string, number>;
   vencimientos: VencimientoFila[];
   vencimientosLejanos: VencimientoFila[];
+  vencimientosAntiguos: VencimientoFila[];
   audiencias: AudienciaFila[];
   tareas: TareaFila[];
   calendario: DiaCalendario[];
@@ -121,6 +124,7 @@ export async function cargarNovedades(periodo: Periodo): Promise<NovedadesComple
   const hoy = todayISO();
   const en7 = addDaysISO(hoy, 7);
   const en14 = addDaysISO(hoy, 14);
+  const hace30 = addDaysISO(hoy, -30);
   const mes = rangoMes(hoy);
 
   const estadosJudiciales = ["Iniciada", "En trámite", "Con resolución", "En ejecución"] as const;
@@ -130,7 +134,7 @@ export async function cargarNovedades(periodo: Periodo): Promise<NovedadesComple
         .eq("estado", e).or("fuero.is.null,fuero.neq.Extrajudicial")),
   );
 
-  const [rpc, tend, venc, lejanos, aud, tar, calVenc, calAud, calTar] = await Promise.all([
+  const [rpc, tend, venc, lejanos, antiguos, aud, tar, calVenc, calAud, calTar] = await Promise.all([
     supabase.rpc("estadisticas_novedades", { p_periodo: periodo }),
     supabase.rpc("estadisticas_tendencias"),
     supabase
@@ -138,6 +142,7 @@ export async function cargarNovedades(periodo: Periodo): Promise<NovedadesComple
       .select("id, fecha, tipo, motivo, causa:causas(caratula)")
       .neq("tipo", "Audiencia")
       .eq("completado", false)
+      .gte("fecha", hace30)
       .lte("fecha", en7)
       .order("fecha", { ascending: true })
       .limit(30),
@@ -149,6 +154,14 @@ export async function cargarNovedades(periodo: Periodo): Promise<NovedadesComple
       .gt("fecha", en7)
       .order("fecha", { ascending: true })
       .limit(1),
+    supabase
+      .from("vencimientos")
+      .select("id, fecha, tipo, motivo, causa:causas(caratula)")
+      .neq("tipo", "Audiencia")
+      .eq("completado", false)
+      .lt("fecha", hace30)
+      .order("fecha", { ascending: false })
+      .limit(200),
     supabase
       .from("vencimientos")
       .select("id, fecha, hora, motivo, lugar, causa:causas(caratula)")
@@ -166,19 +179,19 @@ export async function cargarNovedades(periodo: Periodo): Promise<NovedadesComple
       .limit(20),
     supabase
       .from("vencimientos")
-      .select("fecha, completado, tipo")
+      .select("fecha, completado, tipo, motivo, causa:causas(caratula)")
       .neq("tipo", "Audiencia")
       .gte("fecha", mes.desde)
       .lte("fecha", mes.hasta),
     supabase
       .from("vencimientos")
-      .select("fecha")
+      .select("fecha, motivo, causa:causas(caratula)")
       .eq("tipo", "Audiencia")
       .gte("fecha", mes.desde)
       .lte("fecha", mes.hasta),
     supabase
       .from("todos")
-      .select("fecha_limite")
+      .select("fecha_limite, texto")
       .neq("estado", "Completado")
       .gte("fecha_limite", mes.desde)
       .lte("fecha_limite", mes.hasta),
@@ -186,7 +199,7 @@ export async function cargarNovedades(periodo: Periodo): Promise<NovedadesComple
 
   if (rpc.error) throw new Error(`No se pudieron calcular los indicadores: ${rpc.error.message}`);
   if (tend.error) throw new Error(`No se pudieron calcular las tendencias: ${tend.error.message}`);
-  if (venc.error || lejanos.error || aud.error || tar.error || calVenc.error || calAud.error || calTar.error)
+  if (venc.error || lejanos.error || antiguos.error || aud.error || tar.error || calVenc.error || calAud.error || calTar.error)
     throw new Error("No se pudieron cargar las listas del dashboard.");
 
   const etiquetaCausa = (c: unknown) => (c as { caratula?: string } | null)?.caratula ?? "Causa";
@@ -194,16 +207,27 @@ export async function cargarNovedades(periodo: Periodo): Promise<NovedadesComple
   // Calendario del mes: un contador por día y tipo.
   const dias = new Map<string, DiaCalendario>();
   const dia = (f: string) => {
-    if (!dias.has(f)) dias.set(f, { fecha: f, audiencias: 0, vencimientos: 0, vencidos: 0, tareas: 0 });
+    if (!dias.has(f)) dias.set(f, { fecha: f, audiencias: 0, vencimientos: 0, vencidos: 0, tareas: 0, detalle: [] });
     return dias.get(f)!;
   };
   for (const v of calVenc.data ?? []) {
     const d = dia(v.fecha);
-    if (!v.completado && v.fecha < hoy) d.vencidos++;
+    const vencido = !v.completado && v.fecha < hoy;
+    if (vencido) d.vencidos++;
     else d.vencimientos++;
+    d.detalle.push(`${vencido ? "Vencido" : "Vencimiento"} · ${v.motivo || v.tipo} · ${etiquetaCausa(v.causa)}`);
   }
-  for (const a of calAud.data ?? []) dia(a.fecha).audiencias++;
-  for (const t of calTar.data ?? []) if (t.fecha_limite) dia(t.fecha_limite).tareas++;
+  for (const a of calAud.data ?? []) {
+    const d = dia(a.fecha);
+    d.audiencias++;
+    d.detalle.push(`Audiencia · ${a.motivo || "Audiencia"} · ${etiquetaCausa(a.causa)}`);
+  }
+  for (const t of calTar.data ?? []) {
+    if (!t.fecha_limite) continue;
+    const d = dia(t.fecha_limite);
+    d.tareas++;
+    d.detalle.push(`Tarea · ${t.texto}`);
+  }
 
   const judiciales = await judicialesQ;
   const judicialesPorEstado: Record<string, number> = {};
@@ -220,6 +244,9 @@ export async function cargarNovedades(periodo: Periodo): Promise<NovedadesComple
       id: v.id, fecha: v.fecha, tipo: v.tipo, motivo: v.motivo, causa: etiquetaCausa(v.causa),
     })),
     vencimientosLejanos: (lejanos.data ?? []).map((v) => ({
+      id: v.id, fecha: v.fecha, tipo: v.tipo, motivo: v.motivo, causa: etiquetaCausa(v.causa),
+    })),
+    vencimientosAntiguos: (antiguos.data ?? []).map((v) => ({
       id: v.id, fecha: v.fecha, tipo: v.tipo, motivo: v.motivo, causa: etiquetaCausa(v.causa),
     })),
     audiencias: (aud.data ?? []).map((a) => ({

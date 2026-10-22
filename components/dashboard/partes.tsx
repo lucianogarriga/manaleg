@@ -1,4 +1,5 @@
 // Piezas visuales del dashboard (Novedades y KPIs). Solo usan tokens de color de la paleta.
+import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { formatCurrency } from "@/utils/formatters";
 import type { Dinero, Moneda } from "@/services/supabase/novedades";
@@ -94,18 +95,18 @@ export function Badge({ tono, children }: { tono: Tono; children: ReactNode }) {
 }
 
 // Badge pequeño de la fila de "hoy": borde gris, rojo solo si el valor es mayor a 0.
-export function BadgeHoy({ etiqueta, valor, rojo = false }: { etiqueta: string; valor: number; rojo?: boolean }) {
+export function BadgeHoy({ etiqueta, valor, rojo = false, href }: { etiqueta: string; valor: number; rojo?: boolean; href?: string }) {
   const alerta = rojo && valor > 0;
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-[3px] text-[12px] text-muted ${
-        alerta ? "border-red" : "border-border"
-      }`}
-    >
+  const clase = `inline-flex items-center gap-1.5 rounded-full border px-2.5 py-[3px] text-[12px] text-muted ${
+    alerta ? "border-red" : "border-border"
+  } ${href ? "transition-colors hover:border-blue hover:text-text" : ""}`;
+  const contenido = (
+    <>
       {etiqueta}
       <b className={`tabular-nums ${alerta ? "text-red" : "text-text"}`}>{valor}</b>
-    </span>
+    </>
   );
+  return href ? <Link href={href} className={clase}>{contenido}</Link> : <span className={clase}>{contenido}</span>;
 }
 
 // Barras de tendencia de las últimas 7 semanas (la última resaltada).
@@ -410,8 +411,10 @@ export function Segmentado<T extends string>({ valores, actual, onChange, etique
 }
 
 // Calendario mensual: puntos por tipo de evento.
+const MESES_CORTOS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+
 export function Calendario({ anio, mes, dias, hoy }: {
-  anio: number; mes: number; dias: { fecha: string; audiencias: number; vencimientos: number; vencidos: number; tareas: number }[]; hoy: string;
+  anio: number; mes: number; dias: { fecha: string; audiencias: number; vencimientos: number; vencidos: number; tareas: number; detalle: string[] }[]; hoy: string;
 }) {
   const primero = new Date(Date.UTC(anio, mes - 1, 1));
   const cantidad = new Date(Date.UTC(anio, mes, 0)).getUTCDate();
@@ -429,8 +432,17 @@ export function Calendario({ anio, mes, dias, hoy }: {
           if (n === null) return <div key={`v${i}`} />;
           const d = porDia.get(n);
           return (
-            <div key={n} className={`relative rounded-md py-1.5 ${esHoy(n) ? "bg-blue font-bold text-on-primary" : ""}`}>
+            <div key={n} className={`group relative rounded-md py-1.5 ${esHoy(n) ? "bg-blue font-bold text-on-primary" : ""}`}>
               {n}
+              {d && d.detalle.length > 0 && (
+                <div className="pointer-events-none absolute left-1/2 top-full z-30 mt-1 hidden w-[240px] -translate-x-1/2 rounded-[8px] border border-border bg-card p-2.5 text-left text-[12px] font-normal text-sub shadow-[0_8px_24px_rgba(0,0,0,.18)] group-hover:block">
+                  <div className="mb-1 text-[11px] font-bold uppercase tracking-[.4px] text-muted">{n} de {MESES_CORTOS[mes - 1]}</div>
+                  {d.detalle.slice(0, 6).map((linea, i) => (
+                    <div key={i} className="truncate py-[2px]">{linea}</div>
+                  ))}
+                  {d.detalle.length > 6 && <div className="pt-1 text-muted">+{d.detalle.length - 6} más</div>}
+                </div>
+              )}
               <div className="absolute bottom-[2px] left-1/2 flex -translate-x-1/2 gap-[2px]">
                 {d && d.audiencias > 0 && <span className="h-1 w-1 rounded-full bg-cel" />}
                 {d && d.vencimientos > 0 && <span className="h-1 w-1 rounded-full bg-amb" />}
