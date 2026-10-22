@@ -22,12 +22,19 @@ export default function DominoReveal({ children }: { children: ReactNode }) {
         h.classList.add("rv");
       });
 
+    // Elementos a animar: los marcados con data-reveal y los hijos directos de un data-reveal-group
     const buscar = (nodo: Node): Element[] => {
       if (!(nodo instanceof Element)) return [];
-      return [...(nodo.matches("[data-reveal]") ? [nodo] : []), ...nodo.querySelectorAll("[data-reveal]")];
+      const propios = nodo.matches("[data-reveal]") ? [nodo] : [];
+      const enGrupo = nodo.parentElement?.hasAttribute("data-reveal-group") ? [nodo] : [];
+      return [...propios, ...enGrupo, ...nodo.querySelectorAll("[data-reveal], [data-reveal-group] > *")];
     };
+    const existentes = () => [
+      ...root.querySelectorAll("[data-reveal]"),
+      ...root.querySelectorAll("[data-reveal-group] > *"),
+    ];
 
-    animar([...root.querySelectorAll("[data-reveal]")]);
+    animar([...existentes()]);
 
     const observer = new MutationObserver((mutaciones) => {
       const nuevos = mutaciones.flatMap((m) => [...m.addedNodes].flatMap(buscar));

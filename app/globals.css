@@ -567,3 +567,26 @@ html[data-motion="off"] *::after {
     scroll-behavior: auto !important;
   }
 }
+
+/* ── Capa premium general (todas las secciones) ───────────────────── */
+
+/* Elevación al pasar el cursor (cards y filas tipo card) */
+.lift { transition: transform .35s cubic-bezier(.34,1.3,.64,1), box-shadow .35s ease; }
+.lift:hover { transform: translateY(-3px); box-shadow: 0 16px 30px -18px rgba(0,0,0,.4); }
+
+/* Campos: halo de foco en el color de acento */
+main input:not([type="checkbox"]):not([type="radio"]):focus,
+main select:focus,
+main textarea:focus {
+  outline: none;
+  border-color: var(--color-blue) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-blue) 22%, transparent);
+  transition: box-shadow .2s ease, border-color .2s ease;
+}
+
+/* Botones: se hunden al presionar */
+main button:not(:disabled):active { transform: scale(.97); }
+
+/* Filas de tabla: acento lateral al pasar el cursor */
+main tbody tr { transition: background-color .2s ease, box-shadow .2s ease; }
+main tbody tr:hover { box-shadow: inset 3px 0 0 var(--color-blue); }

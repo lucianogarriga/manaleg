@@ -378,7 +378,7 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
       </div>
 
       {/* Columnas */}
-      <div className="flex flex-1 gap-3 overflow-x-auto p-4">
+      <div className="flex flex-1 gap-3 overflow-x-auto p-4" data-reveal-group>
         {COLUMNS.map(({ estado, label, color, light }) => {
           const items = filtered.filter((t) => t.estado === estado);
           const isOver = dragOver === estado;

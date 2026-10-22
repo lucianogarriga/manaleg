@@ -118,7 +118,7 @@ export default function CalendarView({ hoy, avisos, inhabiles, userId }: Calenda
           ))}
         </div>
 
-        <div className="grid grid-cols-7">
+        <div className="grid grid-cols-7" data-reveal-group>
           {celdas.map((fecha) => {
             const delMes = fecha.startsWith(prefijo);
             const finde = isWeekend(fecha);

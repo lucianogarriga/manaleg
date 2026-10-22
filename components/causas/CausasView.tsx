@@ -211,7 +211,7 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
 
           {/* Lista o grid */}
           {viewMode === "list" ? (
-            <div className="py-1 pb-16">
+            <div className="py-1 pb-16" data-reveal-group>
               {visibles.map((causa) => (
                 <CausaRow
                   key={causa.id}
@@ -230,7 +230,7 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
             </div>
           ) : (
             <div className="px-4 py-3 pb-16 sm:px-3">
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
                 {visibles.map((causa) => (
                   <CausaCard
                     key={causa.id}

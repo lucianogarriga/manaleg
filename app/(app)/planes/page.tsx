@@ -128,8 +128,8 @@ export default async function PlanesPage() {
       </div>
 
       {/* Cards de planes */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        {PLANS.map((plan, i) => {
+      <div className="grid gap-4 sm:grid-cols-3" data-reveal-group>
+        {PLANS.map((plan) => {
           const isCurrent =
             (plan.id === "prueba" && esPrueba) ||
             (plan.id === "full" && esPro) ||
@@ -137,9 +137,9 @@ export default async function PlanesPage() {
           return (
             <div
               key={plan.id}
-              className="fade-in-up relative flex flex-col rounded-[12px] border p-6"
+              data-spot
+              className="lift relative flex flex-col rounded-[12px] border p-6"
               style={{
-                animationDelay: `${(i + 1) * 80}ms`,
                 borderColor: plan.highlight ? "var(--color-blue)" : "var(--color-border)",
                 background: plan.highlight ? "var(--color-blue-lt)" : "var(--color-card)",
                 boxShadow: plan.highlight ? "0 0 0 1px var(--color-blue)" : undefined,
