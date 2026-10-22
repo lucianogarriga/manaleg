@@ -4,6 +4,7 @@ import { useEffect, useRef, type ReactNode } from "react";
 
 const PASO_MS = 50;
 const MAX_ESCALONES = 12;
+const MAX_ANIMADOS = 24;
 
 // Hace aparecer en cascada, de una en una, los elementos marcados con data-reveal
 // (también los que se agregan después, por ejemplo al cambiar de pestaña).
@@ -14,8 +15,9 @@ export default function DominoReveal({ children }: { children: ReactNode }) {
     const root = ref.current;
     if (!root) return;
 
+    // Solo animamos los primeros elementos: en listas largas, animar todo a la vez traba el render
     const animar = (items: Element[]) =>
-      items.forEach((el, i) => {
+      items.slice(0, MAX_ANIMADOS).forEach((el, i) => {
         const h = el as HTMLElement;
         if (h.classList.contains("rv")) return;
         h.style.setProperty("--rv-delay", `${Math.min(i, MAX_ESCALONES) * PASO_MS}ms`);
