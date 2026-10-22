@@ -337,13 +337,17 @@
 
 
 /* Fade-up: sube desde abajo, se enfoca y termina con una leve desaceleración */
+/* Entrada "tilt": la card cae desde arriba con una leve inclinación 3D y se asienta.
+   Solo transform y opacity: se compone en la GPU y no repinta el contenido. */
 @keyframes rvIn {
-  from { opacity: 0; transform: translate3d(0, 22px, 0) scale(.985); }
-  to   { opacity: 1; transform: none; }
+  from { opacity: 0; transform: perspective(1000px) translate3d(0, -18px, 0) rotateX(-12deg); }
+  60%  { opacity: 1; }
+  to   { opacity: 1; transform: perspective(1000px) translate3d(0, 0, 0) rotateX(0deg); }
 }
 
 .rv {
-  animation: rvIn 640ms cubic-bezier(.16,1,.3,1) backwards;
+  transform-origin: 50% 0;
+  animation: rvIn 720ms cubic-bezier(.16,1,.3,1) backwards;
   animation-delay: var(--rv-delay, 0ms);
 }
 

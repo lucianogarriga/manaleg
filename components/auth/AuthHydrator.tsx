@@ -18,6 +18,12 @@ export default function AuthHydrator({ profile }: { profile: Profile }) {
   useEffect(() => {
     document.documentElement.setAttribute("data-palette", paletaInicial.current);
     if (movimientoInicial.current) document.documentElement.dataset.motion = "off";
+    // Copia local para que el próximo F5 aplique la misma paleta antes de pintar (ver layout.tsx)
+    try {
+      localStorage.setItem("palette", paletaInicial.current);
+      if (movimientoInicial.current) localStorage.setItem("motion", "off");
+      else localStorage.removeItem("motion");
+    } catch {}
   }, []);
 
   return null;
