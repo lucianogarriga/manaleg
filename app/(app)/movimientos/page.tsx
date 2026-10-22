@@ -107,7 +107,7 @@ export default async function MovimientosPage({
         />
       ) : (
         <>
-          <div className="overflow-hidden rounded-[7px] border border-border bg-card">
+          <div className="overflow-hidden rounded-[7px] border border-border bg-card" data-reveal-group>
             <div className="border-b border-border px-[13px] py-[9px] text-[12px] font-bold tracking-[.4px] text-sub uppercase">
               Actividad reciente
             </div>

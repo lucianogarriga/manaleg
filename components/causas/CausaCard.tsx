@@ -33,7 +33,8 @@ export default function CausaCard({ causa, active, onSelect }: CausaCardProps) {
     <button
       type="button"
       onClick={onSelect}
-      className={`flex w-full cursor-pointer flex-col gap-[5px] overflow-hidden rounded-xl border border-l-[3px] px-[10px] py-[9px] text-left ${cerrada ? "opacity-55" : ""}`}
+      data-spot
+      className={`lift flex w-full cursor-pointer flex-col gap-[5px] overflow-hidden rounded-xl border border-l-[3px] px-[10px] py-[9px] text-left ${cerrada ? "opacity-55" : ""}`}
       style={{
         background: bg,
         borderColor: "var(--color-border)",

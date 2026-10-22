@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -11,16 +11,28 @@ import type { LayoutCounts } from "@/services/supabase/layoutCounts";
 import { NAV_SECTIONS, type NavItem } from "./navigation";
 import UserSettings from "./UserSettings";
 
+// Los íconos ocupan siempre la misma columna (centro en x=24), abierto o cerrado:
+// lo único que cambia al expandir es el ancho del panel y la aparición del texto.
+const ICON_LEFT = 14; // ítems fuera de la tarjeta de navegación (pin)
+const NAV_ICON_LEFT = 6; // ítems dentro de la tarjeta de navegación (padding px-2 de la tarjeta)
+const ICON_BOX = 20;
+const DUR = "260ms cubic-bezier(0.4,0,0.2,1)";
+const SPRING = "520ms cubic-bezier(.34,1.3,.64,1)";
+const TEXT_DELAY_OPEN = "80ms";
+
+interface Medida { top: number; height: number }
+
+const medidaDe = (el: HTMLElement): Medida => ({ top: el.offsetTop, height: el.offsetHeight });
+
 interface NavLinkProps {
   item: NavItem;
   active: boolean;
   expanded: boolean;
-  textStyle: React.CSSProperties;
-  pill: React.ReactNode;
+  badge: React.ReactNode;
   onClick: () => void;
 }
 
-function NavLink({ item, active, expanded, textStyle, pill, onClick }: NavLinkProps) {
+function NavLink({ item, active, expanded, badge, onClick }: NavLinkProps) {
   const [hovered, setHovered] = useState(false);
   const lit = hovered || active;
   const Icon = item.icon;
@@ -29,55 +41,41 @@ function NavLink({ item, active, expanded, textStyle, pill, onClick }: NavLinkPr
       href={item.href}
       onClick={onClick}
       aria-label={item.label}
-      className="mx-[5px] flex items-center overflow-hidden rounded-[7px] py-[4px]"
+      aria-current={active ? "page" : undefined}
+      data-nav
+      data-active={active}
+      className="relative z-[1] flex h-[30px] items-center overflow-hidden rounded-[9px]"
       style={{
-        gap: expanded ? 7 : 0,
+        paddingLeft: NAV_ICON_LEFT,
+        paddingRight: 10,
         color: lit ? "var(--sb-act-fg)" : "var(--sb-fg)",
-        paddingLeft: expanded ? 10 : 9,
-        paddingRight: expanded ? 10 : 9,
-        justifyContent: expanded ? undefined : "center",
-        transition: "color 120ms, padding-left 260ms cubic-bezier(0.4,0,0.2,1), padding-right 260ms cubic-bezier(0.4,0,0.2,1), gap 260ms cubic-bezier(0.4,0,0.2,1)",
+        transition: "color 160ms ease",
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Ícono con barra activa debajo (solo colapsado) */}
-      <span
-        className={`relative flex shrink-0 items-center justify-center ${expanded ? "w-[21px] md:w-[16px]" : "w-[28px]"}`}
-        style={{ transition: `width ${DUR}` }}
-      >
+      <span className="flex shrink-0 items-center justify-center" style={{ width: ICON_BOX, height: ICON_BOX }}>
         <Icon
-          size={expanded ? 17 : 18}
-          className={expanded ? "h-[21px] w-[21px] md:h-[17px] md:w-[17px]" : "h-[18px] w-[18px]"}
+          size={18}
           strokeWidth={1.8}
-          style={{ color: lit ? item.iconColor : "var(--sb-fg)", transition: `color 120ms, font-size ${DUR}` }}
+          style={{
+            color: lit ? item.iconColor : "var(--sb-fg)",
+            transform: lit ? "translateX(2px) scale(1.1) rotate(-6deg)" : "none",
+            transition: `color 160ms ease, transform 420ms ${SPRING}`,
+          }}
         />
-        {active && !expanded && (
-          <span
-            className="absolute -bottom-[7px] left-1/2 h-[2px] w-[12px] -translate-x-1/2 rounded-full"
-            style={{ background: "var(--sb-accent)" }}
-          />
-        )}
       </span>
-
-      {/* Texto con subrayado progresivo en hover/activo (solo expandido) */}
       <span
-        className={`relative whitespace-nowrap text-[16px] md:text-[14px] ${lit ? "font-semibold" : "font-medium"}`}
-        style={textStyle}
+        className={`min-w-0 flex-1 truncate whitespace-nowrap text-[15px] md:text-[13.5px] ${lit ? "font-semibold" : "font-medium"}`}
+        style={{
+          opacity: expanded ? 1 : 0,
+          paddingLeft: expanded ? 10 : 0,
+          transition: `opacity 200ms ${expanded ? TEXT_DELAY_OPEN : "0ms"}, padding-left ${DUR}`,
+        }}
       >
         {item.label}
-        {expanded && (
-          <span
-            className="absolute bottom-[-1px] left-0 h-[1.5px] rounded-full"
-            style={{
-              background: "var(--sb-accent)",
-              width: lit ? "100%" : "0%",
-              transition: lit ? "width 180ms cubic-bezier(0.4,0,0.2,1)" : "width 120ms ease",
-            }}
-          />
-        )}
       </span>
-      {pill}
+      {badge}
     </Link>
   );
 }
@@ -87,16 +85,15 @@ interface SidebarProps {
   counts: LayoutCounts;
 }
 
-// Duración y curva compartidos por todos los elementos animados
-const DUR = "260ms cubic-bezier(0.4,0,0.2,1)";
-// Delay al abrir: texto aparece DESPUÉS de que el ancho empieza a crecer
-const TEXT_DELAY_OPEN = "80ms";
-
 export default function Sidebar({ profile, counts }: SidebarProps) {
   const pathname = usePathname();
   const { sidebarOpen, closeSidebar, sidebarPinned, toggleSidebarPin } = useUIStore();
   const selectCausa = useCausasStore((s) => s.select);
   const [hovered, setHovered] = useState(false);
+  const navRef = useRef<HTMLDivElement>(null);
+  const [pill, setPill] = useState<Medida | null>(null);
+  const [hoverPill, setHoverPill] = useState<Medida | null>(null);
+  const [listo, setListo] = useState(false);
 
   // Hidratar el pin desde localStorage en el cliente
   useEffect(() => {
@@ -106,6 +103,19 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
   // Desktop: se expande al hacer hover o si está pinned
   // Mobile: se expande solo cuando está abierto (hamburger)
   const exp = sidebarOpen || sidebarPinned || hovered;
+
+  // La pastilla de la sección activa se mide antes de pintar y se desliza al cambiar de ruta
+  const medirActivo = () => {
+    const el = navRef.current?.querySelector<HTMLElement>('[data-active="true"]');
+    setPill(el ? medidaDe(el) : null);
+  };
+  useLayoutEffect(() => { medirActivo(); }, [pathname]);
+  useEffect(() => {
+    medirActivo();
+    window.addEventListener("resize", medirActivo);
+    const id = requestAnimationFrame(() => setListo(true));
+    return () => { window.removeEventListener("resize", medirActivo); cancelAnimationFrame(id); };
+  }, []);
 
   const pillFor = (item: NavItem) => {
     if (!exp) return null;
@@ -118,14 +128,10 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
     return null;
   };
 
-  // Estilos de texto: desaparecen en opacidad Y en ancho para no desplazar los íconos
-  const textStyle: React.CSSProperties = {
+  const textoEntrada = (delay: boolean) => ({
     opacity: exp ? 1 : 0,
-    maxWidth: exp ? "200px" : "0px",
-    overflow: "hidden",
-    pointerEvents: exp ? "auto" : "none",
-    transition: `opacity ${DUR} ${exp ? TEXT_DELAY_OPEN : "0ms"}, max-width ${DUR}`,
-  };
+    transition: `opacity 200ms ${exp && delay ? TEXT_DELAY_OPEN : "0ms"}`,
+  });
 
   return (
     <>
@@ -135,37 +141,27 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex shrink-0 flex-col p-0 md:static md:translate-x-0 md:p-2 ${
+        className={`sb-surface fixed inset-y-0 left-0 z-40 flex shrink-0 flex-col md:static md:translate-x-0 md:p-2 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } ${exp ? "md:w-[228px]" : "md:w-[56px]"} w-full`}
+        } ${exp ? "md:w-[232px]" : "md:w-[64px]"} w-full`}
         style={{ transition: `width ${DUR}` }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        {/* Pill — la superficie flotante */}
-        <div
-          className="flex flex-1 flex-col overflow-hidden rounded-none md:rounded-xl"
-          style={{ background: "var(--sb-bg)", boxShadow: "var(--sb-shadow)" }}
-        >
-          {/* ── Logo ─────────────────────────────────────────────────── */}
-          <div
-            className="flex h-[52px] shrink-0 items-center gap-2 overflow-hidden"
-            style={{
-              borderColor: "var(--color-border)",
-              // paddingLeft anima entre centrado (6px) y alineado (14px)
-              paddingLeft: exp ? 14 : 6,
-              transition: `padding-left ${DUR}`,
-            }}
-          >
-            <div
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[7px] text-[15px] font-bold text-white md:h-7 md:w-7 md:text-[13px]"
-              style={{ background: "var(--sb-accent)" }}
-            >
-              M
+        <div className="flex h-full min-h-0 flex-col justify-center gap-0 md:gap-2">
+          {/* ── Grupo 1: logo ─────────────────────────────────────── */}
+          <div className="sb-card flex h-[52px] shrink-0 items-center overflow-hidden">
+            <div className="flex shrink-0 items-center pl-[8px]">
+              <div
+                className="flex h-[32px] w-[32px] items-center justify-center rounded-[9px] text-[15px] font-bold text-white"
+                style={{ background: "var(--sb-accent)" }}
+              >
+                M
+              </div>
             </div>
             <span
-              className="whitespace-nowrap text-[19px] font-bold md:text-[16px]"
-              style={{ color: "var(--sb-accent)", ...textStyle }}
+              className="ml-[10px] whitespace-nowrap text-[18px] font-bold md:text-[15px]"
+              style={{ color: "var(--sb-accent)", ...textoEntrada(true) }}
             >
               Manaleg
             </span>
@@ -180,79 +176,117 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
             </button>
           </div>
 
-          {/* ── Nav ──────────────────────────────────────────────────── */}
-          <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2">
-            {NAV_SECTIONS.map((section, i) => (
-              <div key={section.title} className={i > 0 ? "mt-1" : undefined}>
-                {/* Título de sección */}
-                <div
-                  className="overflow-hidden"
-                  style={{
-                    maxHeight: exp ? "2rem" : "0px",
-                    opacity: exp ? 1 : 0,
-                    transition: `max-height ${DUR}, opacity ${DUR} ${exp ? TEXT_DELAY_OPEN : "0ms"}`,
-                  }}
-                >
-                  <div
-                    className="px-[13px] pt-[6px] pb-[1px] text-[12.5px] font-bold uppercase tracking-[.9px] md:text-[11px]"
-                    style={{ color: "var(--sb-fg)", opacity: 0.5 }}
-                  >
-                    {section.title}
-                  </div>
-                </div>
+          {/* ── Grupo 2: navegación, centrada en el espacio disponible ── */}
+          <nav className="sb-card flex min-h-0 shrink flex-col overflow-y-auto overflow-x-hidden">
+            <div
+              ref={navRef}
+              className="relative px-2 py-1.5"
+              onPointerOver={(e) => {
+                const el = (e.target as Element).closest<HTMLElement>("[data-nav]");
+                if (el && navRef.current?.contains(el)) setHoverPill(medidaDe(el));
+              }}
+              onPointerLeave={() => setHoverPill(null)}
+            >
+              {/* Pastilla de hover (sigue al cursor) */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute left-2 right-2 rounded-[10px]"
+                style={{
+                  top: hoverPill?.top ?? 0,
+                  height: hoverPill?.height ?? 0,
+                  opacity: hoverPill ? 1 : 0,
+                  background: "var(--sb-act-bg)",
+                  transition: listo
+                    ? `top ${SPRING}, height ${SPRING}, opacity 200ms ease`
+                    : "none",
+                }}
+              />
+              {/* Pastilla de la sección activa: se desliza de una a otra */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute left-2 right-2 rounded-[10px]"
+                style={{
+                  top: pill?.top ?? 0,
+                  height: pill?.height ?? 0,
+                  opacity: pill ? 1 : 0,
+                  background: "var(--sb-act-bg)",
+                  boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--sb-accent) 28%, transparent)",
+                  transition: listo
+                    ? `top ${SPRING}, height ${SPRING}, opacity 200ms ease`
+                    : "none",
+                }}
+              >
+                <span
+                  className="absolute left-0 top-[8px] bottom-[8px] w-[3px] rounded-full"
+                  style={{ background: "var(--sb-accent)" }}
+                />
+              </span>
 
-                {section.items.map((item) => {
-                  const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-                  return (
-                    <NavLink
-                      key={item.href}
-                      item={item}
-                      active={active}
-                      expanded={exp}
-                      textStyle={textStyle}
-                      pill={pillFor(item)}
-                      onClick={() => {
-                        closeSidebar();
-                        if (item.href === "/causas") selectCausa(null);
-                      }}
+              {NAV_SECTIONS.map((section, i) => (
+                <div key={section.title}>
+                  {/* Encabezado de sección: misma altura abierto o cerrado; cerrado muestra un separador */}
+                  <div className="relative flex h-[20px] items-center px-[14px]">
+                    <span
+                      aria-hidden
+                      className="absolute inset-x-[14px] top-1/2 h-px -translate-y-1/2 bg-border"
+                      style={{ opacity: exp || i === 0 ? 0 : 0.8, transition: `opacity 200ms` }}
                     />
-                  );
-                })}
-              </div>
-            ))}
+                    <span
+                      className="whitespace-nowrap text-[11px] font-bold uppercase tracking-[.9px]"
+                      style={{ color: "var(--sb-fg)", ...textoEntrada(true), opacity: exp ? 0.5 : 0 }}
+                    >
+                      {section.title}
+                    </span>
+                  </div>
+
+                  {section.items.map((item) => {
+                    const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+                    return (
+                      <NavLink
+                        key={item.href}
+                        item={item}
+                        active={active}
+                        expanded={exp}
+                        badge={pillFor(item)}
+                        onClick={() => {
+                          closeSidebar();
+                          if (item.href === "/causas") selectCausa(null);
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
           </nav>
 
-          {/* ── Footer: pin + avatar ─────────────────────────────────── */}
-          <div className="shrink-0 mx-[8px]" style={{ height: 1, background: "var(--color-border)" }} />
-          <div className="shrink-0">
-            {/* Pin toggle — solo desktop, solo cuando expandido */}
-            {exp && (
-              <div className="px-[5px] pt-[5px] pb-[2px]">
-                <button
-                  type="button"
-                  onClick={toggleSidebarPin}
-                  title={sidebarPinned ? "Colapsar menú" : "Fijar menú expandido"}
-                  className="hidden md:flex w-full items-center overflow-hidden rounded-[7px] py-[4px] text-left transition-colors cursor-pointer"
-                  style={{ gap: 9, paddingLeft: 10, paddingRight: 12, color: "var(--sb-fg)" }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--sb-act-fg)"; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--sb-fg)"; }}
-                >
-                  {sidebarPinned
-                    ? <PanelLeftClose size={14} strokeWidth={1.8} className="shrink-0" />
-                    : <PanelLeftOpen  size={14} strokeWidth={1.8} className="shrink-0" />
-                  }
-                  <span className="whitespace-nowrap text-[13px] font-medium" style={textStyle}>
-                    {sidebarPinned ? "Colapsar menú" : "Fijar menú"}
-                  </span>
-                </button>
-              </div>
-            )}
-
-            {/* Avatar — centrado cuando colapsado, alineado izq cuando expandido */}
-            <div
-              className={`flex items-center pb-[10px] ${exp ? "mx-[5px] pt-[3px]" : "justify-center pt-[8px]"}`}
-              style={{ paddingLeft: exp ? 10 : 0 }}
+          {/* ── Grupo 3: fijar menú + usuario ─────────────────────── */}
+          <div className="sb-card flex shrink-0 flex-col py-[6px]">
+            <button
+              type="button"
+              onClick={toggleSidebarPin}
+              title={sidebarPinned ? "Colapsar menú" : "Fijar menú expandido"}
+              aria-label={sidebarPinned ? "Colapsar menú" : "Fijar menú expandido"}
+              className="sb-pin hidden h-[34px] items-center overflow-hidden rounded-[10px] md:flex"
+              style={{ paddingLeft: ICON_LEFT, paddingRight: 10, color: "var(--sb-fg)" }}
             >
+              <span className="flex shrink-0 items-center justify-center" style={{ width: ICON_BOX, height: ICON_BOX }}>
+                {sidebarPinned
+                  ? <PanelLeftClose size={16} strokeWidth={1.8} />
+                  : <PanelLeftOpen size={16} strokeWidth={1.8} />}
+              </span>
+              <span
+                className="whitespace-nowrap text-[13px] font-medium"
+                style={{ paddingLeft: exp ? 10 : 0, ...textoEntrada(true), transition: `opacity 200ms ${exp ? TEXT_DELAY_OPEN : "0ms"}, padding-left ${DUR}` }}
+              >
+                {sidebarPinned ? "Colapsar menú" : "Fijar menú"}
+              </span>
+            </button>
+
+            <div className="mx-[12px] my-[4px] hidden h-px bg-border md:block" />
+
+            {/* Avatar: misma X que los íconos (centro en x=24) */}
+            <div className="flex items-center pl-[12px] py-[4px]">
               <UserSettings profile={profile} variant="sidebar" expanded={exp} />
             </div>
           </div>

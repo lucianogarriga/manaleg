@@ -215,9 +215,10 @@ function TareaCard({
         onPointerUp={terminarResize}
         onPointerCancel={terminarResize}
         onDoubleClick={(e) => { e.stopPropagation(); restablecerAlto(); }}
-        className="absolute bottom-0 right-0 h-[14px] w-[14px] cursor-nwse-resize opacity-0 transition-opacity group-hover:opacity-100"
+        className="absolute bottom-0 right-0 h-[16px] w-[16px] cursor-nwse-resize opacity-60 transition-opacity group-hover:opacity-100"
         style={{
-          background: "linear-gradient(135deg, transparent 50%, var(--color-muted) 50%)",
+          // Dos diagonales visibles en ambos temas (antes un triángulo gris que se perdía en light)
+          background: "linear-gradient(135deg, transparent 52%, var(--color-sub) 52%, var(--color-sub) 60%, transparent 60%, transparent 70%, var(--color-sub) 70%, var(--color-sub) 78%, transparent 78%)",
         }}
       />
     </div>
@@ -377,7 +378,7 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
       </div>
 
       {/* Columnas */}
-      <div className="flex flex-1 gap-3 overflow-x-auto p-4">
+      <div className="flex flex-1 gap-3 overflow-x-auto p-4" data-reveal-group>
         {COLUMNS.map(({ estado, label, color, light }) => {
           const items = filtered.filter((t) => t.estado === estado);
           const isOver = dragOver === estado;
@@ -417,7 +418,7 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
               </div>
 
               {/* Cards */}
-              <div className="flex flex-1 flex-col gap-2 px-3 pb-3">
+              <div className="flex flex-col gap-2 px-3 pb-3">
                 {items.map((t) => (
                   <TareaCardMemo
                     key={t.id}
@@ -452,7 +453,7 @@ export default function KanbanView({ causas, userId }: KanbanViewProps) {
                   <button
                     type="button"
                     onClick={() => setAddingIn(estado)}
-                    className="mt-auto flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed px-2 py-[7px] text-[12.5px] font-semibold transition-colors hover:opacity-80"
+                    className="mt-1 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed px-2 py-[7px] text-[12.5px] font-semibold transition-colors hover:opacity-80"
                     style={{ borderColor: color, color }}
                   >
                     <Plus size={14} strokeWidth={2.4} /> Nueva tarea

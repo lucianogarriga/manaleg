@@ -1,4 +1,5 @@
 // Piezas visuales del dashboard (Novedades y KPIs). Solo usan tokens de color de la paleta.
+import CountUp from "@/components/ui/CountUp";
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { formatCurrency } from "@/utils/formatters";
@@ -30,7 +31,7 @@ export function Montos({ valores, vacio = "$ 0" }: { valores: Dinero; vacio?: st
   return (
     <>
       {filas.map((m) => (
-        <span key={m} className="block">{formatCurrency(valores[m] ?? 0, m)}</span>
+        <span key={m} className="block"><CountUp value={valores[m] ?? 0} format={(x) => formatCurrency(x, m)} /></span>
       ))}
     </>
   );
@@ -41,6 +42,8 @@ export function Card({ children, className = "", warn = false, style }: {
 }) {
   return (
     <div
+      data-reveal
+      data-spot
       className={`min-w-0 rounded-xl border border-border bg-card px-[18px] py-4 ${className}`}
       style={{
         ...(warn
@@ -71,7 +74,7 @@ export function Titulo({ children, sub, derecha }: { children: ReactNode; sub?: 
 
 export function SeccionEncabezado({ children, sub }: { children: ReactNode; sub?: ReactNode }) {
   return (
-    <div className="mb-2 mt-4 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[.12em] text-muted">
+    <div data-reveal className="mb-2 mt-4 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[.12em] text-muted">
       {children}
       {sub && <span className="font-normal normal-case tracking-normal">{sub}</span>}
     </div>
@@ -152,7 +155,7 @@ export function KpiCard({ titulo, valor, sub, badge, alerta = false, grisada = f
         </div>
         <div className="flex items-end justify-between gap-3">
           <div className="min-w-0">
-            <div className="text-[22px] font-bold leading-tight tabular-nums text-text">{valor}</div>
+            <div className="text-[22px] font-bold leading-tight tabular-nums text-text">{typeof valor === "number" ? <CountUp value={valor} /> : valor}</div>
             {sub && <div className="mt-1 text-[12px] text-muted">{sub}</div>}
           </div>
           {serie && serie.length > 0 && <Tendencia serie={serie} />}
@@ -170,7 +173,7 @@ export function Tile({ titulo, sub, valor, extra, grisada = false, className = "
     <Card className={`${grisada ? "opacity-60" : ""} ${className}`}>
       <div className="text-[14px] font-semibold text-text">{titulo}</div>
       {grisada && <span className="text-[11px] text-muted">Próximamente</span>}
-      <div className="mt-1 text-[20px] font-bold tabular-nums text-text">{valor}</div>
+      <div className="mt-1 text-[20px] font-bold tabular-nums text-text">{typeof valor === "number" ? <CountUp value={valor} /> : valor}</div>
       {sub && <div className="mt-1 text-[12px] text-muted">{sub}</div>}
       {extra}
     </Card>
