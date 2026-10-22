@@ -148,7 +148,7 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        <div className="flex h-full min-h-0 flex-col gap-0 md:gap-2">
+        <div className="flex h-full min-h-0 flex-col justify-between gap-0 md:gap-2">
           {/* ── Grupo 1: logo ─────────────────────────────────────── */}
           <div className="sb-card flex h-[52px] shrink-0 items-center overflow-hidden">
             <div className="flex shrink-0 items-center pl-[10px]">
@@ -177,10 +177,10 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
           </div>
 
           {/* ── Grupo 2: navegación, centrada en el espacio disponible ── */}
-          <nav className="sb-card flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
+          <nav className="sb-card flex min-h-0 shrink flex-col overflow-y-auto overflow-x-hidden">
             <div
               ref={navRef}
-              className="relative my-auto px-2 py-2"
+              className="relative px-2 py-2"
               onPointerOver={(e) => {
                 const el = (e.target as Element).closest<HTMLElement>("[data-nav]");
                 if (el && navRef.current?.contains(el)) setHoverPill(medidaDe(el));
