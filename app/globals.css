@@ -367,6 +367,113 @@
   animation: kanban-bump 480ms cubic-bezier(.3,1.4,.5,1);
 }
 
+/* ── Efectos premium ─────────────────────────────────────────────── */
+
+/* Modales: entrada con resorte y fondo desenfocado */
+@keyframes modal-spring {
+  from { opacity: 0; transform: translateY(18px) scale(.96); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes backdrop-in {
+  from { opacity: 0; backdrop-filter: blur(0); }
+  to   { opacity: 1; backdrop-filter: blur(4px); }
+}
+.modal-backdrop { animation: backdrop-in 260ms ease both; }
+.modal-panel { animation: modal-spring 420ms cubic-bezier(.34,1.56,.64,1) both; }
+
+/* Avisos: entrada con rebote y barra de progreso que se vacía */
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, 16px) scale(.94); }
+  to   { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+@keyframes toast-progress {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+.toast-in { animation: toast-in 480ms cubic-bezier(.34,1.56,.64,1) both; }
+.toast-progress { transform-origin: left; animation: toast-progress linear both; }
+
+/* Botones de envío: brillo que cruza al pasar el cursor, elevación y pulsación */
+button[type="submit"]:not(:disabled) {
+  position: relative;
+  overflow: hidden;
+  transition: transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .25s ease;
+}
+button[type="submit"]:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px -10px color-mix(in srgb, var(--color-blue) 70%, transparent);
+}
+button[type="submit"]:not(:disabled):active { transform: scale(.97); }
+button[type="submit"]:not(:disabled)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.35) 50%, transparent 65%);
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+button[type="submit"]:not(:disabled):hover::after {
+  transform: translateX(120%);
+  transition: transform .75s ease;
+}
+
+/* Cards: borde que se ilumina y resplandor siguiendo el cursor (--mx / --my los fija DominoReveal) */
+[data-spot] { position: relative; isolation: isolate; --mx: 50%; --my: 50%; }
+[data-spot]::before,
+[data-spot]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .3s ease;
+  z-index: -1;
+}
+[data-spot]::before {
+  padding: 1px;
+  background: radial-gradient(240px circle at var(--mx) var(--my), color-mix(in srgb, var(--color-blue) 75%, transparent), transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+[data-spot]::after {
+  background: radial-gradient(320px circle at var(--mx) var(--my), color-mix(in srgb, var(--color-blue) 10%, transparent), transparent 70%);
+}
+[data-spot]:hover::before,
+[data-spot]:hover::after { opacity: 1; }
+
+/* Filas clicqueables: la flecha se desliza al pasar el cursor */
+.row-slide { transition: transform .3s cubic-bezier(.34,1.56,.64,1), background-color .15s ease; }
+.row-slide:hover { transform: translateX(3px); }
+.row-arrow { transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .2s ease; opacity: .55; }
+.row-slide:hover .row-arrow { transform: translateX(3px); opacity: 1; }
+
+/* Sidebar: la barra del ítem activo crece con resorte */
+@keyframes nav-bar-in {
+  from { transform: translateX(-50%) scaleX(0); }
+  to   { transform: translateX(-50%) scaleX(1); }
+}
+.nav-bar-in { animation: nav-bar-in 380ms cubic-bezier(.34,1.56,.64,1) both; }
+
+/* Preferencia "Reducir movimiento" del perfil (data-motion="off") y reducción del sistema: sin animaciones ni transiciones largas */
+html[data-motion="off"] *,
+html[data-motion="off"] *::before,
+html[data-motion="off"] *::after {
+  animation-duration: .01ms !important;
+  animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .01ms !important;
+  scroll-behavior: auto !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .fade-in-up, .page-enter, .rv, .kanban-land, .kanban-bump { animation: none; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

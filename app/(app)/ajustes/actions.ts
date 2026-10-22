@@ -37,6 +37,20 @@ export async function guardarPaleta(paleta: string): Promise<{ error?: string }>
   return {};
 }
 
+export async function guardarReducirMovimiento(activo: boolean): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "No autenticado." };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ reducir_movimiento: activo })
+    .eq("id", user.id);
+
+  if (error) return { error: error.message };
+  return {};
+}
+
 export async function enviarFeedback(mensaje: string): Promise<{ error?: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

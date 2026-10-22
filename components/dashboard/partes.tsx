@@ -43,6 +43,7 @@ export function Card({ children, className = "", warn = false, style }: {
   return (
     <div
       data-reveal
+      data-spot
       className={`min-w-0 rounded-xl border border-border bg-card px-[18px] py-4 ${className}`}
       style={{
         ...(warn

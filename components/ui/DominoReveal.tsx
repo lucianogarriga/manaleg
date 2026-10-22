@@ -34,7 +34,21 @@ export default function DominoReveal({ children }: { children: ReactNode }) {
       if (nuevos.length) animar(nuevos);
     });
     observer.observe(root, { childList: true, subtree: true });
-    return () => observer.disconnect();
+
+    // Resplandor de las cards: la posición del cursor queda en --mx / --my del elemento [data-spot]
+    const seguirCursor = (e: PointerEvent) => {
+      const card = (e.target as Element).closest?.("[data-spot]") as HTMLElement | null;
+      if (!card) return;
+      const r = card.getBoundingClientRect();
+      card.style.setProperty("--mx", `${e.clientX - r.left}px`);
+      card.style.setProperty("--my", `${e.clientY - r.top}px`);
+    };
+    root.addEventListener("pointermove", seguirCursor);
+
+    return () => {
+      observer.disconnect();
+      root.removeEventListener("pointermove", seguirCursor);
+    };
   }, []);
 
   return <div ref={ref} className="h-full">{children}</div>;

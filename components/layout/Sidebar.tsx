@@ -50,11 +50,15 @@ function NavLink({ item, active, expanded, textStyle, pill, onClick }: NavLinkPr
           size={expanded ? 17 : 18}
           className={expanded ? "h-[21px] w-[21px] md:h-[17px] md:w-[17px]" : "h-[18px] w-[18px]"}
           strokeWidth={1.8}
-          style={{ color: lit ? item.iconColor : "var(--sb-fg)", transition: `color 120ms, font-size ${DUR}` }}
+          style={{
+            color: lit ? item.iconColor : "var(--sb-fg)",
+            transform: lit ? "translateX(2px) scale(1.08)" : "none",
+            transition: `color 120ms, font-size ${DUR}, transform 360ms cubic-bezier(.34,1.56,.64,1)`,
+          }}
         />
         {active && !expanded && (
           <span
-            className="absolute -bottom-[7px] left-1/2 h-[2px] w-[12px] -translate-x-1/2 rounded-full"
+            className="nav-bar-in absolute -bottom-[7px] left-1/2 h-[2px] w-[12px] -translate-x-1/2 rounded-full"
             style={{ background: "var(--sb-accent)" }}
           />
         )}

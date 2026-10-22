@@ -19,12 +19,19 @@ export default function Toaster() {
 
   if (!toast) return null;
 
+  // La key por id reinicia la entrada y la barra de progreso cuando llega un aviso nuevo
   return (
     <div
+      key={toast.id}
       role="status"
-      className="fixed bottom-6 left-1/2 z-[60] flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-4 rounded-[10px] px-6 py-4 text-[14px] shadow-xl"
+      className="toast-in fixed bottom-6 left-1/2 z-[60] flex max-w-[calc(100vw-2rem)] items-center gap-4 overflow-hidden rounded-[10px] px-6 py-4 text-[14px] shadow-xl"
       style={{ background: "#1e293b", color: "#f1f5f9" }}
     >
+      <span
+        aria-hidden
+        className="toast-progress absolute inset-x-0 bottom-0 h-[2px] bg-[#34D399]"
+        style={{ animationDuration: `${DURATION_MS}ms` }}
+      />
       <CheckCircle2 size={22} className="shrink-0 text-[#34D399]" />
       <span>{toast.message}</span>
       {toast.actionLabel && (

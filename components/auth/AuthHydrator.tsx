@@ -8,6 +8,7 @@ import type { Profile } from "@/types";
 export default function AuthHydrator({ profile }: { profile: Profile }) {
   const setProfile = useAuthStore((s) => s.setProfile);
   const paletaInicial = useRef(profile.paleta);
+  const movimientoInicial = useRef(profile.reducir_movimiento);
 
   useEffect(() => {
     setProfile(profile);
@@ -16,6 +17,7 @@ export default function AuthHydrator({ profile }: { profile: Profile }) {
   // Solo al cargar: una revalidación del layout puede traer una paleta anterior a la elegida
   useEffect(() => {
     document.documentElement.setAttribute("data-palette", paletaInicial.current);
+    if (movimientoInicial.current) document.documentElement.dataset.motion = "off";
   }, []);
 
   return null;

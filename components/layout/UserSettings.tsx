@@ -5,10 +5,10 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   ArrowLeft, Bell, BellOff, Bug, Check, ChevronRight, ExternalLink,
-  Coins, FileText, LogOut, Mail, MessageSquare, Palette, ShieldCheck, Zap,
+  Coins, FileText, LogOut, Mail, MessageSquare, Palette, ShieldCheck, Sparkles, Zap,
 } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
-import { guardarPaleta, listarMonedasJudiciales, toggleNotificacionesEmail } from "@/app/(app)/ajustes/actions";
+import { guardarPaleta, guardarReducirMovimiento, listarMonedasJudiciales, toggleNotificacionesEmail } from "@/app/(app)/ajustes/actions";
 import { PALETAS, type PaletaId } from "@/utils/paletas";
 import MonedasJudicialesModal from "./MonedasJudicialesModal";
 import { useMonedasJudiciales } from "@/store/monedasJudicialesStore";
@@ -46,6 +46,7 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
   const [contactOpen, setContactOpen] = useState(false);
   const [emailEnabled, setEmailEnabled] = useState(profile.notificaciones_email ?? true);
   const [paleta, setPaleta] = useState<PaletaId>(profile.paleta ?? "opcion1");
+  const [reducirMovimiento, setReducirMovimiento] = useState(profile.reducir_movimiento ?? false);
   const [paletaOpen, setPaletaOpen] = useState(false);
   const [paletaTop, setPaletaTop] = useState(0);
   const paletaRef = useRef<HTMLDivElement>(null);
@@ -94,6 +95,26 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
     startTransition(async () => { await toggleNotificacionesEmail(next); });
   };
 
+  // "off" en <html> quita animaciones y conteos en toda la app (ver globals.css y CountUp)
+  const setMovimientoReducido = (activo: boolean) => {
+    if (activo) document.documentElement.dataset.motion = "off";
+    else delete document.documentElement.dataset.motion;
+  };
+
+  const handleToggleMovimiento = () => {
+    const anterior = reducirMovimiento;
+    const next = !anterior;
+    setReducirMovimiento(next);
+    setMovimientoReducido(next);
+    startTransition(async () => {
+      const r = await guardarReducirMovimiento(next);
+      if (!r.error) return;
+      setReducirMovimiento(anterior);
+      setMovimientoReducido(anterior);
+      useUIStore.getState().showToast({ message: r.error });
+    });
+  };
+
   const elegirPaleta = (next: PaletaId) => {
     const anterior = paleta;
     setPaleta(next);
@@ -117,7 +138,7 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
   const ico = isSidebar ? "h-[18px] w-[18px] md:h-[13px] md:w-[13px]" : "h-[13px] w-[13px]";
 
   // ── Dropdown rows helpers ──────────────────────────────────────────────────
-  const rowCls = `flex w-full items-center gap-[9px] rounded-[7px] px-[9px] py-[7px] text-left transition-colors cursor-pointer ${
+  const rowCls = `row-slide flex w-full items-center gap-[9px] rounded-[7px] px-[9px] py-[7px] text-left transition-colors cursor-pointer ${
     isSidebar ? "max-md:gap-[12px] max-md:px-[11px] max-md:py-[11px]" : ""
   }`;
   const rowStyle = {
@@ -176,6 +197,18 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
           </span>
         </button>
 
+        {/* Reducir movimiento: quita animaciones y conteos (preferencia guardada en el perfil) */}
+        <button type="button" role="switch" aria-checked={reducirMovimiento} onClick={handleToggleMovimiento} disabled={isPending}
+          className={rowCls} {...rowStyle}>
+          <Sparkles size={13} strokeWidth={1.8} className={`shrink-0 text-muted ${ico}`} />
+          <span className={`flex-1 text-sub ${txt}`}>Reducir movimiento</span>
+          <span className="flex h-[15px] w-[26px] items-center rounded-full transition-colors duration-200"
+            style={{ background: reducirMovimiento ? "var(--color-blue)" : "var(--color-border)" }}>
+            <span className="ml-[2px] h-[11px] w-[11px] rounded-full bg-white shadow-sm transition-transform duration-200"
+              style={{ transform: reducirMovimiento ? "translateX(11px)" : "translateX(0)" }} />
+          </span>
+        </button>
+
         {/* Moneda judicial (valor de referencia para honorarios en JUS) */}
         <button type="button" onClick={() => { setOpen(false); setValorJusOpen(true); }} className={rowCls} {...rowStyle}>
           <Coins size={13} strokeWidth={1.8} className={`shrink-0 text-muted ${ico}`} />
@@ -196,7 +229,7 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
           <span className={`flex-1 text-sub ${txt}`}>Paleta</span>
           <span className="flex items-center gap-[5px] text-[11px] text-muted">
             {PALETAS.find((p) => p.id === paleta)?.label}
-            <ChevronRight size={12} className={isSidebar ? "h-[16px] w-[16px] md:h-[12px] md:w-[12px]" : ""} />
+            <ChevronRight size={12} className={`row-arrow ${isSidebar ? "h-[16px] w-[16px] md:h-[12px] md:w-[12px]" : ""}`} />
           </span>
         </button>
 

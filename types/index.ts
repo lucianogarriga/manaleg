@@ -75,6 +75,7 @@ export interface Profile {
   preferencia_graficos: "barras" | "ondas";
   paleta: "opcion1" | "claude";
   notificaciones_email: boolean;
+  reducir_movimiento: boolean;
   tyc_accepted_at: string | null;
   tyc_version: string | null;
   created_at: string;
