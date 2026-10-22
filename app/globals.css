@@ -540,6 +540,27 @@ button[type="submit"]:not(:disabled):hover::after {
 .kanban-grab { cursor: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20d%3D%22M18%2011.5V9a2%202%200%200%200-2-2a2%202%200%200%200-2%202v1.4%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%224.2%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M14%2010V8a2%202%200%200%200-2-2a2%202%200%200%200-2%202v2%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%224.2%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M10%209.9V9a2%202%200%200%200-2-2a2%202%200%200%200-2%202v5%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%224.2%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M6%2014a2%202%200%200%200-2-2a2%202%200%200%200-2%202%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%224.2%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M18%2011a2%202%200%201%201%204%200v3a8%208%200%200%201-8%208h-4a8%208%200%200%201-8-8%202%202%200%201%201%204%200%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-width%3D%224.2%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M18%2011.5V9a2%202%200%200%200-2-2a2%202%200%200%200-2%202v1.4%22%20fill%3D%22none%22%20stroke%3D%22%231a1a18%22%20stroke-width%3D%221.9%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M14%2010V8a2%202%200%200%200-2-2a2%202%200%200%200-2%202v2%22%20fill%3D%22none%22%20stroke%3D%22%231a1a18%22%20stroke-width%3D%221.9%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M10%209.9V9a2%202%200%200%200-2-2a2%202%200%200%200-2%202v5%22%20fill%3D%22none%22%20stroke%3D%22%231a1a18%22%20stroke-width%3D%221.9%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M6%2014a2%202%200%200%200-2-2a2%202%200%200%200-2%202%22%20fill%3D%22none%22%20stroke%3D%22%231a1a18%22%20stroke-width%3D%221.9%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cpath%20d%3D%22M18%2011a2%202%200%201%201%204%200v3a8%208%200%200%201-8%208h-4a8%208%200%200%201-8-8%202%202%200%201%201%204%200%22%20fill%3D%22none%22%20stroke%3D%22%231a1a18%22%20stroke-width%3D%221.9%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E") 12 12, grab; }
 .kanban-grab:active { cursor: grabbing; }
 
+/* Fondo de la vista: manchas de la paleta muy desenfocadas que siguen suave al cursor (ver FondoVivo) */
+.fondo-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(72px);
+  will-change: transform;
+  transition: transform 1100ms cubic-bezier(.22,1,.36,1);
+}
+.fondo-blob.b1 {
+  width: 46%; height: 62%; left: -8%; top: -12%; opacity: .16; background: var(--color-blue);
+  transform: translate3d(calc((var(--mx, .5) - .5) * -36px), calc((var(--my, .5) - .5) * -24px), 0);
+}
+.fondo-blob.b2 {
+  width: 40%; height: 50%; right: -6%; top: 22%; opacity: .13; background: var(--color-pur);
+  transform: translate3d(calc((var(--mx, .5) - .5) * 44px), calc((var(--my, .5) - .5) * 30px), 0);
+}
+.fondo-blob.b3 {
+  width: 34%; height: 40%; left: 34%; bottom: -16%; opacity: .1; background: var(--color-blue);
+  transform: translate3d(calc((var(--mx, .5) - .5) * -20px), calc((var(--my, .5) - .5) * 18px), 0);
+}
+
 /* Profundidad: cards y badges flotan sobre el fondo. Sombras en capas, un borde de luz arriba
    y una inclinación 3D leve siguiendo el cursor (--tx / --ty los fija DominoReveal). */
 .depth {
