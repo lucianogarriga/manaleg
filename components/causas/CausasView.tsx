@@ -8,7 +8,6 @@ import EmptyState from "@/components/ui/EmptyState";
 import FilterChips from "./FilterChips";
 import StatsRow from "./StatsRow";
 import { useCausas } from "@/hooks/useCausas";
-import { useEnLineaPorCausa } from "@/hooks/usePresence";
 import { useCausasStore } from "@/store/causasStore";
 import type { CausaConRelaciones } from "@/types";
 import CausaForm from "./CausaForm";
@@ -33,7 +32,6 @@ interface CausasViewProps {
 
 export default function CausasView({ causas, totalEnBD, userId, causasMax, causasPropias }: CausasViewProps) {
   const { causas: visibles, total, counts } = useCausas(causas, userId);
-  const enLineaPorCausa = useEnLineaPorCausa(causas.map((c) => c.id), userId);
   // Tipos de juicio únicos presentes en la lista (para el dropdown de filtros)
   const tiposJuicio = useMemo(() => {
     const seen = new Map<string, string>();
@@ -249,7 +247,7 @@ export default function CausasView({ causas, totalEnBD, userId, causasMax, causa
           {/* Lista o grid */}
           {vistaEfectiva === "list" ? (
             <div className="px-3 py-1 pb-16 sm:px-4">
-              <CausasTabla causas={enPagina} enLineaPorCausa={enLineaPorCausa} onSelect={abrirCausa} />
+              <CausasTabla causas={enPagina} onSelect={abrirCausa} />
               {visibles.length === 0 && (
                 <p className="px-4 py-8 text-center text-[13px] text-muted">
                   {search ? `No hay causas que coincidan con "${search}".` : "No hay causas en este filtro."}

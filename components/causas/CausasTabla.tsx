@@ -10,17 +10,14 @@ import {
   getVisualUrgency,
 } from "@/utils/urgencyHelpers";
 import type { CausaConRelaciones } from "@/types";
-import type { PresenceUser } from "@/services/presence/canalesCausa";
-import AvataresEnLinea from "./AvataresEnLinea";
 
 interface Props {
   causas: CausaConRelaciones[];
-  enLineaPorCausa: Record<string, PresenceUser[]>;
   onSelect: (id: string) => void;
 }
 
 // Listado de causas: una causa por línea. En pantallas chicas se ocultan columnas secundarias.
-export default function CausasTabla({ causas, enLineaPorCausa, onSelect }: Props) {
+export default function CausasTabla({ causas, onSelect }: Props) {
   return (
     <div data-reveal-group className="overflow-x-auto rounded-xl border border-border bg-card">
       <table className="w-full min-w-[720px] border-collapse text-[13px]">
@@ -35,12 +32,7 @@ export default function CausasTabla({ causas, enLineaPorCausa, onSelect }: Props
         </thead>
         <tbody>
           {causas.map((causa) => (
-            <FilaCausa
-              key={causa.id}
-              causa={causa}
-              enLinea={enLineaPorCausa[causa.id] ?? []}
-              onSelect={onSelect}
-            />
+            <FilaCausa key={causa.id} causa={causa} onSelect={onSelect} />
           ))}
         </tbody>
       </table>
@@ -48,7 +40,7 @@ export default function CausasTabla({ causas, enLineaPorCausa, onSelect }: Props
   );
 }
 
-function FilaCausa({ causa, enLinea, onSelect }: { causa: CausaConRelaciones; enLinea: PresenceUser[]; onSelect: (id: string) => void }) {
+function FilaCausa({ causa, onSelect }: { causa: CausaConRelaciones; onSelect: (id: string) => void }) {
   const cerrada = causa.estado === "Cerrada";
   const urgencia = getVisualUrgency(causa.proximo_vencimiento, causa.tipo_vencimiento, cerrada);
   const vence = cerrada
@@ -66,10 +58,7 @@ function FilaCausa({ causa, enLinea, onSelect }: { causa: CausaConRelaciones; en
         {causa.nro_expediente ?? <span className="font-normal italic text-muted">Sin nro.</span>}
       </td>
       <td className="max-w-[360px] px-3 py-[9px]">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="truncate font-semibold text-text">{causa.caratula}</span>
-          <AvataresEnLinea users={enLinea} />
-        </div>
+        <span className="block truncate font-semibold text-text">{causa.caratula}</span>
       </td>
       <td className="hidden whitespace-nowrap px-3 py-[9px] text-sub md:table-cell">{causa.fuero ?? "—"}</td>
       <td className="whitespace-nowrap px-3 py-[9px]"><Badge estado={causa.estado} /></td>
