@@ -12,7 +12,7 @@ import { toggleVencimientoCompletado } from "@/app/(app)/causas/detailActions";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { useUIStore } from "@/store/uiStore";
 import type { MonedaJudicial } from "@/types";
-import { ChevronDown, Pencil, Trash2 } from "lucide-react";
+import { Briefcase, ChartColumn, ChevronDown, Newspaper, Pencil, Trash2, Wallet, type LucideIcon } from "lucide-react";
 import type { Moneda, NovedadesCompletas, Periodo, Novedades, VencimientoFila } from "@/services/supabase/novedades";
 import {
   Badge, BadgeHoy, BarrasAgrupadas, BarrasH, BarrasVerticales, Calendario, Card, Dona,
@@ -231,19 +231,31 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
 
         {/* Pestañas en pastilla ovalada, centrada (en mobile baja a su propia línea) */}
         <div className="order-first flex w-full justify-center md:order-none md:w-auto">
-          <nav aria-label="Vistas del dashboard" className="depth-sm inline-flex items-center gap-1 rounded-full border border-border bg-panel2 p-1">
-            {PESTANAS.map(({ id, label }) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setTab(id)}
-            className={`whitespace-nowrap rounded-full px-4 py-[6px] text-[13.5px] transition-all duration-300 ${
-              tab === id ? "bg-card font-semibold text-text shadow-sm" : "text-muted hover:text-text"
-            }`}
+          {/* Efecto vidrio sutil: fondo translúcido y desenfoque leve sobre lo que hay detrás */}
+          <nav
+            aria-label="Vistas del dashboard"
+            className="inline-flex items-center gap-0.5 rounded-full border p-[3px] backdrop-blur-[6px]"
+            style={{
+              borderColor: "color-mix(in srgb, var(--color-border) 70%, transparent)",
+              background: "color-mix(in srgb, var(--color-card) 55%, transparent)",
+              boxShadow: "0 1px 2px rgba(0,0,0,.06)",
+            }}
           >
-            {label}
-          </button>
-        ))}
+            {PESTANAS.map(({ id, label, Icono }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setTab(id)}
+                aria-pressed={tab === id}
+                className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-[4px] text-[12px] transition-colors duration-300 ${
+                  tab === id ? "font-semibold text-blue" : "text-muted hover:text-text"
+                }`}
+                style={tab === id ? { background: "color-mix(in srgb, var(--color-blue) 14%, transparent)" } : undefined}
+              >
+                <Icono size={13} strokeWidth={1.9} aria-hidden />
+                {label}
+              </button>
+            ))}
           </nav>
         </div>
 
@@ -323,11 +335,11 @@ function diasEntre(desde: string, hasta: string): number {
 // Vistas del dashboard: Novedades, y las secciones de KPIs repartidas en pestañas
 type SeccionKpis = "kpis" | "gestion" | "clientes";
 type Pestana = "novedades" | SeccionKpis;
-const PESTANAS: { id: Pestana; label: string }[] = [
-  { id: "novedades", label: "Novedades" },
-  { id: "kpis", label: "KPIs" },
-  { id: "gestion", label: "Gestión" },
-  { id: "clientes", label: "Clientes y cobros" },
+const PESTANAS: { id: Pestana; label: string; Icono: LucideIcon }[] = [
+  { id: "novedades", label: "Novedades", Icono: Newspaper },
+  { id: "kpis", label: "KPIs", Icono: ChartColumn },
+  { id: "gestion", label: "Gestión", Icono: Briefcase },
+  { id: "clientes", label: "Clientes y cobros", Icono: Wallet },
 ];
 
 // ───────────────────────── Novedades ─────────────────────────
