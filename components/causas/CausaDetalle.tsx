@@ -1,5 +1,7 @@
 "use client";
 
+import LiquidacionesSection from "./LiquidacionesSection";
+import type { Liquidacion, OrdenPago } from "@/utils/liquidaciones";
 import { useEffect, useRef, useState } from "react";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import Link from "next/link";
@@ -31,9 +33,10 @@ import type { CausaConRelaciones, CausaShareConUsuario } from "@/types";
 interface Props {
   causa: CausaConRelaciones;
   userId: string;
+  finanzas: { liquidaciones: Liquidacion[]; ordenes: OrdenPago[] };
 }
 
-export default function CausaDetalle({ causa, userId }: Props) {
+export default function CausaDetalle({ causa, userId, finanzas }: Props) {
   const select = useCausasStore((s) => s.select);
   const openEdit = useCausasStore((s) => s.openEdit);
   const showToast = useUIStore((s) => s.showToast);
@@ -299,6 +302,18 @@ export default function CausaDetalle({ causa, userId }: Props) {
                 />
               </CollapsibleSection>
             </div>
+
+            {/* Liquidaciones y órdenes de pago: solo en causas judiciales */}
+            {causa.via_proceso === "Judicial" && (
+              <div className="border-t border-border">
+                <LiquidacionesSection
+                  causaId={causa.id}
+                  esTitular={esTitular}
+                  liquidaciones={finanzas.liquidaciones}
+                  ordenes={finanzas.ordenes}
+                />
+              </div>
+            )}
 
             {causa.editor && (
               <p className="px-5 py-3 text-[12px] text-muted">

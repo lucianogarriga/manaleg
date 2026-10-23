@@ -7,15 +7,17 @@ import type { ClienteOption } from "@/services/supabase/clientes";
 import type { CausaConRelaciones } from "@/types";
 import CausaDetalle from "./CausaDetalle";
 import CausaForm from "./CausaForm";
+import type { Liquidacion, OrdenPago } from "@/utils/liquidaciones";
 
 interface Props {
   causa: CausaConRelaciones;
   clientes: ClienteOption[];
   userId: string;
+  finanzas: { liquidaciones: Liquidacion[]; ordenes: OrdenPago[] };
 }
 
 // Página de una causa: enlace para volver al listado arriba, y el detalle debajo.
-export default function CausaPageView({ causa, clientes, userId }: Props) {
+export default function CausaPageView({ causa, clientes, userId, finanzas }: Props) {
   const formOpen = useCausasStore((s) => s.formOpen);
   const editingId = useCausasStore((s) => s.editingId);
 
@@ -26,7 +28,7 @@ export default function CausaPageView({ causa, clientes, userId }: Props) {
         Volver al listado
       </Link>
 
-      <CausaDetalle causa={causa} userId={userId} />
+      <CausaDetalle causa={causa} userId={userId} finanzas={finanzas} />
 
       {formOpen && <CausaForm key={editingId ?? "nueva"} causa={causa} clientes={clientes} userId={userId} />}
     </div>
