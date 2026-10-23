@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import Link from "next/link";
 import { recargarNovedades, guardarPreferenciaGraficos } from "@/app/(app)/novedadesActions";
 import { toggleTodo } from "@/app/(app)/causas/todoActions";
@@ -229,36 +231,7 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
           </div>
         </div>
 
-        {/* Pestañas en pastilla: en mobile flotan fijas abajo (ícono arriba, texto chico); en desktop van en línea */}
-        <div className="fixed inset-x-0 bottom-[max(12px,env(safe-area-inset-bottom))] z-20 flex justify-center md:static md:w-auto">
-          {/* Efecto vidrio: fondo muy translúcido con desenfoque fuerte sobre lo que hay detrás */}
-          <nav
-            aria-label="Vistas del dashboard"
-            className="inline-flex items-center gap-0.5 rounded-full border p-[3px] backdrop-blur-[14px]"
-            style={{
-              borderColor: "color-mix(in srgb, var(--color-border) 55%, transparent)",
-              background: "color-mix(in srgb, var(--color-card) 38%, transparent)",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,.35), 0 8px 24px -10px rgba(0,0,0,.35)",
-            }}
-          >
-            {PESTANAS.map(({ id, label, labelCorto, Icono }) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setTab(id)}
-                aria-pressed={tab === id}
-                className={`inline-flex flex-col items-center gap-0.5 whitespace-nowrap rounded-full px-2.5 py-[6px] text-[10px] leading-none transition-colors duration-300 md:flex-row md:gap-1.5 md:px-3 md:py-[4px] md:text-[12px] ${
-                  tab === id ? "font-semibold text-blue" : "text-muted hover:text-text"
-                }`}
-                style={tab === id ? { background: "color-mix(in srgb, var(--color-blue) 14%, transparent)" } : undefined}
-              >
-                <Icono size={18} strokeWidth={1.9} aria-hidden className="md:h-[13px] md:w-[13px]" />
-                <span className="md:hidden">{labelCorto}</span>
-                <span className="hidden md:inline">{label}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
+        <BarraPestanas tab={tab} onChange={setTab} />
 
         <div className="flex justify-end md:justify-self-end">
           <Segmentado
@@ -342,6 +315,67 @@ const PESTANAS: { id: Pestana; label: string; labelCorto: string; Icono: LucideI
   { id: "gestion", label: "Gestión", labelCorto: "Gestión", Icono: Briefcase },
   { id: "clientes", label: "Clientes y cobros", labelCorto: "Cartera", Icono: Wallet },
 ];
+
+const ESTILO_BARRA = {
+  borderColor: "color-mix(in srgb, var(--color-border) 55%, transparent)",
+  background: "color-mix(in srgb, var(--color-card) 38%, transparent)",
+  boxShadow: "inset 0 1px 0 rgba(255,255,255,.35), 0 8px 24px -10px rgba(0,0,0,.35)",
+};
+const ESTILO_BARRA_MOVIL = {
+  borderColor: "color-mix(in srgb, var(--color-border) 45%, transparent)",
+  background: "linear-gradient(180deg, rgba(255,255,255,.30), rgba(255,255,255,.04)), color-mix(in srgb, var(--color-card) 45%, transparent)",
+  boxShadow: "inset 0 1px 0 rgba(255,255,255,.55), 0 12px 30px -12px rgba(0,0,0,.45)",
+};
+const MASCARA_DESENFOQUE = "linear-gradient(to top, black 40%, transparent)";
+
+// En mobile la barra va flotando fija abajo, montada sobre body para que ningún contenedor la arrastre con el scroll
+function BarraPestanas({ tab, onChange }: { tab: Pestana; onChange: (p: Pestana) => void }) {
+  const esMobile = useMediaQuery("(max-width: 767px)");
+
+  const nav = (
+    <nav
+      aria-label="Vistas del dashboard"
+      className="pointer-events-auto relative inline-flex items-center gap-0.5 rounded-full border p-[3px] backdrop-blur-[14px]"
+      style={esMobile ? ESTILO_BARRA_MOVIL : ESTILO_BARRA}
+    >
+      {PESTANAS.map(({ id, label, labelCorto, Icono }) => (
+        <button
+          key={id}
+          type="button"
+          onClick={() => onChange(id)}
+          aria-pressed={tab === id}
+          className={`inline-flex flex-col items-center gap-0.5 whitespace-nowrap rounded-full px-2.5 py-[6px] text-[10px] leading-none transition-colors duration-300 md:flex-row md:gap-1.5 md:px-3 md:py-[4px] md:text-[12px] ${
+            tab === id ? "font-semibold text-blue" : "text-muted hover:text-text"
+          }`}
+          style={tab === id ? { background: "color-mix(in srgb, var(--color-blue) 14%, transparent)" } : undefined}
+        >
+          <Icono size={18} strokeWidth={1.9} aria-hidden className="md:h-[13px] md:w-[13px]" />
+          <span className="md:hidden">{labelCorto}</span>
+          <span className="hidden md:inline">{label}</span>
+        </button>
+      ))}
+    </nav>
+  );
+
+  if (!esMobile) return <div className="flex justify-center">{nav}</div>;
+
+  return createPortal(
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center pt-10 pb-[max(12px,env(safe-area-inset-bottom))]">
+      <div
+        aria-hidden
+        className="absolute inset-0 backdrop-blur-md"
+        style={{
+          background: "linear-gradient(to top, color-mix(in srgb, var(--color-bg) 85%, transparent), transparent)",
+          maskImage: MASCARA_DESENFOQUE,
+          WebkitMaskImage: MASCARA_DESENFOQUE,
+        }}
+      />
+      {nav}
+    </div>,
+    document.body,
+  );
+}
+
 
 // ───────────────────────── Novedades ─────────────────────────
 
