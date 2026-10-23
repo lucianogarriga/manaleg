@@ -305,7 +305,7 @@ export default function CausaDetalle({ causa, userId, finanzas }: Props) {
 
             {/* Liquidaciones y órdenes de pago: solo en causas judiciales */}
             {causa.via_proceso === "Judicial" && (
-              <div className="border-t border-border">
+              <div>
                 <LiquidacionesSection
                   causaId={causa.id}
                   esTitular={esTitular}

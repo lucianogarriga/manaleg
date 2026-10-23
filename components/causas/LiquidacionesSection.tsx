@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
 import Modal from "@/components/ui/Modal";
@@ -403,26 +404,32 @@ export default function LiquidacionesSection({ causaId, esTitular, liquidaciones
         {aviso && <p className="text-[12.5px] text-sub">{aviso}</p>}
       </div>
 
-      {formLiq && (
-        <Modal open title={formLiq.liq ? "Editar liquidación" : "Nueva liquidación"} onClose={() => setFormLiq(null)}>
-          <FormLiquidacion
-            causaId={causaId}
-            inicial={formLiq.liq}
-            onGuardado={(m) => { setFormLiq(null); setAviso(m); }}
-          />
-        </Modal>
+      {/* Se montan en body: dentro de cards con transform, un modal fijo quedaría mal ubicado */}
+      {typeof document !== "undefined" && createPortal(
+        <>
+          {formLiq && (
+            <Modal open title={formLiq.liq ? "Editar liquidación" : "Nueva liquidación"} onClose={() => setFormLiq(null)}>
+              <FormLiquidacion
+                causaId={causaId}
+                inicial={formLiq.liq}
+                onGuardado={(m) => { setFormLiq(null); setAviso(m); }}
+              />
+            </Modal>
+          )}
+          {formOp && (
+            <Modal open title={formOp.op ? "Editar orden de pago" : "Nueva orden de pago"} onClose={() => setFormOp(null)}>
+              <FormOrdenPago
+                causaId={causaId}
+                inicial={formOp.op}
+                rubrosAprobados={rubrosAprobados}
+                onGuardado={(m) => { setFormOp(null); setAviso(m); }}
+              />
+            </Modal>
+          )}
+          {dialog}
+        </>,
+        document.body,
       )}
-      {formOp && (
-        <Modal open title={formOp.op ? "Editar orden de pago" : "Nueva orden de pago"} onClose={() => setFormOp(null)}>
-          <FormOrdenPago
-            causaId={causaId}
-            inicial={formOp.op}
-            rubrosAprobados={rubrosAprobados}
-            onGuardado={(m) => { setFormOp(null); setAviso(m); }}
-          />
-        </Modal>
-      )}
-      {dialog}
     </CollapsibleSection>
   );
 }
