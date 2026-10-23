@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
@@ -10,6 +10,7 @@ import { useConfirm } from "@/components/ui/ConfirmDialog";
 import { formatCurrency, formatDate, todayISO } from "@/utils/formatters";
 import {
   RUBROS_SUGERIDOS,
+  claveRubro,
   seguimiento,
   totalLiquidacion,
   ultimaAprobada,
@@ -49,42 +50,137 @@ const COLOR_ESTADO: Record<EstadoRubro, string> = {
   "Sin monto": "text-muted",
 };
 
-// ─── Seguimiento por rubro según la última liquidación aprobada ──────────────
-function Seguimiento({ liquidaciones, ordenes }: { liquidaciones: Liquidacion[]; ordenes: OrdenPago[] }) {
-  const aprobada = ultimaAprobada(liquidaciones);
-  if (!aprobada) {
-    return <p className="text-[13px] text-muted">Aprobá una liquidación para ver cómo se va cancelando cada rubro.</p>;
-  }
-  const filas = seguimiento(aprobada, ordenes);
-  const totalLiq = totalLiquidacion(aprobada);
-  const totalGirado = filas.reduce((acc, f) => acc + f.girado, 0);
+// ─── Seguimiento: tres formas de ver lo mismo ────────────────────────────────
+type Vista = "linea" | "tablero" | "matriz";
+const VISTAS: { id: Vista; label: string }[] = [
+  { id: "linea", label: "Línea de tiempo" },
+  { id: "tablero", label: "Tablero" },
+  { id: "matriz", label: "Matriz" },
+];
 
+// OP en orden cronológico (la más antigua primero)
+const cronologicas = (ordenes: OrdenPago[]) =>
+  [...ordenes].sort((a, b) => a.fecha.localeCompare(b.fecha) || a.numero.localeCompare(b.numero));
+
+function VistaLinea({ aprobada, ordenes }: { aprobada: Liquidacion; ordenes: OrdenPago[] }) {
+  let saldo = totalLiquidacion(aprobada);
   return (
-    <div className="flex flex-col gap-3">
-      <p className="text-[12px] text-muted">
-        Liquidación aprobada el {formatDate(aprobada.fecha_aprobacion ?? aprobada.fecha)}. Girado {pesos(totalGirado)} de {pesos(totalLiq)}.
-      </p>
+    <div className="relative flex flex-col gap-4 pl-6">
+      <span aria-hidden className="absolute bottom-2 left-[6px] top-2 w-[2px] bg-border" />
+      <div className="relative">
+        <span aria-hidden className="absolute -left-6 top-[5px] h-[12px] w-[12px] rounded-full bg-blue" />
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <span className="text-[13px] font-semibold text-text">Liquidación aprobada</span>
+          <span className="text-[12px] tabular-nums text-muted">{formatDate(aprobada.fecha_aprobacion ?? aprobada.fecha)}</span>
+        </div>
+        <div className="text-[12.5px] tabular-nums text-sub">Total {pesos(saldo)} · saldo inicial {pesos(saldo)}</div>
+      </div>
+      {cronologicas(ordenes).map((op) => {
+        const imputadoOP = op.imputaciones
+          .filter((imp) => aprobada.rubros.some((r) => claveRubro(r.nombre) === claveRubro(imp.rubro)))
+          .reduce((acc, imp) => acc + imp.monto, 0);
+        saldo = Math.max(0, saldo - imputadoOP);
+        return (
+          <div key={op.id} className="relative">
+            <span aria-hidden className={`absolute -left-6 top-[5px] h-[12px] w-[12px] rounded-full border-2 border-blue ${op.estado === "Procesada" ? "bg-blue" : "bg-card"}`} />
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <span className="text-[13px] font-semibold text-text">OP {op.numero}{op.beneficiario ? ` · ${op.beneficiario}` : ""}</span>
+              <span className="text-[12px] tabular-nums text-muted">{formatDate(op.fecha)} · {op.estado}</span>
+            </div>
+            <div className="text-[12.5px] tabular-nums text-sub">
+              {op.imputaciones.length > 0 ? op.imputaciones.map((imp) => `${imp.rubro} ${pesos(imp.monto)}`).join(" · ") : "Sin imputar"}
+            </div>
+            <div className="text-[12.5px] tabular-nums text-text">Saldo después: <strong>{pesos(saldo)}</strong></div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function VistaTablero({ aprobada, ordenes }: { aprobada: Liquidacion; ordenes: OrdenPago[] }) {
+  const filas = seguimiento(aprobada, ordenes);
+  return (
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {filas.map((f) => (
-        <div key={f.rubro} className="flex flex-col gap-1">
-          <div className="flex items-baseline justify-between gap-2 text-[13px]">
-            <span className="font-semibold text-text">{f.rubro}</span>
-            <span className={`text-[12px] font-semibold ${COLOR_ESTADO[f.estado]}`}>{f.estado}</span>
+        <div key={f.rubro} className="flex flex-col gap-2 rounded-[10px] border border-border bg-card p-3">
+          <div className="flex items-start justify-between gap-2">
+            <span className="text-[13px] font-semibold text-text">{f.rubro}</span>
+            <span className={`text-[11.5px] font-semibold ${COLOR_ESTADO[f.estado]}`}>{f.estado}</span>
           </div>
           <div className="h-[6px] overflow-hidden rounded-[3px] bg-border">
-            <div
-              className={`h-full rounded-[3px] ${f.estado === "Cerca de cancelarse" ? "bg-amb" : "bg-blue"}`}
-              style={{ width: `${f.pct}%` }}
-            />
+            <div className={`h-full rounded-[3px] ${f.estado === "Cerca de cancelarse" ? "bg-amb" : "bg-blue"}`} style={{ width: `${f.pct}%` }} />
           </div>
           <div className="flex flex-wrap justify-between gap-x-3 text-[12px] tabular-nums text-muted">
             <span>Girado {pesos(f.girado)} ({Math.round(f.pct)}%)</span>
-            <span>Procesado {pesos(f.procesado)}</span>
             <span>Pendiente {pesos(f.pendiente)}</span>
           </div>
         </div>
       ))}
     </div>
   );
+}
+
+function VistaMatriz({ aprobada, ordenes }: { aprobada: Liquidacion; ordenes: OrdenPago[] }) {
+  const rubros = aprobada.rubros.map((r) => r.nombre);
+  const filas = seguimiento(aprobada, ordenes);
+  const girado = filas.reduce((acc, f) => acc + f.girado, 0);
+  const celda = (monto: number) =>
+    monto > 0
+      ? <td className="px-2 py-[7px] text-right tabular-nums text-text">{pesos(monto)}</td>
+      : <td className="px-2 py-[7px] text-right text-muted">—</td>;
+  return (
+    <div className="overflow-x-auto rounded-[10px] border border-border">
+      <table className="w-full min-w-[520px] border-collapse text-[12.5px]">
+        <thead>
+          <tr className="border-b border-border text-left text-[11.5px] font-semibold text-muted">
+            <th className="px-2 py-[7px] font-semibold">OP</th>
+            {rubros.map((r) => <th key={r} className="px-2 py-[7px] text-right font-semibold">{r}</th>)}
+            <th className="px-2 py-[7px] text-right font-semibold">Total OP</th>
+          </tr>
+        </thead>
+        <tbody>
+          {cronologicas(ordenes).map((op) => (
+            <tr key={op.id} className="border-b border-border">
+              <td className="whitespace-nowrap px-2 py-[7px] text-text">{op.numero} <span className="text-muted">· {formatDate(op.fecha)}</span></td>
+              {rubros.map((r) => {
+                const monto = op.imputaciones.filter((i) => claveRubro(i.rubro) === claveRubro(r)).reduce((acc, i) => acc + i.monto, 0);
+                return <React.Fragment key={r}>{celda(monto)}</React.Fragment>;
+              })}
+              <td className="px-2 py-[7px] text-right font-semibold tabular-nums text-text">{pesos(op.monto)}</td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr className="border-b border-border font-semibold text-text">
+            <td className="px-2 py-[7px]">Girado</td>
+            {filas.map((f) => <td key={f.rubro} className="px-2 py-[7px] text-right tabular-nums">{pesos(f.girado)}</td>)}
+            <td className="px-2 py-[7px] text-right tabular-nums">{pesos(girado)}</td>
+          </tr>
+          <tr className="font-semibold text-text">
+            <td className="px-2 py-[7px]">Pendiente</td>
+            {filas.map((f) => <td key={f.rubro} className="px-2 py-[7px] text-right tabular-nums">{pesos(f.pendiente)}</td>)}
+            <td className="px-2 py-[7px] text-right tabular-nums">{pesos(totalLiquidacion(aprobada) - girado)}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  );
+}
+
+function Seguimiento({ liquidaciones, ordenes, vista }: { liquidaciones: Liquidacion[]; ordenes: OrdenPago[]; vista: Vista }) {
+  const aprobada = ultimaAprobada(liquidaciones);
+  if (!aprobada) {
+    return <p className="text-[13px] text-muted">Aprobá una liquidación para ver cómo se va cancelando cada rubro.</p>;
+  }
+  const cabecera = (
+    <p className="text-[12px] text-muted">
+      Liquidación aprobada el {formatDate(aprobada.fecha_aprobacion ?? aprobada.fecha)} · Total {pesos(totalLiquidacion(aprobada))}
+    </p>
+  );
+  if (vista === "tablero") return <div className="flex flex-col gap-3">{cabecera}<VistaTablero aprobada={aprobada} ordenes={ordenes} /></div>;
+  if (vista === "matriz") return <div className="flex flex-col gap-3">{cabecera}<VistaMatriz aprobada={aprobada} ordenes={ordenes} /></div>;
+  return <div className="flex flex-col gap-3">{cabecera}<VistaLinea aprobada={aprobada} ordenes={ordenes} /></div>;
 }
 
 // ─── Formulario de liquidación ───────────────────────────────────────────────
@@ -295,6 +391,7 @@ export default function LiquidacionesSection({ causaId, esTitular, liquidaciones
   const [formLiq, setFormLiq] = useState<{ liq: Liquidacion | null } | null>(null);
   const [formOp, setFormOp] = useState<{ op: OrdenPago | null } | null>(null);
   const [aviso, setAviso] = useState<string>();
+  const [vista, setVista] = useState<Vista>("linea");
   const [, startDelete] = useTransition();
   const { request: confirmar, dialog } = useConfirm();
 
@@ -325,8 +422,25 @@ export default function LiquidacionesSection({ causaId, esTitular, liquidaciones
     <CollapsibleSection title="Liquidación y órdenes de pago" defaultOpen>
       <div className="flex flex-col gap-6 px-4 py-4">
         <section className="flex flex-col gap-3">
-          <h3 className="text-[12px] font-bold uppercase tracking-[.4px] text-sub">Seguimiento de rubros</h3>
-          <Seguimiento liquidaciones={liquidaciones} ordenes={ordenes} />
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-[12px] font-bold uppercase tracking-[.4px] text-sub">Seguimiento de rubros</h3>
+            <div role="group" aria-label="Forma de ver el seguimiento" className="inline-flex rounded-full border border-border bg-bg p-[3px]">
+              {VISTAS.map((v) => (
+                <button
+                  key={v.id}
+                  type="button"
+                  aria-pressed={vista === v.id}
+                  onClick={() => setVista(v.id)}
+                  className={`cursor-pointer rounded-full px-3 py-[4px] text-[12px] font-semibold transition-colors ${
+                    vista === v.id ? "bg-card text-blue shadow-sm" : "text-muted hover:text-text"
+                  }`}
+                >
+                  {v.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <Seguimiento liquidaciones={liquidaciones} ordenes={ordenes} vista={vista} />
         </section>
 
         <section className="flex flex-col gap-2">
