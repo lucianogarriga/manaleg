@@ -16,6 +16,7 @@ import CausaForm from "./CausaForm";
 import CausaModal from "./CausaModal";
 import MaintenanceBanner from "@/components/ui/MaintenanceBanner";
 import CausasTabla from "./CausasTabla";
+import Paginacion, { CAUSAS_POR_PAGINA } from "./Paginacion";
 import CausaCard from "./CausaCard";
 import FabSpotlight from "@/components/ui/FabSpotlight";
 import ImportarCausasModal from "./ImportarCausasModal";
@@ -55,8 +56,12 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
   const openCreate = useCausasStore((s) => s.openCreate);
   const select = useCausasStore((s) => s.select);
   const search = useCausasStore((s) => s.search);
+  const filtro = useCausasStore((s) => s.filter);
+  const fueros = useCausasStore((s) => s.fueros);
+  const tipoJuicioActivo = useCausasStore((s) => s.tipoJuicio);
 
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [pagina, setPagina] = useState(1);
   const [importOpen, setImportOpen] = useState(false);
   const [avisoImport, setAvisoImport] = useState<string | null>(null);
 
@@ -101,8 +106,23 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
     try {
       const saved = localStorage.getItem("causas-view") as ViewMode | null;
       if (saved === "list" || saved === "grid") setViewMode(saved);
+      // Sin preferencia guardada, en pantallas chicas la tabla no entra completa: se muestran cards
+      else if (window.matchMedia("(max-width: 1023px)").matches) setViewMode("grid");
     } catch {}
   }, []);
+
+  // Cualquier cambio de filtro o búsqueda vuelve a la primera página
+  useEffect(() => {
+    setPagina(1);
+  }, [filtro, search, fueros, tipoJuicioActivo]);
+
+  const totalPaginas = Math.max(1, Math.ceil(visibles.length / CAUSAS_POR_PAGINA));
+  const paginaActual = Math.min(pagina, totalPaginas);
+  const enPagina = visibles.slice((paginaActual - 1) * CAUSAS_POR_PAGINA, paginaActual * CAUSAS_POR_PAGINA);
+  const cambiarPagina = (p: number) => {
+    setPagina(p);
+    document.querySelector("main")?.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const toggleView = (mode: ViewMode) => {
     setViewMode(mode);
@@ -212,7 +232,7 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
           {/* Lista o grid */}
           {viewMode === "list" ? (
             <div className="px-3 py-1 pb-16 sm:px-4">
-              <CausasTabla causas={visibles} enLineaPorCausa={enLineaPorCausa} onSelect={(id) => select(id)} />
+              <CausasTabla causas={enPagina} enLineaPorCausa={enLineaPorCausa} onSelect={(id) => select(id)} />
               {visibles.length === 0 && (
                 <p className="px-4 py-8 text-center text-[13px] text-muted">
                   {search ? `No hay causas que coincidan con "${search}".` : "No hay causas en este filtro."}
@@ -222,7 +242,7 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
           ) : (
             <div className="px-4 py-3 pb-16 sm:px-3">
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
-                {visibles.map((causa) => (
+                {enPagina.map((causa) => (
                   <CausaCard
                     key={causa.id}
                     causa={causa}
@@ -238,6 +258,13 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
               )}
             </div>
           )}
+          <Paginacion
+            pagina={paginaActual}
+            totalPaginas={totalPaginas}
+            total={visibles.length}
+            porPagina={CAUSAS_POR_PAGINA}
+            onChange={cambiarPagina}
+          />
         </div>
       )}
 
