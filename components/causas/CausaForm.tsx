@@ -11,7 +11,7 @@ import AutocompleteField from "@/components/ui/AutocompleteField";
 import { FormSection, SelectField, TextAreaField, TextField } from "@/components/ui/FormControls";
 import { useCausasStore } from "@/store/causasStore";
 import { useUIStore } from "@/store/uiStore";
-import { ANTICIPACION_ALERTA, ESTADOS_CAUSA, ETAPAS_PROCESALES, FUEROS, RESULTADOS_CAUSA, TIPOS_AVISO, TIPOS_JUICIO_POR_FUERO, VIAS_PROCESO } from "@/utils/constants";
+import { ANTICIPACION_ALERTA, ESTADOS_CAUSA, ETAPAS_POR_VIA, ETIQUETA_RESULTADO, FUEROS, TIPOS_AVISO, TIPOS_JUICIO_POR_FUERO, VIAS_PROCESO, resultadosPara } from "@/utils/constants";
 import type { ClienteOption } from "@/services/supabase/clientes";
 import type { CaracterAbogado, CausaConRelaciones, CausaParte, RolParte, TipoPersona } from "@/types";
 
@@ -185,6 +185,8 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
   // Clientes: la lista puede crecer desde este formulario (alta rápida de cliente)
   const [listaClientes, setListaClientes] = useState<ClienteOption[]>(clientes);
   const [clienteSel, setClienteSel] = useState<string>(v?.cliente_id ?? "");
+  // La vía de proceso define las etapas y los resultados posibles
+  const [viaSel, setViaSel] = useState<string>(v?.via_proceso ?? "");
   const [nuevoCliente, setNuevoCliente] = useState<string | null>(null); // null = cerrado
   const [errorCliente, setErrorCliente] = useState<string>();
   const [creandoCliente, startCrearCliente] = useTransition();
@@ -362,7 +364,7 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
         {/* ── 3. Resto del expediente ── */}
         <FormSection title="Expediente">
           <SelectField label="Estado" name="estado" options={ESTADOS_CAUSA} defaultValue={v?.estado ?? "Iniciada"} />
-          <SelectField label="Vía de proceso" name="via_proceso" options={VIAS_PROCESO} placeholder="Seleccionar…" defaultValue={v?.via_proceso ?? ""} />
+          <SelectField label="Vía de proceso" name="via_proceso" options={VIAS_PROCESO} placeholder="Seleccionar…" value={viaSel} onChange={(e) => setViaSel(e.target.value)} />
           <SelectField
             label="Fuero"
             name="fuero"
@@ -373,8 +375,8 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
           />
           <TextField label="Juzgado / Cámara" name="juzgado_camara" error={state.campo === "juzgado_camara"} defaultValue={v?.juzgado_camara ?? ""} placeholder="Cámara 6°" />
           <TextField label="Fecha de inicio" name="fecha_inicio" type="date" defaultValue={v?.fecha_inicio ?? ""} />
-          <SelectField label="Etapa procesal" name="etapa_procesal" options={ETAPAS_PROCESALES} placeholder="Sin definir" defaultValue={v?.etapa_procesal ?? ""} />
-          <SelectField label="Resultado" name="resultado" options={RESULTADOS_CAUSA} placeholder="Sin resultado" defaultValue={v?.resultado ?? ""} />
+          <SelectField label="Etapa procesal" name="etapa_procesal" options={ETAPAS_POR_VIA[viaSel || "Judicial"] ?? []} placeholder="Sin definir" defaultValue={v?.etapa_procesal ?? ""} />
+          <SelectField label="Resultado" name="resultado" options={resultadosPara(viaSel).map((r) => ({ value: r, label: ETIQUETA_RESULTADO[r] ?? r }))} placeholder="Sin resultado" defaultValue={v?.resultado ?? ""} />
           <TextField label="Fecha del resultado" name="resultado_fecha" error={state.campo === "resultado_fecha"} type="date" defaultValue={v?.resultado_fecha ?? ""} />
         </FormSection>
 

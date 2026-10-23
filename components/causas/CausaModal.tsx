@@ -99,13 +99,36 @@ export default function CausaModal({ causa, userId }: Props) {
   const inactiva = !cerrada && diasSinMovimiento >= causa.inactividad_dias;
   const ownerName = causa.owner?.nombre_completo ?? causa.owner?.email ?? "—";
 
+  // Partes según el tipo de conflicto: cada par se muestra junto (actora/demandada, denunciante/denunciado, etc.)
+  const partesCausa = causa.causa_partes ?? [];
+  const PARES_PARTES = [["actora", "demandada"], ["requirente", "requerido"], ["solicitante", "solicitado"], ["denunciante", "denunciado"]];
+  const ETIQUETA_ROL: Record<string, string> = {
+    actora: "Parte actora", demandada: "Parte demandada",
+    requirente: "Requirente", requerido: "Requerido",
+    solicitante: "Solicitante", solicitado: "Solicitado",
+    denunciante: "Denunciante", denunciado: "Denunciado",
+  };
+  const par = PARES_PARTES.find(([a, b]) => partesCausa.some((p) => p.rol === a || p.rol === b));
+  const parRoles: string[] = par ? [...par] : [];
+  const nombresDe = (rol: string) => partesCausa.filter((p) => p.rol === rol).map((p) => p.nombre).join(", ");
+  const otros = partesCausa.filter((p) => !parRoles.includes(p.rol));
+  const partesDatos: Field[] = par
+    ? [
+        { label: ETIQUETA_ROL[par[0]], value: nombresDe(par[0]) || "—" },
+        { label: ETIQUETA_ROL[par[1]], value: nombresDe(par[1]) || "—" },
+        ...(otros.length > 0 ? [{ label: "Otros intervinientes", value: otros.map((p) => p.nombre).join(", "), full: true }] : []),
+      ]
+    : [
+        { label: "Parte actora", value: causa.parte_actora ?? "—" },
+        { label: "Parte demandada", value: causa.parte_demandada ?? "—" },
+      ];
+
   const datos: Field[] = [
     { label: "Nro Expediente", value: causa.nro_expediente ?? "—" },
     { label: "Fuero", value: causa.fuero ?? "—" },
     { label: "Tipo de juicio", value: causa.tipo_juicio ?? "—" },
     { label: "Juzgado / Cámara", value: causa.juzgado_camara ?? "—" },
-    { label: "Parte actora", value: causa.parte_actora ?? "—" },
-    { label: "Parte demandada", value: causa.parte_demandada ?? "—" },
+    ...partesDatos,
     { label: "Fecha de inicio", value: formatDate(causa.fecha_inicio) },
     { label: "Monto reclamado", value: formatCurrency(causa.monto_reclamado) },
     {
@@ -213,7 +236,7 @@ export default function CausaModal({ causa, userId }: Props) {
                 )}
                 <button
                   type="button"
-                  onClick={() => openEdit(causa.id)}
+                  onClick={() => { select(null); openEdit(causa.id); }}
                   className="flex cursor-pointer items-center gap-1 text-[13px] font-semibold text-blue hover:underline"
                 >
                   <Pencil size={12} /> Editar

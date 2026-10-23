@@ -65,7 +65,7 @@
 
 /* ─── CLARO ───
    Paleta: fondo #E4E8EC, cards #FBFCFD, primario #3A74B5 (texto #FFFFFF). */
-:root[data-theme="light"] {
+:root[data-theme="light"], [data-theme="light"] {
   --color-bg:      #E4E8EC;
   --color-card:    #FBFCFD;
   --color-border:  #D0D6DD;
@@ -166,7 +166,7 @@
   color-scheme: dark;
 }
 
-:root[data-palette="claude"][data-theme="light"] {
+:root[data-palette="claude"][data-theme="light"], [data-palette="claude"] [data-theme="light"] {
   --color-bg:      #F4F2EC;
   --color-card:    #FFFFFF;
   --color-border:  #E3DED3;
