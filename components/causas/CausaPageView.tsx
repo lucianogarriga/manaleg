@@ -5,7 +5,9 @@ import { ChevronLeft } from "lucide-react";
 import { useCausasStore } from "@/store/causasStore";
 import type { CausaConRelaciones } from "@/types";
 import CausaDetalle from "./CausaDetalle";
-import CausaForm from "./CausaForm";
+
+const CausaForm = dynamic(() => import("./CausaForm"));
+import dynamic from "next/dynamic";
 import type { Liquidacion, OrdenPago } from "@/utils/liquidaciones";
 
 interface Props {

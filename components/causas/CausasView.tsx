@@ -10,13 +10,14 @@ import StatsRow from "./StatsRow";
 import { useCausas } from "@/hooks/useCausas";
 import { useCausasStore } from "@/store/causasStore";
 import type { CausaConRelaciones } from "@/types";
-import CausaForm from "./CausaForm";
+import dynamic from "next/dynamic";
 import MaintenanceBanner from "@/components/ui/MaintenanceBanner";
 import CausasTabla from "./CausasTabla";
 import Paginacion, { CAUSAS_POR_PAGINA } from "./Paginacion";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import CausaCard from "./CausaCard";
-import ImportarCausasModal from "./ImportarCausasModal";
+const CausaForm = dynamic(() => import("./CausaForm"));
+const ImportarCausasModal = dynamic(() => import("./ImportarCausasModal"));
 import { COLUMNAS_CAUSA } from "@/services/csv/importarCausas";
 import { escribirCsv } from "@/utils/csv";
 
@@ -282,11 +283,13 @@ export default function CausasView({ causas, totalEnBD, userId, causasMax, causa
         </div>
       )}
 
-      <ImportarCausasModal
-        open={importOpen}
-        onClose={() => setImportOpen(false)}
-        onImported={(m) => setAvisoImport(m)}
-      />
+      {importOpen && (
+        <ImportarCausasModal
+          open
+          onClose={() => setImportOpen(false)}
+          onImported={(m) => setAvisoImport(m)}
+        />
+      )}
       {formOpen && (
         <CausaForm key={editingId ?? "new"} causa={editing} userId={userId} />
       )}

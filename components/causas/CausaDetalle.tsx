@@ -8,7 +8,7 @@ import Link from "next/link";
 import { X, Share2, Pencil } from "lucide-react";
 import { revokeAccess } from "@/app/(app)/causas/shareActions";
 import ColaboradoresList from "@/components/shares/ColaboradoresList";
-import ShareCausaModal from "@/components/shares/ShareCausaModal";
+import dynamic from "next/dynamic";
 import AlertCard from "@/components/ui/AlertCard";
 import Badge from "@/components/ui/Badge";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
@@ -29,6 +29,8 @@ import { useUIStore } from "@/store/uiStore";
 import { formatCurrency, formatDate, getDaysUntil, getInitials } from "@/utils/formatters";
 import { getDeadlineLabel, getUrgency } from "@/utils/urgencyHelpers";
 import type { CausaConRelaciones, CausaShareConUsuario } from "@/types";
+
+const ShareCausaModal = dynamic(() => import("@/components/shares/ShareCausaModal"));
 
 interface Props {
   causa: CausaConRelaciones;
