@@ -439,7 +439,7 @@ export default function LiquidacionesSection({ causaId, esTitular, liquidaciones
   const tituloBoton = "cursor-pointer inline-flex items-center gap-1 rounded-[6px] border border-border bg-card px-2.5 py-[4px] text-[12px] font-semibold text-blue hover:bg-bg";
 
   return (
-    <CollapsibleSection title="Liquidación y órdenes de pago" defaultOpen>
+    <CollapsibleSection title="Liquidación y órdenes de pago">
       <div className="flex flex-col gap-6 px-4 py-4">
         <section className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
