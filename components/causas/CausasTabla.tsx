@@ -1,7 +1,7 @@
 "use client";
 
 import Badge from "@/components/ui/Badge";
-import { formatDate, getInitials } from "@/utils/formatters";
+import { formatDate } from "@/utils/formatters";
 import {
   URGENCY_DOT,
   URGENCY_LEFT,
@@ -9,7 +9,6 @@ import {
   getRowDeadlineText,
   getVisualUrgency,
 } from "@/utils/urgencyHelpers";
-import { VIA_LABELS } from "@/utils/constants";
 import type { CausaConRelaciones } from "@/types";
 import type { PresenceUser } from "@/services/presence/canalesCausa";
 import AvataresEnLinea from "./AvataresEnLinea";
@@ -30,10 +29,8 @@ export default function CausasTabla({ causas, enLineaPorCausa, onSelect }: Props
             <th className="whitespace-nowrap px-3 py-[10px] font-semibold">Expediente</th>
             <th className="px-3 py-[10px] font-semibold">Carátula</th>
             <th className="hidden whitespace-nowrap px-3 py-[10px] font-semibold md:table-cell">Fuero</th>
-            <th className="hidden whitespace-nowrap px-3 py-[10px] font-semibold md:table-cell">Responsable</th>
             <th className="whitespace-nowrap px-3 py-[10px] font-semibold">Estado</th>
             <th className="whitespace-nowrap px-3 py-[10px] font-semibold">Próxima acción</th>
-            <th className="hidden whitespace-nowrap px-3 py-[10px] font-semibold lg:table-cell">Vía</th>
           </tr>
         </thead>
         <tbody>
@@ -57,9 +54,6 @@ function FilaCausa({ causa, enLinea, onSelect }: { causa: CausaConRelaciones; en
   const vence = cerrada
     ? `Cerrada ${formatDate(causa.updated_at)}`
     : getRowDeadlineText(causa.proximo_vencimiento, causa.tipo_vencimiento, causa.motivo_vencimiento);
-  const responsable = causa.owner?.nombre_completo ?? causa.owner?.email ?? "—";
-  const iniciales = getInitials(causa.owner?.nombre_completo, causa.owner?.email[0]?.toUpperCase());
-  const via = causa.via_proceso ? (VIA_LABELS[causa.via_proceso] ?? causa.via_proceso) : causa.tipo_juicio ?? "—";
 
   return (
     <tr
@@ -78,12 +72,6 @@ function FilaCausa({ causa, enLinea, onSelect }: { causa: CausaConRelaciones; en
         </div>
       </td>
       <td className="hidden whitespace-nowrap px-3 py-[9px] text-sub md:table-cell">{causa.fuero ?? "—"}</td>
-      <td className="hidden px-3 py-[9px] md:table-cell">
-        <div className="flex items-center gap-2">
-          <span className="rounded-[4px] px-[5px] py-px text-[10px] font-bold text-sub" style={{ background: "var(--color-border)" }}>{iniciales}</span>
-          <span className="max-w-[160px] truncate text-sub">{responsable}</span>
-        </div>
-      </td>
       <td className="whitespace-nowrap px-3 py-[9px]"><Badge estado={causa.estado} /></td>
       <td className="px-3 py-[9px]">
         <div className="flex max-w-[280px] items-center gap-[6px]">
@@ -91,7 +79,6 @@ function FilaCausa({ causa, enLinea, onSelect }: { causa: CausaConRelaciones; en
           <span className={`truncate text-[12.5px] ${URGENCY_TEXT[urgencia]}`} title={vence}>{vence}</span>
         </div>
       </td>
-      <td className="hidden max-w-[180px] truncate px-3 py-[9px] text-sub lg:table-cell">{via}</td>
     </tr>
   );
 }
