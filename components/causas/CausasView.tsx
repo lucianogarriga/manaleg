@@ -15,7 +15,7 @@ import type { CausaConRelaciones } from "@/types";
 import CausaForm from "./CausaForm";
 import CausaModal from "./CausaModal";
 import MaintenanceBanner from "@/components/ui/MaintenanceBanner";
-import CausaRow from "./CausaRow";
+import CausasTabla from "./CausasTabla";
 import CausaCard from "./CausaCard";
 import FabSpotlight from "@/components/ui/FabSpotlight";
 import ImportarCausasModal from "./ImportarCausasModal";
@@ -211,17 +211,8 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
 
           {/* Lista o grid */}
           {viewMode === "list" ? (
-            <div className="py-1 pb-16" data-reveal-group>
-              {visibles.map((causa) => (
-                <CausaRow
-                  key={causa.id}
-                  causa={causa}
-                  active={false}
-                  onSelect={() => select(causa.id)}
-                  enLinea={enLineaPorCausa[causa.id]}
-                  wide
-                />
-              ))}
+            <div className="px-3 py-1 pb-16 sm:px-4">
+              <CausasTabla causas={visibles} enLineaPorCausa={enLineaPorCausa} onSelect={(id) => select(id)} />
               {visibles.length === 0 && (
                 <p className="px-4 py-8 text-center text-[13px] text-muted">
                   {search ? `No hay causas que coincidan con "${search}".` : "No hay causas en este filtro."}
