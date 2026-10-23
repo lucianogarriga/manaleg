@@ -559,6 +559,9 @@ button[type="submit"]:not(:disabled):hover::after {
   width: 44%; height: 58%; left: -10%; top: -16%; opacity: .2; background: var(--color-blue);
   transform: translate3d(calc((var(--mx, .5) - .5) * -30px), calc((var(--my, .5) - .5) * -20px), 0);
 }
+@media (max-width: 767px) {
+  .fondo-blob.b2 { display: none; }
+}
 .fondo-blob.b2 {
   width: 40%; height: 52%; right: -10%; bottom: -18%; opacity: .16; background: var(--color-pur);
   transform: translate3d(calc((var(--mx, .5) - .5) * 34px), calc((var(--my, .5) - .5) * 24px), 0);
@@ -617,6 +620,12 @@ button[type="submit"]:not(:disabled):hover::after {
   animation-delay: calc(var(--i, 0) * 220ms + 100ms);
 }
 @keyframes chart-draw { to { stroke-dashoffset: 0; } }
+
+/* Gráficos: la animación queda pausada hasta que el gráfico entra en pantalla (ver DominoReveal) */
+[data-lazy-anim]:not([data-en-vista]),
+[data-lazy-anim]:not([data-en-vista]) * {
+  animation-play-state: paused;
+}
 
 /* Mobile: iOS hace zoom al enfocar campos con letra menor a 16px; los campos quedan en 16px */
 @media (max-width: 767px) {

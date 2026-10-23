@@ -15,6 +15,15 @@ export default function DominoReveal({ children }: { children: ReactNode }) {
     if (!root) return;
 
     const pendientes = new Set<Element>();
+    // Gráficos: su animación está pausada en CSS; al entrar en pantalla se reanuda
+    const visorGrafico = new IntersectionObserver((entradas) => {
+      entradas.forEach((e) => {
+        if (!e.isIntersecting) return;
+        visorGrafico.unobserve(e.target);
+        pendientes.delete(e.target);
+        e.target.setAttribute("data-en-vista", "");
+      });
+    }, { threshold: 0.2 });
     const visor = new IntersectionObserver((entradas) => {
       const visibles = entradas.filter((e) => e.isIntersecting).map((e) => e.target);
       visibles.forEach((el, i) => {
@@ -29,6 +38,13 @@ export default function DominoReveal({ children }: { children: ReactNode }) {
 
     // Oculto mientras espera, para que no se vea un parpadeo antes de la animación
     const observar = (items: Element[]) => items.forEach((el) => {
+      if (el.hasAttribute("data-lazy-anim")) {
+        if (!el.hasAttribute("data-en-vista") && !pendientes.has(el)) {
+          pendientes.add(el);
+          visorGrafico.observe(el);
+        }
+        return;
+      }
       if (el.classList.contains("rv") || pendientes.has(el)) return;
       pendientes.add(el);
       (el as HTMLElement).style.opacity = "0";
@@ -37,14 +53,15 @@ export default function DominoReveal({ children }: { children: ReactNode }) {
 
     const buscar = (nodo: Node): Element[] => {
       if (!(nodo instanceof Element)) return [];
-      const propios = nodo.matches("[data-reveal]") ? [nodo] : [];
+      const propios = nodo.matches("[data-reveal], [data-lazy-anim]") ? [nodo] : [];
       const enGrupo = nodo.parentElement?.hasAttribute("data-reveal-group") ? [nodo] : [];
-      return [...propios, ...enGrupo, ...nodo.querySelectorAll("[data-reveal], [data-reveal-group] > *")];
+      return [...propios, ...enGrupo, ...nodo.querySelectorAll("[data-reveal], [data-reveal-group] > *, [data-lazy-anim]")];
     };
 
     observar([
       ...root.querySelectorAll("[data-reveal]"),
       ...root.querySelectorAll("[data-reveal-group] > *"),
+      ...root.querySelectorAll("[data-lazy-anim]"),
     ]);
 
     const observer = new MutationObserver((mutaciones) => {
@@ -79,6 +96,7 @@ export default function DominoReveal({ children }: { children: ReactNode }) {
     return () => {
       observer.disconnect();
       visor.disconnect();
+      visorGrafico.disconnect();
       root.removeEventListener("pointermove", alMover);
       cancelAnimationFrame(frame);
     };
