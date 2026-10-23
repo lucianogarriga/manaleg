@@ -42,7 +42,7 @@ export default function Modal({ open, title, onClose, children, footer, ancho = 
             <X size={16} />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
         {footer && <div className="border-t border-border bg-bg/60 px-4 py-3">{footer}</div>}
       </div>
     </div>

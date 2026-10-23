@@ -127,7 +127,7 @@ export default function CausaModal({ causa, userId }: Props) {
     { label: "Nro Expediente", value: causa.nro_expediente ?? "—" },
     { label: "Fuero", value: causa.fuero ?? "—" },
     { label: "Tipo de juicio", value: causa.tipo_juicio ?? "—" },
-    { label: "Juzgado / Cámara", value: causa.juzgado_camara ?? "—" },
+    { label: "Tribunal", value: causa.juzgado_camara ?? "—" },
     ...partesDatos,
     { label: "Fecha de inicio", value: formatDate(causa.fecha_inicio) },
     { label: "Monto reclamado", value: formatCurrency(causa.monto_reclamado) },
