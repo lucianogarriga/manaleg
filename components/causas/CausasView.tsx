@@ -10,7 +10,6 @@ import StatsRow from "./StatsRow";
 import { useCausas } from "@/hooks/useCausas";
 import { useEnLineaPorCausa } from "@/hooks/usePresence";
 import { useCausasStore } from "@/store/causasStore";
-import type { ClienteOption } from "@/services/supabase/clientes";
 import type { CausaConRelaciones } from "@/types";
 import CausaForm from "./CausaForm";
 import MaintenanceBanner from "@/components/ui/MaintenanceBanner";
@@ -27,13 +26,12 @@ type ViewMode = "list" | "grid";
 interface CausasViewProps {
   causas: CausaConRelaciones[];
   totalEnBD: number;
-  clientes: ClienteOption[];
   userId: string;
   causasMax: number;
   causasPropias: number; // conteo real en la base (no depende del tope de la lista)
 }
 
-export default function CausasView({ causas, totalEnBD, clientes, userId, causasMax, causasPropias }: CausasViewProps) {
+export default function CausasView({ causas, totalEnBD, userId, causasMax, causasPropias }: CausasViewProps) {
   const { causas: visibles, total, counts } = useCausas(causas, userId);
   const enLineaPorCausa = useEnLineaPorCausa(causas.map((c) => c.id), userId);
   // Tipos de juicio únicos presentes en la lista (para el dropdown de filtros)
@@ -292,7 +290,7 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
         onImported={(m) => setAvisoImport(m)}
       />
       {formOpen && (
-        <CausaForm key={editingId ?? "new"} causa={editing} clientes={clientes} userId={userId} />
+        <CausaForm key={editingId ?? "new"} causa={editing} userId={userId} />
       )}
     </>
   );
