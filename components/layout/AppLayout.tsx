@@ -41,7 +41,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           notificaciones={counts.notificaciones}
           sinLeer={counts.notificacionesSinLeer}
         />
-        <main className="min-h-0 flex-1 overflow-y-auto px-[clamp(20px,5vw,72px)]">
+        <main className="min-h-0 flex-1 overflow-y-auto px-[clamp(10px,3vw,72px)] md:px-[clamp(20px,5vw,72px)]">
           {children}
         </main>
       </div>

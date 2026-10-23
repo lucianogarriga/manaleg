@@ -201,7 +201,7 @@ export default function CausasView({ causas, totalEnBD, userId, causasMax, causa
                 className="w-full min-w-0 bg-transparent text-[13px] text-text outline-none placeholder:text-muted"
               />
             </label>
-            <div className="flex flex-wrap justify-end gap-2">
+            <div className="flex w-full flex-wrap justify-end gap-2 sm:w-auto">
             <button
               type="button"
               onClick={() => setImportOpen(true)}
