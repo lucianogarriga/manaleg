@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { AlertTriangle, FileSpreadsheet, Scale, X } from "lucide-react";
+import { AlertTriangle, FileSpreadsheet, Scale, Search, X } from "lucide-react";
 import { CAUSAS_LIMIT, normalizeTipoJuicio } from "@/utils/constants";
 import EmptyState from "@/components/ui/EmptyState";
 import FAB from "@/components/ui/FAB";
@@ -56,6 +56,7 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
   const openCreate = useCausasStore((s) => s.openCreate);
   const select = useCausasStore((s) => s.select);
   const search = useCausasStore((s) => s.search);
+  const setSearch = useCausasStore((s) => s.setSearch);
   const filtro = useCausasStore((s) => s.filter);
   const fueros = useCausasStore((s) => s.fueros);
   const tipoJuicioActivo = useCausasStore((s) => s.tipoJuicio);
@@ -187,7 +188,22 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
             </div>
           )}
 
-          <div className="flex flex-wrap justify-end gap-2 px-3 pt-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-3 pt-2">
+            {/* Buscador por carátula o expediente: a la izquierda, en la misma fila que las acciones */}
+            <label
+              className="flex w-full items-center gap-[6px] rounded-[7px] border px-[10px] py-[6px] text-[13px] sm:w-[340px]"
+              style={{ borderColor: "var(--color-border)", background: "var(--color-card)" }}
+            >
+              <Search size={13} className="shrink-0 text-muted" />
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar por carátula o expediente…"
+                className="w-full min-w-0 bg-transparent text-[13px] text-text outline-none placeholder:text-muted"
+              />
+            </label>
+            <div className="flex flex-wrap justify-end gap-2">
             <button
               type="button"
               onClick={() => setImportOpen(true)}
@@ -204,6 +220,7 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
               <FileSpreadsheet size={15} strokeWidth={1.8} />
               Exportar CSV
             </button>
+            </div>
           </div>
           {avisoImport && (
             <div className="mx-3 mt-2 flex items-start gap-2 rounded-lg border border-grn/30 bg-grn/10 px-3 py-2 text-[12px] text-grn">
