@@ -29,7 +29,7 @@ export default function Modal({ open, title, onClose, children, footer, ancho = 
         aria-modal="true"
         aria-label={title}
         onMouseDown={(e) => e.stopPropagation()}
-        className={`modal-panel flex max-h-[92vh] w-full flex-col ${ancho === "xl" ? "max-w-[960px]" : "max-w-[640px]"} overflow-hidden rounded-t-[10px] border border-border bg-card shadow-xl sm:rounded-[9px]`}
+        className={`modal-panel flex max-h-[92vh] supports-[height:100dvh]:max-h-[92dvh] w-full flex-col ${ancho === "xl" ? "max-w-[960px]" : "max-w-[640px]"} overflow-hidden rounded-t-[10px] border border-border bg-card shadow-xl sm:rounded-[9px]`}
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <h2 className="text-[16px] font-bold text-text">{title}</h2>

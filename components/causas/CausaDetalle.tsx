@@ -8,7 +8,7 @@ import Link from "next/link";
 import { X, Share2, Pencil } from "lucide-react";
 import { revokeAccess } from "@/app/(app)/causas/shareActions";
 import ColaboradoresList from "@/components/shares/ColaboradoresList";
-import ShareCausaModal from "@/components/shares/ShareCausaModal";
+import dynamic from "next/dynamic";
 import AlertCard from "@/components/ui/AlertCard";
 import Badge from "@/components/ui/Badge";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
@@ -30,6 +30,8 @@ import { formatCurrency, formatDate, getDaysUntil, getInitials } from "@/utils/f
 import { getDeadlineLabel, getUrgency } from "@/utils/urgencyHelpers";
 import type { CausaConRelaciones, CausaShareConUsuario } from "@/types";
 
+const ShareCausaModal = dynamic(() => import("@/components/shares/ShareCausaModal"));
+
 interface Props {
   causa: CausaConRelaciones;
   userId: string;
@@ -37,7 +39,6 @@ interface Props {
 }
 
 export default function CausaDetalle({ causa, userId, finanzas }: Props) {
-  const select = useCausasStore((s) => s.select);
   const openEdit = useCausasStore((s) => s.openEdit);
   const showToast = useUIStore((s) => s.showToast);
   const { data: shares, loading: sharesLoading, reload: reloadShares } = useShares(causa.id);
@@ -73,13 +74,6 @@ export default function CausaDetalle({ causa, userId, finanzas }: Props) {
   const cerrada = causa.estado === "Cerrada";
   const urgency = getUrgency(causa.proximo_vencimiento, cerrada);
   const esTitular = causa.user_id === userId;
-
-  // Esc para cerrar
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") select(null); };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [select]);
 
   // Bloquear scroll del body
   useEffect(() => {
@@ -136,7 +130,7 @@ export default function CausaDetalle({ causa, userId, finanzas }: Props) {
     {
       label: "Cliente",
       value: causa.cliente
-        ? <Link href={`/clientes?id=${causa.cliente.id}`} className="text-blue hover:underline" onClick={() => select(null)}>{causa.cliente.nombre_completo}</Link>
+        ? <Link href={`/clientes?id=${causa.cliente.id}`} className="text-blue hover:underline">{causa.cliente.nombre_completo}</Link>
         : "—",
     },
   ];

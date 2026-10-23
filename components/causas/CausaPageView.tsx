@@ -3,21 +3,21 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { useCausasStore } from "@/store/causasStore";
-import type { ClienteOption } from "@/services/supabase/clientes";
 import type { CausaConRelaciones } from "@/types";
 import CausaDetalle from "./CausaDetalle";
-import CausaForm from "./CausaForm";
+
+const CausaForm = dynamic(() => import("./CausaForm"));
+import dynamic from "next/dynamic";
 import type { Liquidacion, OrdenPago } from "@/utils/liquidaciones";
 
 interface Props {
   causa: CausaConRelaciones;
-  clientes: ClienteOption[];
   userId: string;
   finanzas: { liquidaciones: Liquidacion[]; ordenes: OrdenPago[] };
 }
 
 // Página de una causa: enlace para volver al listado arriba, y el detalle debajo.
-export default function CausaPageView({ causa, clientes, userId, finanzas }: Props) {
+export default function CausaPageView({ causa, userId, finanzas }: Props) {
   const formOpen = useCausasStore((s) => s.formOpen);
   const editingId = useCausasStore((s) => s.editingId);
 
@@ -30,7 +30,7 @@ export default function CausaPageView({ causa, clientes, userId, finanzas }: Pro
 
       <CausaDetalle causa={causa} userId={userId} finanzas={finanzas} />
 
-      {formOpen && <CausaForm key={editingId ?? "nueva"} causa={causa} clientes={clientes} userId={userId} />}
+      {formOpen && <CausaForm key={editingId ?? "nueva"} causa={causa} userId={userId} />}
     </div>
   );
 }

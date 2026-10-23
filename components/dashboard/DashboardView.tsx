@@ -141,7 +141,7 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-3 px-4 pb-6 md:px-6">
+    <div className="flex flex-col gap-3 px-4 pb-28 md:px-6 md:pb-6">
       {/* ── Encabezado ── */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -229,31 +229,32 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
           </div>
         </div>
 
-        {/* Pestañas en pastilla ovalada, centrada (en mobile baja a su propia línea) */}
-        <div className="order-first flex w-full justify-center md:order-none md:w-auto">
-          {/* Efecto vidrio sutil: fondo translúcido y desenfoque leve sobre lo que hay detrás */}
+        {/* Pestañas en pastilla: en mobile flotan fijas abajo (ícono arriba, texto chico); en desktop van en línea */}
+        <div className="fixed inset-x-0 bottom-[max(12px,env(safe-area-inset-bottom))] z-20 flex justify-center md:static md:w-auto">
+          {/* Efecto vidrio: fondo muy translúcido con desenfoque fuerte sobre lo que hay detrás */}
           <nav
             aria-label="Vistas del dashboard"
-            className="inline-flex items-center gap-0.5 rounded-full border p-[3px] backdrop-blur-[6px]"
+            className="inline-flex items-center gap-0.5 rounded-full border p-[3px] backdrop-blur-[14px]"
             style={{
-              borderColor: "color-mix(in srgb, var(--color-border) 70%, transparent)",
-              background: "color-mix(in srgb, var(--color-card) 55%, transparent)",
-              boxShadow: "0 1px 2px rgba(0,0,0,.06)",
+              borderColor: "color-mix(in srgb, var(--color-border) 55%, transparent)",
+              background: "color-mix(in srgb, var(--color-card) 38%, transparent)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,.35), 0 8px 24px -10px rgba(0,0,0,.35)",
             }}
           >
-            {PESTANAS.map(({ id, label, Icono }) => (
+            {PESTANAS.map(({ id, label, labelCorto, Icono }) => (
               <button
                 key={id}
                 type="button"
                 onClick={() => setTab(id)}
                 aria-pressed={tab === id}
-                className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-[4px] text-[12px] transition-colors duration-300 ${
+                className={`inline-flex flex-col items-center gap-0.5 whitespace-nowrap rounded-full px-2.5 py-[6px] text-[10px] leading-none transition-colors duration-300 md:flex-row md:gap-1.5 md:px-3 md:py-[4px] md:text-[12px] ${
                   tab === id ? "font-semibold text-blue" : "text-muted hover:text-text"
                 }`}
                 style={tab === id ? { background: "color-mix(in srgb, var(--color-blue) 14%, transparent)" } : undefined}
               >
-                <Icono size={13} strokeWidth={1.9} aria-hidden />
-                {label}
+                <Icono size={18} strokeWidth={1.9} aria-hidden className="md:h-[13px] md:w-[13px]" />
+                <span className="md:hidden">{labelCorto}</span>
+                <span className="hidden md:inline">{label}</span>
               </button>
             ))}
           </nav>
@@ -335,11 +336,11 @@ function diasEntre(desde: string, hasta: string): number {
 // Vistas del dashboard: Novedades, y las secciones de KPIs repartidas en pestañas
 type SeccionKpis = "kpis" | "gestion" | "clientes";
 type Pestana = "novedades" | SeccionKpis;
-const PESTANAS: { id: Pestana; label: string; Icono: LucideIcon }[] = [
-  { id: "novedades", label: "Novedades", Icono: Newspaper },
-  { id: "kpis", label: "KPIs", Icono: ChartColumn },
-  { id: "gestion", label: "Gestión", Icono: Briefcase },
-  { id: "clientes", label: "Clientes y cobros", Icono: Wallet },
+const PESTANAS: { id: Pestana; label: string; labelCorto: string; Icono: LucideIcon }[] = [
+  { id: "novedades", label: "Novedades", labelCorto: "Novedades", Icono: Newspaper },
+  { id: "kpis", label: "KPIs", labelCorto: "KPIs", Icono: ChartColumn },
+  { id: "gestion", label: "Gestión", labelCorto: "Gestión", Icono: Briefcase },
+  { id: "clientes", label: "Clientes y cobros", labelCorto: "Cartera", Icono: Wallet },
 ];
 
 // ───────────────────────── Novedades ─────────────────────────

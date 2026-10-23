@@ -125,6 +125,7 @@ export function Tendencia({ serie }: { serie: number[] }) {
         return (
           <span
             key={i}
+            data-lazy-anim
             className="chart-bar w-[12px] rounded-[4px]"
             style={{
               ...ind(i),
@@ -205,7 +206,7 @@ export function BarrasH({ filas, formato = (n: number) => String(n) }: {
         <div key={f.etiqueta} className="grid grid-cols-[minmax(0,120px)_1fr_auto] items-center gap-2 text-[12px]">
           <span className="truncate text-muted">{f.etiqueta}</span>
           <div className="h-[9px] overflow-hidden rounded-[5px] bg-panel2">
-            <div className="chart-hbar h-full rounded-[5px] bg-blue" style={{ width: `${(f.valor / max) * 100}%`, ...ind(i) }} />
+            <div data-lazy-anim className="chart-hbar h-full rounded-[5px] bg-blue" style={{ width: `${(f.valor / max) * 100}%`, ...ind(i) }} />
           </div>
           <span className="whitespace-nowrap text-right font-semibold tabular-nums text-text">{formato(f.valor)}</span>
         </div>
@@ -222,7 +223,7 @@ export function Dona({ segmentos, sinLeyenda = false }: { segmentos: { etiqueta:
   const punto = (radio: number, a: number) => [c + radio * Math.cos(a), c + radio * Math.sin(a)];
   return (
     <div className="flex flex-wrap items-center gap-5">
-      <svg width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="Estado de causas" className="chart-wipe shrink-0">
+      <svg data-lazy-anim width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="Estado de causas" className="chart-wipe shrink-0">
         {total === 0 && (
           <circle cx={c} cy={c} r={(r + ri) / 2} fill="none" strokeWidth={r - ri} style={{ stroke: "var(--color-panel2)" }} />
         )}
@@ -276,7 +277,7 @@ export function BarrasAgrupadas({ meses, cobrado, pendiente, moneda }: {
   const slot = iw / meses.length, bw = slot * 0.3, gp = 3;
   const marcas = [0, 0.33, 0.66, 1].map((k) => max * k);
   return (
-    <svg viewBox={`0 0 ${vw} ${vh}`} width="100%" role="img" aria-label="Honorarios cobrados y pendientes por mes">
+    <svg data-lazy-anim viewBox={`0 0 ${vw} ${vh}`} width="100%" role="img" aria-label="Honorarios cobrados y pendientes por mes">
       {marcas.map((v) => (
         <g key={v}>
           <line x1={pl} x2={vw - pr} y1={y(v)} y2={y(v)} style={{ stroke: "var(--color-border)" }} />
@@ -319,7 +320,7 @@ export function Ondas({ meses, series, moneda, formato }: {
   const fmt = formato ?? ((n: number) => formatCurrency(Math.round(n), moneda ?? "ARS"));
   const marcas = [0, 1, 2, 3].map((k) => (max * k) / 3);
   return (
-    <svg viewBox={`0 0 ${vw} ${vh}`} width="100%" role="img" aria-label="Gráfico de ondas">
+    <svg data-lazy-anim viewBox={`0 0 ${vw} ${vh}`} width="100%" role="img" aria-label="Gráfico de ondas">
       {marcas.map((v) => (
         <g key={v}>
           <line x1={pl} x2={vw - pr} y1={Y(v)} y2={Y(v)} style={{ stroke: "var(--color-border)" }} />
@@ -364,7 +365,7 @@ export function BarrasVerticales({ meses, valores }: { meses: string[]; valores:
   const max = Math.max(...valores, 1) * 1.15;
   const slot = vw / meses.length, bw = slot * 0.5;
   return (
-    <svg viewBox={`0 0 ${vw} ${vh}`} width="100%" role="img" aria-label="Causas nuevas por mes">
+    <svg data-lazy-anim viewBox={`0 0 ${vw} ${vh}`} width="100%" role="img" aria-label="Causas nuevas por mes">
       {meses.map((m, i) => {
         const h = (valores[i] / max) * ih;
         const x = i * slot + (slot - bw) / 2;

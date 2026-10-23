@@ -8,7 +8,9 @@ import AuthField from "@/components/auth/AuthField";
 import FormAlert from "@/components/auth/FormAlert";
 import SubmitButton from "@/components/auth/SubmitButton";
 import Turnstile from "@/components/auth/Turnstile";
-import LegalModal from "@/components/ui/LegalModal";
+import dynamic from "next/dynamic";
+
+const LegalModal = dynamic(() => import("@/components/ui/LegalModal"));
 import { validarPassword } from "@/utils/password";
 
 export default function RegisterPage() {

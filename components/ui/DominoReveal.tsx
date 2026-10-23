@@ -4,10 +4,9 @@ import { useEffect, useRef, type ReactNode } from "react";
 
 const PASO_MS = 50;
 const MAX_ESCALONES = 12;
-const MAX_ANIMADOS = 24;
 
-// Hace aparecer en cascada, de una en una, los elementos marcados con data-reveal
-// (también los que se agregan después, por ejemplo al cambiar de pestaña).
+// Hace aparecer en cascada los elementos marcados con data-reveal (y los hijos de un data-reveal-group).
+// Cada uno anima recién cuando entra en pantalla: lo que está debajo del pliegue no consume nada hasta verse.
 export default function DominoReveal({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -15,32 +14,59 @@ export default function DominoReveal({ children }: { children: ReactNode }) {
     const root = ref.current;
     if (!root) return;
 
-    // Solo animamos los primeros elementos: en listas largas, animar todo a la vez traba el render
-    const animar = (items: Element[]) =>
-      items.slice(0, MAX_ANIMADOS).forEach((el, i) => {
+    const pendientes = new Set<Element>();
+    // Gráficos: su animación está pausada en CSS; al entrar en pantalla se reanuda
+    const visorGrafico = new IntersectionObserver((entradas) => {
+      entradas.forEach((e) => {
+        if (!e.isIntersecting) return;
+        visorGrafico.unobserve(e.target);
+        pendientes.delete(e.target);
+        e.target.setAttribute("data-en-vista", "");
+      });
+    }, { threshold: 0.2 });
+    const visor = new IntersectionObserver((entradas) => {
+      const visibles = entradas.filter((e) => e.isIntersecting).map((e) => e.target);
+      visibles.forEach((el, i) => {
+        visor.unobserve(el);
+        pendientes.delete(el);
         const h = el as HTMLElement;
-        if (h.classList.contains("rv")) return;
+        h.style.opacity = "";
         h.style.setProperty("--rv-delay", `${Math.min(i, MAX_ESCALONES) * PASO_MS}ms`);
         h.classList.add("rv");
       });
+    });
 
-    // Elementos a animar: los marcados con data-reveal y los hijos directos de un data-reveal-group
+    // Oculto mientras espera, para que no se vea un parpadeo antes de la animación
+    const observar = (items: Element[]) => items.forEach((el) => {
+      if (el.hasAttribute("data-lazy-anim")) {
+        if (!el.hasAttribute("data-en-vista") && !pendientes.has(el)) {
+          pendientes.add(el);
+          visorGrafico.observe(el);
+        }
+        return;
+      }
+      if (el.classList.contains("rv") || pendientes.has(el)) return;
+      pendientes.add(el);
+      (el as HTMLElement).style.opacity = "0";
+      visor.observe(el);
+    });
+
     const buscar = (nodo: Node): Element[] => {
       if (!(nodo instanceof Element)) return [];
-      const propios = nodo.matches("[data-reveal]") ? [nodo] : [];
+      const propios = nodo.matches("[data-reveal], [data-lazy-anim]") ? [nodo] : [];
       const enGrupo = nodo.parentElement?.hasAttribute("data-reveal-group") ? [nodo] : [];
-      return [...propios, ...enGrupo, ...nodo.querySelectorAll("[data-reveal], [data-reveal-group] > *")];
+      return [...propios, ...enGrupo, ...nodo.querySelectorAll("[data-reveal], [data-reveal-group] > *, [data-lazy-anim]")];
     };
-    const existentes = () => [
+
+    observar([
       ...root.querySelectorAll("[data-reveal]"),
       ...root.querySelectorAll("[data-reveal-group] > *"),
-    ];
-
-    animar([...existentes()]);
+      ...root.querySelectorAll("[data-lazy-anim]"),
+    ]);
 
     const observer = new MutationObserver((mutaciones) => {
       const nuevos = mutaciones.flatMap((m) => [...m.addedNodes].flatMap(buscar));
-      if (nuevos.length) animar(nuevos);
+      if (nuevos.length) observar(nuevos);
     });
     observer.observe(root, { childList: true, subtree: true });
 
@@ -69,6 +95,8 @@ export default function DominoReveal({ children }: { children: ReactNode }) {
 
     return () => {
       observer.disconnect();
+      visor.disconnect();
+      visorGrafico.disconnect();
       root.removeEventListener("pointermove", alMover);
       cancelAnimationFrame(frame);
     };

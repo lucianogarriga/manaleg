@@ -14,8 +14,10 @@ import MonedasJudicialesModal from "./MonedasJudicialesModal";
 import { useMonedasJudiciales } from "@/store/monedasJudicialesStore";
 import { useUIStore } from "@/store/uiStore";
 import { getInitials } from "@/utils/formatters";
-import FeedbackModal from "./FeedbackModal";
-import ContactModal from "./ContactModal";
+import dynamic from "next/dynamic";
+
+const FeedbackModal = dynamic(() => import("./FeedbackModal"));
+const ContactModal = dynamic(() => import("./ContactModal"));
 import type { Profile } from "@/types";
 
 interface Props {

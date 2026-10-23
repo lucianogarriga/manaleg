@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { deleteCausa, saveCausa, type CausaFormState } from "@/app/(app)/causas/actions";
-import { crearClienteRapido } from "@/app/(app)/clientes/clienteActions";
+import { crearClienteRapido, listarClientesOpciones } from "@/app/(app)/clientes/clienteActions";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import FormAlert from "@/components/auth/FormAlert";
 import Modal from "@/components/ui/Modal";
@@ -18,7 +18,6 @@ import type { CaracterAbogado, CausaConRelaciones, CausaParte, RolParte, TipoPer
 
 interface CausaFormProps {
   causa: CausaConRelaciones | null; // null = nueva causa
-  clientes: ClienteOption[];
   userId: string;
 }
 
@@ -103,7 +102,7 @@ function computeAutoCaratula(partes: ParteRow[], tipoJuicio: string): string | n
 
 // Se monta solo mientras el modal está abierto (ver CausasView),
 // así cada apertura arranca con el estado limpio.
-export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
+export default function CausaForm({ causa, userId }: CausaFormProps) {
   const closeForm = useCausasStore((s) => s.closeForm);
   const router = useRouter();
   const pathname = usePathname();
@@ -189,7 +188,16 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
 
   const [selectedFuero, setSelectedFuero] = useState<string>(v?.fuero ?? "");
   // Clientes: la lista puede crecer desde este formulario (alta rápida de cliente)
-  const [listaClientes, setListaClientes] = useState<ClienteOption[]>(clientes);
+  const [listaClientes, setListaClientes] = useState<ClienteOption[]>([]);
+  const [cargandoClientes, setCargandoClientes] = useState(true);
+  useEffect(() => {
+    let vigente = true;
+    listarClientesOpciones()
+      .then((lista) => { if (vigente) setListaClientes(lista); })
+      .catch(() => { if (vigente) useUIStore.getState().showToast({ message: "No se pudieron cargar los clientes." }); })
+      .finally(() => { if (vigente) setCargandoClientes(false); });
+    return () => { vigente = false; };
+  }, []);
   const [clienteSel, setClienteSel] = useState<string>(v?.cliente_id ?? "");
   // Instancia (judicial o extrajudicial) y, si es extrajudicial, la vía concreta.
   // La vía que se guarda es "Judicial" o la vía extrajudicial elegida.
@@ -413,7 +421,7 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
             <SelectField
               label="Cliente"
               name="cliente_id"
-              placeholder={listaClientes.length ? "Sin cliente asignado" : "Todavía no cargaste clientes"}
+              placeholder={cargandoClientes ? "Cargando clientes…" : listaClientes.length ? "Sin cliente asignado" : "Todavía no cargaste clientes"}
               options={listaClientes.map((c) => ({ value: c.id, label: c.nombre_completo }))}
               value={clienteSel}
               onChange={(e) => setClienteSel(e.target.value)}

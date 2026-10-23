@@ -8,17 +8,16 @@ import EmptyState from "@/components/ui/EmptyState";
 import FilterChips from "./FilterChips";
 import StatsRow from "./StatsRow";
 import { useCausas } from "@/hooks/useCausas";
-import { useEnLineaPorCausa } from "@/hooks/usePresence";
 import { useCausasStore } from "@/store/causasStore";
-import type { ClienteOption } from "@/services/supabase/clientes";
 import type { CausaConRelaciones } from "@/types";
-import CausaForm from "./CausaForm";
+import dynamic from "next/dynamic";
 import MaintenanceBanner from "@/components/ui/MaintenanceBanner";
 import CausasTabla from "./CausasTabla";
 import Paginacion, { CAUSAS_POR_PAGINA } from "./Paginacion";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import CausaCard from "./CausaCard";
-import ImportarCausasModal from "./ImportarCausasModal";
+const CausaForm = dynamic(() => import("./CausaForm"));
+const ImportarCausasModal = dynamic(() => import("./ImportarCausasModal"));
 import { COLUMNAS_CAUSA } from "@/services/csv/importarCausas";
 import { escribirCsv } from "@/utils/csv";
 
@@ -27,15 +26,13 @@ type ViewMode = "list" | "grid";
 interface CausasViewProps {
   causas: CausaConRelaciones[];
   totalEnBD: number;
-  clientes: ClienteOption[];
   userId: string;
   causasMax: number;
   causasPropias: number; // conteo real en la base (no depende del tope de la lista)
 }
 
-export default function CausasView({ causas, totalEnBD, clientes, userId, causasMax, causasPropias }: CausasViewProps) {
+export default function CausasView({ causas, totalEnBD, userId, causasMax, causasPropias }: CausasViewProps) {
   const { causas: visibles, total, counts } = useCausas(causas, userId);
-  const enLineaPorCausa = useEnLineaPorCausa(causas.map((c) => c.id), userId);
   // Tipos de juicio únicos presentes en la lista (para el dropdown de filtros)
   const tiposJuicio = useMemo(() => {
     const seen = new Map<string, string>();
@@ -205,7 +202,7 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
                 className="w-full min-w-0 bg-transparent text-[13px] text-text outline-none placeholder:text-muted"
               />
             </label>
-            <div className="flex flex-wrap justify-end gap-2">
+            <div className="flex w-full flex-wrap justify-end gap-2 sm:w-auto">
             <button
               type="button"
               onClick={() => setImportOpen(true)}
@@ -251,7 +248,7 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
           {/* Lista o grid */}
           {vistaEfectiva === "list" ? (
             <div className="px-3 py-1 pb-16 sm:px-4">
-              <CausasTabla causas={enPagina} enLineaPorCausa={enLineaPorCausa} onSelect={abrirCausa} />
+              <CausasTabla causas={enPagina} onSelect={abrirCausa} />
               {visibles.length === 0 && (
                 <p className="px-4 py-8 text-center text-[13px] text-muted">
                   {search ? `No hay causas que coincidan con "${search}".` : "No hay causas en este filtro."}
@@ -265,7 +262,6 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
                   <CausaCard
                     key={causa.id}
                     causa={causa}
-                    active={false}
                     onSelect={() => abrirCausa(causa.id)}
                   />
                 ))}
@@ -287,13 +283,15 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
         </div>
       )}
 
-      <ImportarCausasModal
-        open={importOpen}
-        onClose={() => setImportOpen(false)}
-        onImported={(m) => setAvisoImport(m)}
-      />
+      {importOpen && (
+        <ImportarCausasModal
+          open
+          onClose={() => setImportOpen(false)}
+          onImported={(m) => setAvisoImport(m)}
+        />
+      )}
       {formOpen && (
-        <CausaForm key={editingId ?? "new"} causa={editing} clientes={clientes} userId={userId} />
+        <CausaForm key={editingId ?? "new"} causa={editing} userId={userId} />
       )}
     </>
   );

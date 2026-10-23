@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { createCliente, updateCliente, deleteCliente as deleteClienteService } from "@/services/supabase/clientes";
+import { createCliente, updateCliente, deleteCliente as deleteClienteService, getClienteOptions, type ClienteOption } from "@/services/supabase/clientes";
 import { revalidatePath } from "next/cache";
 import type { FormState } from "@/types";
 
@@ -64,6 +64,11 @@ export async function deleteCliente(id: string): Promise<FormState> {
   if (error) return { error: error.message };
   revalidatePath("/clientes");
   return { message: "Cliente eliminado." };
+}
+
+// Opciones para el select de cliente: se piden recién al abrir el formulario de causa.
+export async function listarClientesOpciones(): Promise<ClienteOption[]> {
+  return getClienteOptions();
 }
 
 // Alta rápida desde el formulario de causa: solo nombre. Devuelve el cliente creado para seleccionarlo.
