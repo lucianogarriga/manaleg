@@ -46,7 +46,7 @@ function NavLink({ item, active, expanded, badge, onClick }: NavLinkProps) {
       aria-current={active ? "page" : undefined}
       data-nav
       data-active={active}
-      className="relative z-[1] flex h-[30px] items-center overflow-hidden rounded-[9px] transition-transform duration-150 active:scale-[.96]"
+      className="relative z-[1] flex h-[30px] items-center overflow-hidden rounded-[9px] transition-transform duration-150 active:scale-[.96] max-md:h-[46px]"
       style={{
         paddingLeft: NAV_ICON_LEFT,
         paddingRight: 10,
@@ -68,7 +68,7 @@ function NavLink({ item, active, expanded, badge, onClick }: NavLinkProps) {
         />
       </span>
       <span
-        className={`min-w-0 flex-1 truncate whitespace-nowrap text-[15px] md:text-[13.5px] ${lit ? "font-semibold" : "font-medium"}`}
+        className={`min-w-0 flex-1 truncate whitespace-nowrap text-[18px] md:text-[13.5px] ${lit ? "font-semibold" : "font-medium"}`}
         style={{
           opacity: expanded ? 1 : 0,
           paddingLeft: expanded ? 10 : 0,
@@ -159,14 +159,15 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
     <>
       {/* Backdrop mobile */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-30 bg-black/30 md:hidden" onClick={closeSidebar} />
+        <div className="fixed inset-0 z-30 bg-black/25 backdrop-blur-[6px] md:hidden" onClick={closeSidebar} />
       )}
 
+      {/* Mobile: hoja que sube desde abajo, a 75% de la altura. Desktop: panel lateral como siempre. */}
       <aside
-        className={`sb-surface fixed inset-y-0 left-0 z-40 flex shrink-0 flex-col md:static md:translate-x-0 md:p-2 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        className={`sb-surface fixed bottom-0 left-0 z-40 flex shrink-0 flex-col max-md:h-[75vh] max-md:rounded-t-[22px] max-md:shadow-[0_-12px_40px_rgba(0,0,0,.25)] max-md:transition-transform max-md:duration-[380ms] md:static md:translate-x-0 md:p-2 ${
+          sidebarOpen ? "max-md:translate-y-0" : "max-md:translate-y-full"
         } ${exp ? "md:w-[232px]" : "md:w-[64px]"} w-full`}
-        style={{ transition: `width ${DUR}` }}
+        style={{ transition: `width ${DUR}, transform 380ms cubic-bezier(.22,1,.36,1)` }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
