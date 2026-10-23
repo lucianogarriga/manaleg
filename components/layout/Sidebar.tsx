@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useUIStore, loadPin } from "@/store/uiStore";
 import { useCausasStore } from "@/store/causasStore";
 import type { Profile } from "@/types";
@@ -31,7 +31,7 @@ interface NavLinkProps {
   active: boolean;
   expanded: boolean;
   badge: React.ReactNode;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
 function NavLink({ item, active, expanded, badge, onClick }: NavLinkProps) {
@@ -46,7 +46,7 @@ function NavLink({ item, active, expanded, badge, onClick }: NavLinkProps) {
       aria-current={active ? "page" : undefined}
       data-nav
       data-active={active}
-      className="relative z-[1] flex h-[30px] items-center overflow-hidden rounded-[9px] transition-transform duration-150 active:scale-[.96]"
+      className="relative z-[1] flex h-[30px] items-center overflow-hidden rounded-[9px] transition-transform duration-150 active:scale-[.96] max-md:h-[46px]"
       style={{
         paddingLeft: NAV_ICON_LEFT,
         paddingRight: 10,
@@ -68,7 +68,7 @@ function NavLink({ item, active, expanded, badge, onClick }: NavLinkProps) {
         />
       </span>
       <span
-        className={`min-w-0 flex-1 truncate whitespace-nowrap text-[15px] md:text-[13.5px] ${lit ? "font-semibold" : "font-medium"}`}
+        className={`min-w-0 flex-1 truncate whitespace-nowrap text-[18px] md:text-[13.5px] ${lit ? "font-semibold" : "font-medium"}`}
         style={{
           opacity: expanded ? 1 : 0,
           paddingLeft: expanded ? 10 : 0,
@@ -89,6 +89,7 @@ interface SidebarProps {
 
 export default function Sidebar({ profile, counts }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { sidebarOpen, closeSidebar, sidebarPinned, toggleSidebarPin } = useUIStore();
   const selectCausa = useCausasStore((s) => s.select);
   const [hovered, setHovered] = useState(false);
@@ -119,6 +120,25 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
     return () => { window.removeEventListener("resize", medirActivo); cancelAnimationFrame(id); };
   }, []);
 
+  // Transición entre secciones: la vista actual se desvanece, luego navega (el loader muestra la carga)
+  const navegar = (href: string, e: React.MouseEvent<HTMLAnchorElement>) => {
+    closeSidebar();
+    if (href === "/causas") selectCausa(null);
+    const esClicSimple = e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
+    if (!esClicSimple || href === pathname) return;
+    e.preventDefault();
+    const sinMovimiento =
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      document.documentElement.dataset.motion === "off";
+    const vista = document.querySelector<HTMLElement>("[data-page]");
+    if (sinMovimiento || !vista) {
+      router.push(href);
+      return;
+    }
+    vista.classList.add("vista-salida");
+    setTimeout(() => router.push(href), 190);
+  };
+
   const pillFor = (item: NavItem) => {
     if (!exp) return null;
     if (item.badge === "vencimientos" && counts.vencimientosProximos > 0)
@@ -139,14 +159,15 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
     <>
       {/* Backdrop mobile */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-30 bg-black/30 md:hidden" onClick={closeSidebar} />
+        <div className="fixed inset-0 z-30 bg-black/25 backdrop-blur-[6px] md:hidden" onClick={closeSidebar} />
       )}
 
+      {/* Mobile: hoja que sube desde abajo, a 75% de la altura. Desktop: panel lateral como siempre. */}
       <aside
-        className={`sb-surface fixed inset-y-0 left-0 z-40 flex shrink-0 flex-col md:static md:translate-x-0 md:p-2 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        className={`sb-surface fixed bottom-0 left-0 z-40 flex shrink-0 flex-col max-md:h-[75vh] max-md:rounded-t-[22px] max-md:shadow-[0_-12px_40px_rgba(0,0,0,.25)] max-md:transition-transform max-md:duration-[380ms] md:static md:translate-x-0 md:p-2 ${
+          sidebarOpen ? "max-md:translate-y-0" : "max-md:translate-y-full"
         } ${exp ? "md:w-[232px]" : "md:w-[64px]"} w-full`}
-        style={{ transition: `width ${DUR}` }}
+        style={{ transition: `width ${DUR}, transform 380ms cubic-bezier(.22,1,.36,1)` }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
@@ -250,10 +271,7 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
                         active={active}
                         expanded={exp}
                         badge={pillFor(item)}
-                        onClick={() => {
-                          closeSidebar();
-                          if (item.href === "/causas") selectCausa(null);
-                        }}
+                        onClick={(e) => navegar(item.href, e)}
                       />
                     );
                   })}

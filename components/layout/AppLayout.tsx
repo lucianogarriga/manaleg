@@ -10,6 +10,7 @@ import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import TitleUpdater from "./TitleUpdater";
 import NavigationProgress from "./NavigationProgress";
+import FondoVivo from "./FondoVivo";
 
 // Estructura base: Sidebar fijo + columna principal (Topbar + contenido).
 // Cada página maneja su propio scroll dentro del área de contenido.
@@ -29,9 +30,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <Sidebar profile={profile} counts={counts} />
       {/* Área derecha: topbar + contenido sobre bg (sin card wrapper) */}
       <div
-        className="flex min-w-0 flex-1 flex-col overflow-hidden md:rounded-xl"
+        className="isolate flex min-w-0 flex-1 flex-col overflow-hidden md:rounded-xl"
         style={{ background: "var(--color-bg)" }}
       >
+        <FondoVivo />
         <Topbar
           fecha={formatLongDate(todayISO())}
           alertas={counts.alertas}
@@ -39,7 +41,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           notificaciones={counts.notificaciones}
           sinLeer={counts.notificacionesSinLeer}
         />
-        <main className="min-h-0 flex-1 overflow-y-auto">
+        <main className="min-h-0 flex-1 overflow-y-auto px-[clamp(20px,5vw,72px)]">
           {children}
         </main>
       </div>

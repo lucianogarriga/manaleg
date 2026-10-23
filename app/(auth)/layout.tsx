@@ -1,4 +1,5 @@
 import { BellDot, Users, FileText } from "lucide-react";
+import FondoVivo from "@/components/layout/FondoVivo";
 
 const FEATURES = [
   {
@@ -21,24 +22,12 @@ const FEATURES = [
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <main className="flex min-h-dvh" data-theme="light">
-      {/* ── Panel izquierdo — marca ── */}
+      {/* ── Panel izquierdo — marca. Mismo fondo desenfocado que la app ── */}
       <div
-        className="relative hidden flex-col justify-between overflow-hidden px-10 py-10 md:flex"
-        style={{
-          width: "44%",
-          background: "linear-gradient(160deg, #1E1E1C 0%, #2E2E2B 45%, #476C6A 100%)",
-        }}
+        className="relative isolate hidden flex-col justify-between overflow-hidden px-10 py-10 md:flex"
+        style={{ width: "44%", background: "var(--color-bg)" }}
       >
-        {/* Orbe decorativo inferior-derecha */}
-        <div
-          className="pointer-events-none absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(94,156,164,.14) 0%, transparent 65%)" }}
-        />
-        {/* Orbe superior */}
-        <div
-          className="pointer-events-none absolute -top-20 left-1/2 h-[240px] w-[240px] -translate-x-1/2 rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(94,156,164,.08) 0%, transparent 70%)" }}
-        />
+        <FondoVivo />
 
         {/* Placeholder para mantener el justify-between */}
         <div className="relative" />
@@ -47,27 +36,30 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="relative">
           {/* Logo — icono + MANALEG justo arriba del título */}
           <div className="mb-4 flex items-center gap-[10px]">
-            <div className="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] bg-white/15 text-[17px] font-bold text-white">
+            <div className="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] text-[17px] font-bold text-on-primary" style={{ background: "var(--color-blue)" }}>
               M
             </div>
-            <span className="text-[20px] font-bold tracking-[.6px] text-white">MANALEG</span>
+            <span className="text-[20px] font-bold tracking-[.6px]" style={{ color: "var(--color-text)" }}>MANALEG</span>
           </div>
-          <h1 className="mb-3 text-[26px] font-bold leading-[1.22] text-white">
+          <h1 className="mb-3 text-[26px] font-bold leading-[1.22]" style={{ color: "var(--color-text)" }}>
             Tu manager legal,<br />tus causas al día
           </h1>
-          <p className="mb-8 max-w-[290px] text-[13px] leading-[1.65] text-blue-100/65">
+          <p className="mb-8 max-w-[290px] text-[13px] leading-[1.65]" style={{ color: "var(--color-sub)" }}>
             Organizá tu estudio jurídico, seguí cada expediente y tomá el control de tu cartera de clientes desde un solo lugar.
           </p>
 
           <div className="flex flex-col gap-[16px]">
             {FEATURES.map(({ icon: Icon, title, desc }) => (
               <div key={title} className="flex items-start gap-[12px]">
-                <div className="flex h-[28px] w-[28px] shrink-0 items-center justify-center rounded-[7px] bg-white/10 ring-1 ring-white/[.08]">
-                  <Icon size={13} strokeWidth={2} className="text-blue-200" />
+                <div
+                  className="flex h-[28px] w-[28px] shrink-0 items-center justify-center rounded-[7px] shadow-sm"
+                  style={{ background: "var(--color-card)", border: "1px solid var(--color-border)" }}
+                >
+                  <Icon size={13} strokeWidth={2} style={{ color: "var(--color-blue)" }} />
                 </div>
                 <div>
-                  <div className="text-[12.5px] font-semibold leading-tight text-white">{title}</div>
-                  <div className="mt-[2px] text-[11.5px] leading-snug text-blue-200/55">{desc}</div>
+                  <div className="text-[12.5px] font-semibold leading-tight" style={{ color: "var(--color-text)" }}>{title}</div>
+                  <div className="mt-[2px] text-[11.5px] leading-snug" style={{ color: "var(--color-muted)" }}>{desc}</div>
                 </div>
               </div>
             ))}
@@ -75,7 +67,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         {/* Footer */}
-        <div className="relative text-[10.5px] text-blue-300/40">
+        <div className="relative text-[10.5px]" style={{ color: "var(--color-muted)" }}>
           © {new Date().getFullYear()} Manaleg · Todos los derechos reservados
         </div>
       </div>

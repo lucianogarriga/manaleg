@@ -160,7 +160,7 @@ function TareaCard({
         if (redimensionando.current) { e.preventDefault(); return; }
         onDragStart(todo.id, e);
       }}
-      className={`group relative cursor-grab overflow-hidden rounded-lg border p-3 transition-[opacity,transform] duration-150 active:cursor-grabbing ${isDragging ? "opacity-40 scale-95" : ""} ${landed ? "kanban-land" : ""}`}
+      className={`kanban-grab group relative overflow-hidden rounded-lg border p-3 transition-[opacity,transform] duration-150 ${isDragging ? "opacity-40 scale-95" : ""} ${landed ? "kanban-land" : ""}`}
       style={{
         background: "var(--color-card)",
         borderColor: "var(--color-border)",

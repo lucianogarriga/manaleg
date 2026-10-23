@@ -6,7 +6,7 @@ export default function Badge({ estado, size = "sm" }: { estado: EstadoCausa; si
   const style = ESTADO_STYLES[estado] ?? ESTADO_STYLES.Iniciada;
   const sizing = size === "lg" ? "px-[9px] py-[3px] text-[13px]" : "px-[6px] py-[1.5px] text-[10.5px]";
   return (
-    <span className={`whitespace-nowrap rounded-full font-bold ${sizing} ${style.bg} ${style.text}`}>
+    <span className={`depth-sm whitespace-nowrap rounded-full font-bold ${sizing} ${style.bg} ${style.text}`}>
       {estado}
     </span>
   );

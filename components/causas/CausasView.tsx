@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { AlertTriangle, FileSpreadsheet, Scale, X } from "lucide-react";
+import { AlertTriangle, FileSpreadsheet, Scale, Search, X } from "lucide-react";
 import { CAUSAS_LIMIT, normalizeTipoJuicio } from "@/utils/constants";
 import EmptyState from "@/components/ui/EmptyState";
 import FAB from "@/components/ui/FAB";
@@ -15,7 +15,8 @@ import type { CausaConRelaciones } from "@/types";
 import CausaForm from "./CausaForm";
 import CausaModal from "./CausaModal";
 import MaintenanceBanner from "@/components/ui/MaintenanceBanner";
-import CausaRow from "./CausaRow";
+import CausasTabla from "./CausasTabla";
+import Paginacion, { CAUSAS_POR_PAGINA } from "./Paginacion";
 import CausaCard from "./CausaCard";
 import FabSpotlight from "@/components/ui/FabSpotlight";
 import ImportarCausasModal from "./ImportarCausasModal";
@@ -55,8 +56,13 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
   const openCreate = useCausasStore((s) => s.openCreate);
   const select = useCausasStore((s) => s.select);
   const search = useCausasStore((s) => s.search);
+  const setSearch = useCausasStore((s) => s.setSearch);
+  const filtro = useCausasStore((s) => s.filter);
+  const fueros = useCausasStore((s) => s.fueros);
+  const tipoJuicioActivo = useCausasStore((s) => s.tipoJuicio);
 
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [pagina, setPagina] = useState(1);
   const [importOpen, setImportOpen] = useState(false);
   const [avisoImport, setAvisoImport] = useState<string | null>(null);
 
@@ -101,8 +107,23 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
     try {
       const saved = localStorage.getItem("causas-view") as ViewMode | null;
       if (saved === "list" || saved === "grid") setViewMode(saved);
+      // Sin preferencia guardada, en pantallas chicas la tabla no entra completa: se muestran cards
+      else if (window.matchMedia("(max-width: 1023px)").matches) setViewMode("grid");
     } catch {}
   }, []);
+
+  // Cualquier cambio de filtro o búsqueda vuelve a la primera página
+  useEffect(() => {
+    setPagina(1);
+  }, [filtro, search, fueros, tipoJuicioActivo]);
+
+  const totalPaginas = Math.max(1, Math.ceil(visibles.length / CAUSAS_POR_PAGINA));
+  const paginaActual = Math.min(pagina, totalPaginas);
+  const enPagina = visibles.slice((paginaActual - 1) * CAUSAS_POR_PAGINA, paginaActual * CAUSAS_POR_PAGINA);
+  const cambiarPagina = (p: number) => {
+    setPagina(p);
+    document.querySelector("main")?.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const toggleView = (mode: ViewMode) => {
     setViewMode(mode);
@@ -167,7 +188,22 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
             </div>
           )}
 
-          <div className="flex flex-wrap justify-end gap-2 px-3 pt-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-3 pt-2">
+            {/* Buscador por carátula o expediente: a la izquierda, en la misma fila que las acciones */}
+            <label
+              className="flex w-full items-center gap-[6px] rounded-[7px] border px-[10px] py-[6px] text-[13px] sm:w-[340px]"
+              style={{ borderColor: "var(--color-border)", background: "var(--color-card)" }}
+            >
+              <Search size={13} className="shrink-0 text-muted" />
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar por carátula o expediente…"
+                className="w-full min-w-0 bg-transparent text-[13px] text-text outline-none placeholder:text-muted"
+              />
+            </label>
+            <div className="flex flex-wrap justify-end gap-2">
             <button
               type="button"
               onClick={() => setImportOpen(true)}
@@ -184,6 +220,7 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
               <FileSpreadsheet size={15} strokeWidth={1.8} />
               Exportar CSV
             </button>
+            </div>
           </div>
           {avisoImport && (
             <div className="mx-3 mt-2 flex items-start gap-2 rounded-lg border border-grn/30 bg-grn/10 px-3 py-2 text-[12px] text-grn">
@@ -211,17 +248,8 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
 
           {/* Lista o grid */}
           {viewMode === "list" ? (
-            <div className="py-1 pb-16" data-reveal-group>
-              {visibles.map((causa) => (
-                <CausaRow
-                  key={causa.id}
-                  causa={causa}
-                  active={false}
-                  onSelect={() => select(causa.id)}
-                  enLinea={enLineaPorCausa[causa.id]}
-                  wide
-                />
-              ))}
+            <div className="px-3 py-1 pb-16 sm:px-4">
+              <CausasTabla causas={enPagina} enLineaPorCausa={enLineaPorCausa} onSelect={(id) => select(id)} />
               {visibles.length === 0 && (
                 <p className="px-4 py-8 text-center text-[13px] text-muted">
                   {search ? `No hay causas que coincidan con "${search}".` : "No hay causas en este filtro."}
@@ -231,7 +259,7 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
           ) : (
             <div className="px-4 py-3 pb-16 sm:px-3">
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3" data-reveal-group>
-                {visibles.map((causa) => (
+                {enPagina.map((causa) => (
                   <CausaCard
                     key={causa.id}
                     causa={causa}
@@ -247,6 +275,13 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
               )}
             </div>
           )}
+          <Paginacion
+            pagina={paginaActual}
+            totalPaginas={totalPaginas}
+            total={visibles.length}
+            porPagina={CAUSAS_POR_PAGINA}
+            onChange={cambiarPagina}
+          />
         </div>
       )}
 

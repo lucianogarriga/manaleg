@@ -99,6 +99,10 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
   const setMovimientoReducido = (activo: boolean) => {
     if (activo) document.documentElement.dataset.motion = "off";
     else delete document.documentElement.dataset.motion;
+    try {
+      if (activo) localStorage.setItem("motion", "off");
+      else localStorage.removeItem("motion");
+    } catch {}
   };
 
   const handleToggleMovimiento = () => {
@@ -120,6 +124,7 @@ export default function UserSettings({ profile, variant = "topbar", expanded = t
     setPaleta(next);
     setPaletaOpen(false);
     document.documentElement.setAttribute("data-palette", next);
+    try { localStorage.setItem("palette", next); } catch {}
     startTransition(async () => {
       const r = await guardarPaleta(next);
       if (!r.error) return;
