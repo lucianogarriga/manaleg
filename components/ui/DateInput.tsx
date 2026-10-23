@@ -39,6 +39,16 @@ function formatear(iso: string): string {
   return p ? `${String(p.d).padStart(2, "0")}/${String(p.m).padStart(2, "0")}/${p.y}` : "";
 }
 
+// "dd/mm/aaaa" -> "aaaa-mm-dd", o null si no es una fecha real
+function desdeTexto(t: string): string | null {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(t);
+  if (!m) return null;
+  const d = Number(m[1]), mes = Number(m[2]), y = Number(m[3]);
+  const fecha = new Date(y, mes - 1, d);
+  if (fecha.getFullYear() !== y || fecha.getMonth() !== mes - 1 || fecha.getDate() !== d) return null;
+  return aIso(y, mes, d);
+}
+
 // Calendario mensual con el mismo valor que un <input type="date"> (YYYY-MM-DD).
 export default function DateInput({
   name, id, value, defaultValue, onChange, required, min, max, autoFocus, disabled, className, ...rest
@@ -48,13 +58,46 @@ export default function DateInput({
   const [abierto, setAbierto] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const [vista, setVista] = useState(() => partes(actual) ?? partes(todayISO())!);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  // Texto que se ve en el input: se puede escribir a mano o se llena al elegir en el calendario
+  const [texto, setTexto] = useState(() => formatear(actual));
   const popRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const p = partes(actual);
     if (p) setVista({ y: p.y, m: p.m, d: p.d });
+    setTexto(formatear(actual));
   }, [actual]);
+
+  const dentroDeLimites = (iso: string) => !((min && iso < min) || (max && iso > max));
+
+  // Máscara mientras se escribe: barras automáticas; se confirma cuando la fecha está completa y es válida
+  const alEscribir = (raw: string) => {
+    const digitos = raw.replace(/\D/g, "").slice(0, 8);
+    const mascara = [digitos.slice(0, 2), digitos.slice(2, 4), digitos.slice(4, 8)].filter(Boolean).join("/");
+    setTexto(mascara);
+    if (digitos.length === 0) {
+      if (actual) elegir("");
+      return;
+    }
+    if (digitos.length === 8) {
+      const iso = desdeTexto(mascara);
+      if (iso && dentroDeLimites(iso)) elegir(iso);
+    }
+  };
+
+  // Al salir del campo: si quedó una fecha válida la toma; si no, vuelve al último valor válido
+  const alSalir = () => {
+    const iso = desdeTexto(texto);
+    if (iso && dentroDeLimites(iso)) {
+      if (iso !== actual) elegir(iso);
+      setTexto(formatear(iso));
+    } else if (!texto) {
+      if (actual) elegir("");
+    } else {
+      setTexto(formatear(actual));
+    }
+  };
 
   const elegir = (v: string) => {
     if (value === undefined) setInterno(v);
@@ -119,21 +162,34 @@ export default function DateInput({
 
   return (
     <>
-      <button
-        ref={triggerRef}
-        type="button"
-        id={id}
-        disabled={disabled}
-        autoFocus={autoFocus}
-        aria-label={rest["aria-label"]}
-        aria-haspopup="dialog"
-        aria-expanded={abierto}
-        onClick={() => (abierto ? setAbierto(false) : abrir())}
-        className={`${className ?? ""} flex w-full items-center justify-between gap-2 text-left cursor-pointer disabled:cursor-not-allowed disabled:opacity-60`}
-      >
-        <span className={actual ? "" : "text-muted"}>{actual ? formatear(actual) : "dd/mm/aaaa"}</span>
-        <CalendarDays size={14} className="shrink-0 text-muted" aria-hidden />
-      </button>
+      <div ref={triggerRef} className="relative">
+        <input
+          type="text"
+          inputMode="numeric"
+          id={id}
+          value={texto}
+          disabled={disabled}
+          autoFocus={autoFocus}
+          placeholder="dd/mm/aaaa"
+          aria-label={rest["aria-label"]}
+          autoComplete="off"
+          onChange={(e) => alEscribir(e.target.value)}
+          onBlur={alSalir}
+          onClick={() => { if (!abierto) abrir(); }}
+          className={`${className ?? ""} pr-9`}
+        />
+        <button
+          type="button"
+          onClick={() => (abierto ? setAbierto(false) : abrir())}
+          disabled={disabled}
+          aria-label="Abrir calendario"
+          aria-haspopup="dialog"
+          aria-expanded={abierto}
+          className="absolute right-2 top-1/2 flex -translate-y-1/2 cursor-pointer items-center text-muted hover:text-text disabled:cursor-not-allowed"
+        >
+          <CalendarDays size={14} aria-hidden />
+        </button>
+      </div>
 
       {name && (
         <input

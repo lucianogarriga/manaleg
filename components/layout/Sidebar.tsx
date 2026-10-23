@@ -139,6 +139,9 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
     setTimeout(() => router.push(href), 190);
   };
 
+  // El menú se expande solo al pasar sobre sus tarjetas, no sobre los espacios vacíos del lateral
+  const zonaHover = { onMouseEnter: () => setHovered(true), onMouseLeave: () => setHovered(false) };
+
   const pillFor = (item: NavItem) => {
     if (!exp) return null;
     if (item.badge === "vencimientos" && counts.vencimientosProximos > 0)
@@ -168,12 +171,10 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
           sidebarOpen ? "max-md:translate-y-0" : "max-md:translate-y-full"
         } ${exp ? "md:w-[232px]" : "md:w-[64px]"} w-full`}
         style={{ transition: `width ${DUR}, transform 380ms cubic-bezier(.22,1,.36,1)` }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
       >
         <div className="flex h-full min-h-0 flex-col justify-center gap-0 md:gap-2">
           {/* ── Grupo 1: logo ─────────────────────────────────────── */}
-          <div className="sb-card flex h-[52px] shrink-0 items-center overflow-hidden">
+          <div {...zonaHover} className="sb-card flex h-[52px] shrink-0 items-center overflow-hidden">
             <div className="flex shrink-0 items-center pl-[8px]">
               <div
                 className="flex h-[32px] w-[32px] items-center justify-center rounded-[9px] text-[15px] font-bold text-white"
@@ -200,7 +201,7 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
           </div>
 
           {/* ── Grupo 2: navegación, centrada en el espacio disponible ── */}
-          <nav className="sb-card flex min-h-0 shrink flex-col overflow-y-auto overflow-x-hidden">
+          <nav {...zonaHover} className="sb-card flex min-h-0 shrink flex-col overflow-y-auto overflow-x-hidden">
             <div
               ref={navRef}
               className="relative px-2 py-1.5"
@@ -281,7 +282,7 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
           </nav>
 
           {/* ── Grupo 3: fijar menú + usuario ─────────────────────── */}
-          <div className="sb-card flex shrink-0 flex-col py-[6px]">
+          <div {...zonaHover} className="sb-card flex shrink-0 flex-col py-[6px]">
             <button
               type="button"
               onClick={toggleSidebarPin}

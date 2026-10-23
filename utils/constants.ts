@@ -28,8 +28,6 @@ export const FUEROS = [
   "Federal",
   "Comercial",
   "Ciberdelitos",
-  "Estafa virtual",
-  "Phishing",
   "Defensa del Consumidor",
   "Otro",
 ] as const;
@@ -129,9 +127,42 @@ export const VIA_LABELS: Record<string, string> = {
 // Tipo del próximo aviso de una causa
 export const TIPOS_AVISO = ["Vencimiento", "Recordatorio", "Audiencia"] as const;
 
-export const ETAPAS_PROCESALES = ["Inicial", "Prueba", "Alegatos", "Sentencia", "Ejecución"] as const;
+// Etapas según la vía de proceso: cada una tiene las suyas
+export const ETAPAS_POR_VIA: Record<string, readonly string[]> = {
+  Judicial: ["Inicial", "Prueba", "Alegatos", "Sentencia", "Ejecución"],
+  Mediación: ["Iniciada", "Audiencia de mediación", "Propuesta", "Cierre"],
+  "Defensa del Consumidor": ["Reclamo", "Audiencia de conciliación", "Propuesta", "Resolución/Acta de cierre"],
+  Administrativo: ["Reclamo administrativo", "Propuesta", "Peritaje", "Resolución"],
+  Extrajudicial: ["Inicial", "Negociación", "Intimación", "Cierre"],
+};
 
-export const RESULTADOS_CAUSA = ["Ganada", "Transada", "Perdida"] as const;
+// Vías dentro de "Extrajudicial" (la instancia). El valor "Extrajudicial" es la categoría genérica.
+export const VIAS_EXTRAJUDICIALES = [
+  { value: "Mediación", label: "Mediación" },
+  { value: "Defensa del Consumidor", label: "Defensa del consumidor" },
+  { value: "Administrativo", label: "Administrativo" },
+  { value: "Extrajudicial", label: "Otra extrajudicial" },
+];
+
+// Todas las etapas posibles (para validar en el servidor)
+export const ETAPAS_PROCESALES: string[] = [...new Set(Object.values(ETAPAS_POR_VIA).flat())];
+
+// Resultados posibles en la base. "Transada" se muestra como "Acuerdo".
+export const RESULTADOS_CAUSA = ["Ganada", "Transada", "Perdida", "Sin acuerdo"] as const;
+
+export const ETIQUETA_RESULTADO: Record<string, string> = {
+  Ganada: "Ganada",
+  Transada: "Acuerdo",
+  Perdida: "Perdida",
+  "Sin acuerdo": "Sin acuerdo",
+};
+
+// Judicial: ganada, acuerdo o perdida. Extrajudicial (consumidor, audiencias, mediación, administrativo): también "sin acuerdo".
+export function resultadosPara(via: string): string[] {
+  return via === "" || via === "Judicial"
+    ? ["Ganada", "Transada", "Perdida"]
+    : ["Ganada", "Transada", "Sin acuerdo", "Perdida"];
+}
 
 export const ESTADOS_CAUSA = [
   "Iniciada",

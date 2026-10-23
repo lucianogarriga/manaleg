@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { AlertTriangle, FileSpreadsheet, Scale, Search, X } from "lucide-react";
 import { CAUSAS_LIMIT, normalizeTipoJuicio } from "@/utils/constants";
 import EmptyState from "@/components/ui/EmptyState";
-import FAB from "@/components/ui/FAB";
 import FilterChips from "./FilterChips";
 import StatsRow from "./StatsRow";
 import { useCausas } from "@/hooks/useCausas";
@@ -13,12 +13,11 @@ import { useCausasStore } from "@/store/causasStore";
 import type { ClienteOption } from "@/services/supabase/clientes";
 import type { CausaConRelaciones } from "@/types";
 import CausaForm from "./CausaForm";
-import CausaModal from "./CausaModal";
 import MaintenanceBanner from "@/components/ui/MaintenanceBanner";
 import CausasTabla from "./CausasTabla";
 import Paginacion, { CAUSAS_POR_PAGINA } from "./Paginacion";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import CausaCard from "./CausaCard";
-import FabSpotlight from "@/components/ui/FabSpotlight";
 import ImportarCausasModal from "./ImportarCausasModal";
 import { COLUMNAS_CAUSA } from "@/services/csv/importarCausas";
 import { escribirCsv } from "@/utils/csv";
@@ -50,11 +49,12 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
     return [...seen.values()].sort();
   }, [causas]);
   const atLimit = causasPropias >= causasMax;
-  const selectedId = useCausasStore((s) => s.selectedId);
   const formOpen = useCausasStore((s) => s.formOpen);
   const editingId = useCausasStore((s) => s.editingId);
   const openCreate = useCausasStore((s) => s.openCreate);
-  const select = useCausasStore((s) => s.select);
+  const router = useRouter();
+  // Cada causa tiene su propia página: se abre en /causas/[id]
+  const abrirCausa = (id: string) => router.push(`/causas/${id}`);
   const search = useCausasStore((s) => s.search);
   const setSearch = useCausasStore((s) => s.setSearch);
   const filtro = useCausasStore((s) => s.filter);
@@ -63,6 +63,9 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
 
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [pagina, setPagina] = useState(1);
+  // En mobile solo se muestran cards: la tabla no entra en pantalla
+  const esMobile = useMediaQuery("(max-width: 767px)");
+  const vistaEfectiva: ViewMode = esMobile ? "grid" : viewMode;
   const [importOpen, setImportOpen] = useState(false);
   const [avisoImport, setAvisoImport] = useState<string | null>(null);
 
@@ -130,7 +133,6 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
     try { localStorage.setItem("causas-view", mode); } catch {}
   };
 
-  const selected = causas.find((c) => c.id === selectedId) ?? null;
   const editing = editingId ? (causas.find((c) => c.id === editingId) ?? null) : null;
 
   return (
@@ -242,14 +244,14 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
             tiposJuicio={tiposJuicio}
             causasPropias={causasPropias}
             causasMax={causasMax}
-            viewMode={viewMode}
-            onViewChange={toggleView}
+            viewMode={vistaEfectiva}
+            onViewChange={esMobile ? undefined : toggleView}
           />
 
           {/* Lista o grid */}
-          {viewMode === "list" ? (
+          {vistaEfectiva === "list" ? (
             <div className="px-3 py-1 pb-16 sm:px-4">
-              <CausasTabla causas={enPagina} enLineaPorCausa={enLineaPorCausa} onSelect={(id) => select(id)} />
+              <CausasTabla causas={enPagina} enLineaPorCausa={enLineaPorCausa} onSelect={abrirCausa} />
               {visibles.length === 0 && (
                 <p className="px-4 py-8 text-center text-[13px] text-muted">
                   {search ? `No hay causas que coincidan con "${search}".` : "No hay causas en este filtro."}
@@ -263,8 +265,8 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
                   <CausaCard
                     key={causa.id}
                     causa={causa}
-                    active={selectedId === causa.id}
-                    onSelect={() => select(causa.id)}
+                    active={false}
+                    onSelect={() => abrirCausa(causa.id)}
                   />
                 ))}
               </div>
@@ -290,16 +292,6 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
         onClose={() => setImportOpen(false)}
         onImported={(m) => setAvisoImport(m)}
       />
-      {selected && <CausaModal causa={selected} userId={userId} />}
-      <FabSpotlight />
-
-      {total > 0 && (
-        <FAB
-          onClick={atLimit ? undefined : openCreate}
-          label={atLimit ? `Límite alcanzado (${causasMax})` : "Nueva causa"}
-          disabled={atLimit}
-        />
-      )}
       {formOpen && (
         <CausaForm key={editingId ?? "new"} causa={editing} clientes={clientes} userId={userId} />
       )}

@@ -52,40 +52,40 @@ function parsePartes(raw: string): { partes?: ParteInput[]; error?: string } {
   return { partes };
 }
 
-function parseCausa(formData: FormData): { input?: CausaInput; error?: string } {
+function parseCausa(formData: FormData): { input?: CausaInput; error?: string; campo?: string } {
   const caratula = text(formData, "caratula");
-  if (!caratula) return { error: "La carátula es obligatoria." };
-  if (caratula.length > 200) return { error: "La carátula es demasiado larga (máx. 200 caracteres)." };
+  if (!caratula) return { error: "La carátula es obligatoria.", campo: "caratula" };
+  if (caratula.length > 200) return { error: "La carátula es demasiado larga (máx. 200 caracteres).", campo: "caratula" };
 
   const monto = parseMonto(text(formData, "monto_reclamado"));
-  if (monto === "invalid") return { error: "El monto reclamado no es un número válido." };
+  if (monto === "invalid") return { error: "El monto reclamado no es un número válido.", campo: "monto_reclamado" };
 
   const inactividad = Number(text(formData, "inactividad_dias") ?? 7);
   if (!Number.isInteger(inactividad) || inactividad < 1 || inactividad > 365)
-    return { error: "Los días de inactividad deben estar entre 1 y 365." };
+    return { error: "Los días de inactividad deben estar entre 1 y 365.", campo: "inactividad_dias" };
 
   const proximoVencimiento = text(formData, "proximo_vencimiento");
   const motivoVencimiento = text(formData, "motivo_vencimiento");
-  if (motivoVencimiento && motivoVencimiento.length > 100) return { error: "El motivo del vencimiento es demasiado largo (máx. 100 caracteres)." };
+  if (motivoVencimiento && motivoVencimiento.length > 100) return { error: "El motivo del vencimiento es demasiado largo (máx. 100 caracteres).", campo: "motivo_vencimiento" };
 
   const nroExpediente = text(formData, "nro_expediente");
-  if (nroExpediente && nroExpediente.length > 60) return { error: "El número de expediente es demasiado largo (máx. 60 caracteres)." };
+  if (nroExpediente && nroExpediente.length > 60) return { error: "El número de expediente es demasiado largo (máx. 60 caracteres).", campo: "nro_expediente" };
 
   const tipoJuicio = text(formData, "tipo_juicio");
-  if (tipoJuicio && tipoJuicio.length > 50) return { error: "El tipo de juicio es demasiado largo (máx. 50 caracteres)." };
+  if (tipoJuicio && tipoJuicio.length > 50) return { error: "El tipo de juicio es demasiado largo (máx. 50 caracteres).", campo: "tipo_juicio" };
 
   const juzgadoCamara = text(formData, "juzgado_camara");
-  if (juzgadoCamara && juzgadoCamara.length > 50) return { error: "El juzgado/cámara es demasiado largo (máx. 50 caracteres)." };
+  if (juzgadoCamara && juzgadoCamara.length > 50) return { error: "El juzgado/cámara es demasiado largo (máx. 50 caracteres).", campo: "juzgado_camara" };
 
   const notas = text(formData, "notas");
-  if (notas && notas.length > 500) return { error: "Las notas son demasiado largas (máx. 500 caracteres)." };
+  if (notas && notas.length > 500) return { error: "Las notas son demasiado largas (máx. 500 caracteres).", campo: "notas" };
 
   const link = text(formData, "link_drive");
   if (link && !/^https?:\/\//i.test(link))
-    return { error: "El link de Drive debe empezar con https://" };
+    return { error: "El link de Drive debe empezar con https://", campo: "link_drive" };
 
   const resultadoFecha = text(formData, "resultado_fecha");
-  if (resultadoFecha && !isISODate(resultadoFecha)) return { error: "La fecha del resultado no es válida." };
+  if (resultadoFecha && !isISODate(resultadoFecha)) return { error: "La fecha del resultado no es válida.", campo: "resultado_fecha" };
 
   return {
     input: {
@@ -119,8 +119,8 @@ export async function saveCausa(_prev: CausaFormState, formData: FormData): Prom
   if (!await requireUser()) return { error: "No autenticado." };
 
   const id = text(formData, "id");
-  const { input, error } = parseCausa(formData);
-  if (!input) return { error };
+  const { input, error, campo } = parseCausa(formData);
+  if (!input) return { error, campo };
 
   const { partes, error: partesError } = parsePartes(text(formData, "partes") ?? "[]");
   if (!partes) return { error: partesError };

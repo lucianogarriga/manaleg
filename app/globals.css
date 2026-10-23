@@ -65,7 +65,7 @@
 
 /* ─── CLARO ───
    Paleta: fondo #E4E8EC, cards #FBFCFD, primario #3A74B5 (texto #FFFFFF). */
-:root[data-theme="light"] {
+:root[data-theme="light"], [data-theme="light"] {
   --color-bg:      #E4E8EC;
   --color-card:    #FBFCFD;
   --color-border:  #D0D6DD;
@@ -166,7 +166,7 @@
   color-scheme: dark;
 }
 
-:root[data-palette="claude"][data-theme="light"] {
+:root[data-palette="claude"][data-theme="light"], [data-palette="claude"] [data-theme="light"] {
   --color-bg:      #F4F2EC;
   --color-card:    #FFFFFF;
   --color-border:  #E3DED3;
@@ -617,6 +617,11 @@ button[type="submit"]:not(:disabled):hover::after {
   animation-delay: calc(var(--i, 0) * 220ms + 100ms);
 }
 @keyframes chart-draw { to { stroke-dashoffset: 0; } }
+
+/* Mobile: iOS hace zoom al enfocar campos con letra menor a 16px; los campos quedan en 16px */
+@media (max-width: 767px) {
+  input, select, textarea { font-size: 16px; }
+}
 
 /* Preferencia "Reducir movimiento" del perfil (data-motion="off") y reducción del sistema: sin animaciones ni transiciones largas */
 html[data-motion="off"] *,

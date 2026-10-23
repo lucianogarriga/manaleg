@@ -1,7 +1,8 @@
 "use client";
 
+import LiquidacionesSection from "./LiquidacionesSection";
+import type { Liquidacion, OrdenPago } from "@/utils/liquidaciones";
 import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import Link from "next/link";
 import { X, Share2, Pencil } from "lucide-react";
@@ -32,9 +33,10 @@ import type { CausaConRelaciones, CausaShareConUsuario } from "@/types";
 interface Props {
   causa: CausaConRelaciones;
   userId: string;
+  finanzas: { liquidaciones: Liquidacion[]; ordenes: OrdenPago[] };
 }
 
-export default function CausaModal({ causa, userId }: Props) {
+export default function CausaDetalle({ causa, userId, finanzas }: Props) {
   const select = useCausasStore((s) => s.select);
   const openEdit = useCausasStore((s) => s.openEdit);
   const showToast = useUIStore((s) => s.showToast);
@@ -99,13 +101,36 @@ export default function CausaModal({ causa, userId }: Props) {
   const inactiva = !cerrada && diasSinMovimiento >= causa.inactividad_dias;
   const ownerName = causa.owner?.nombre_completo ?? causa.owner?.email ?? "—";
 
+  // Partes según el tipo de conflicto: cada par se muestra junto (actora/demandada, denunciante/denunciado, etc.)
+  const partesCausa = causa.causa_partes ?? [];
+  const PARES_PARTES = [["actora", "demandada"], ["requirente", "requerido"], ["solicitante", "solicitado"], ["denunciante", "denunciado"]];
+  const ETIQUETA_ROL: Record<string, string> = {
+    actora: "Parte actora", demandada: "Parte demandada",
+    requirente: "Requirente", requerido: "Requerido",
+    solicitante: "Solicitante", solicitado: "Solicitado",
+    denunciante: "Denunciante", denunciado: "Denunciado",
+  };
+  const par = PARES_PARTES.find(([a, b]) => partesCausa.some((p) => p.rol === a || p.rol === b));
+  const parRoles: string[] = par ? [...par] : [];
+  const nombresDe = (rol: string) => partesCausa.filter((p) => p.rol === rol).map((p) => p.nombre).join(", ");
+  const otros = partesCausa.filter((p) => !parRoles.includes(p.rol));
+  const partesDatos: Field[] = par
+    ? [
+        { label: ETIQUETA_ROL[par[0]], value: nombresDe(par[0]) || "—" },
+        { label: ETIQUETA_ROL[par[1]], value: nombresDe(par[1]) || "—" },
+        ...(otros.length > 0 ? [{ label: "Otros intervinientes", value: otros.map((p) => p.nombre).join(", "), full: true }] : []),
+      ]
+    : [
+        { label: "Parte actora", value: causa.parte_actora ?? "—" },
+        { label: "Parte demandada", value: causa.parte_demandada ?? "—" },
+      ];
+
   const datos: Field[] = [
     { label: "Nro Expediente", value: causa.nro_expediente ?? "—" },
     { label: "Fuero", value: causa.fuero ?? "—" },
     { label: "Tipo de juicio", value: causa.tipo_juicio ?? "—" },
-    { label: "Juzgado / Cámara", value: causa.juzgado_camara ?? "—" },
-    { label: "Parte actora", value: causa.parte_actora ?? "—" },
-    { label: "Parte demandada", value: causa.parte_demandada ?? "—" },
+    { label: "Tribunal", value: causa.juzgado_camara ?? "—" },
+    ...partesDatos,
     { label: "Fecha de inicio", value: formatDate(causa.fecha_inicio) },
     { label: "Monto reclamado", value: formatCurrency(causa.monto_reclamado) },
     {
@@ -117,21 +142,11 @@ export default function CausaModal({ causa, userId }: Props) {
   ];
   if (causa.notas) datos.push({ label: "Notas", value: causa.notas, full: true });
 
-  return createPortal(
+  // Página de detalle: ya no es un modal (sin fondo, sin portal). El formulario de edición sí se abre encima.
+  return (
     <>
-      {/* Backdrop */}
-      <div
-        className="modal-backdrop fixed inset-0 z-50 bg-black/45 backdrop-blur-[3px]"
-        onClick={() => select(null)}
-        aria-hidden="true"
-      />
-
-      {/* Modal: 97vh en mobile, 95vh en desktop — siempre flotando sobre el backdrop */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => select(null)}>
-        <div
-          className="modal-panel relative flex h-[92dvh] w-[calc(100%-16px)] flex-col overflow-hidden overscroll-contain rounded-xl bg-bg shadow-2xl md:w-[95%] md:rounded-2xl"
-          onClick={(e) => e.stopPropagation()}
-        >
+      <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card">
+        <div>
           {/* Header fijo */}
           <div className="shrink-0 border-b border-border bg-card px-5 pt-4 pb-3">
             {/* Título + botón cerrar */}
@@ -139,16 +154,6 @@ export default function CausaModal({ causa, userId }: Props) {
               <h2 className="flex-1 text-[16px] font-bold leading-[1.35] text-text">
                 {causa.nro_expediente && `${causa.nro_expediente} — `}{causa.caratula}
               </h2>
-              <button
-                type="button"
-                onClick={() => select(null)}
-                title="Cerrar (Esc)"
-                className="mt-[2px] shrink-0 cursor-pointer rounded-lg p-[5px] text-sub transition-colors"
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--hover-row)"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = ""; }}
-              >
-                <X size={17} />
-              </button>
             </div>
 
             {/* Badges + acciones */}
@@ -298,6 +303,18 @@ export default function CausaModal({ causa, userId }: Props) {
               </CollapsibleSection>
             </div>
 
+            {/* Liquidaciones y órdenes de pago: solo en causas judiciales */}
+            {causa.via_proceso === "Judicial" && (
+              <div>
+                <LiquidacionesSection
+                  causaId={causa.id}
+                  esTitular={esTitular}
+                  liquidaciones={finanzas.liquidaciones}
+                  ordenes={finanzas.ordenes}
+                />
+              </div>
+            )}
+
             {causa.editor && (
               <p className="px-5 py-3 text-[12px] text-muted">
                 Última edición: {causa.editor.nombre_completo ?? causa.editor.email} · {formatDate(causa.updated_at)}
@@ -321,7 +338,6 @@ export default function CausaModal({ causa, userId }: Props) {
         />
       )}
       {confirmDialog}
-    </>,
-    document.body,
+    </>
   );
 }

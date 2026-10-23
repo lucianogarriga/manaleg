@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCausasStore } from "@/store/causasStore";
 import { getDaysUntil, formatDate } from "@/utils/formatters";
 import type { VencimientoItem } from "@/services/supabase/vencimientos";
 
@@ -86,12 +85,7 @@ function BucketSection({ label, style, items, onSelect }: {
 
 export default function VencimientosView({ items }: VencimientosViewProps) {
   const router = useRouter();
-  const selectCausa = useCausasStore((s) => s.select);
-
-  const goToCausa = (causaId: string) => {
-    selectCausa(causaId);
-    router.push("/causas");
-  };
+  const goToCausa = (causaId: string) => router.push(`/causas/${causaId}`);
 
   const grouped = GRUPOS.map((g) => ({
     ...g,

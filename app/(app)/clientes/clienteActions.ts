@@ -65,3 +65,22 @@ export async function deleteCliente(id: string): Promise<FormState> {
   revalidatePath("/clientes");
   return { message: "Cliente eliminado." };
 }
+
+// Alta rápida desde el formulario de causa: solo nombre. Devuelve el cliente creado para seleccionarlo.
+export async function crearClienteRapido(nombre: string): Promise<{ id?: string; nombre_completo?: string; error?: string }> {
+  const nombreLimpio = nombre.trim();
+  if (!nombreLimpio) return { error: "Escribí el nombre del cliente." };
+  if (nombreLimpio.length > 200) return { error: "El nombre es demasiado largo (máx. 200 caracteres)." };
+
+  const { data, error } = await createCliente({
+    nombre_completo: nombreLimpio,
+    dni_cuit: null,
+    telefono: null,
+    email: null,
+    notas: null,
+  });
+  if (error || !data) return { error: error?.message ?? "No se pudo crear el cliente." };
+
+  revalidatePath("/clientes");
+  return { id: data.id, nombre_completo: nombreLimpio };
+}

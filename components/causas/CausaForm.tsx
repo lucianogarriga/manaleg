@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { deleteCausa, saveCausa, type CausaFormState } from "@/app/(app)/causas/actions";
+import { crearClienteRapido } from "@/app/(app)/clientes/clienteActions";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import FormAlert from "@/components/auth/FormAlert";
 import Modal from "@/components/ui/Modal";
@@ -9,8 +10,9 @@ import { Plus, Trash2 } from "lucide-react";
 import AutocompleteField from "@/components/ui/AutocompleteField";
 import { FormSection, SelectField, TextAreaField, TextField } from "@/components/ui/FormControls";
 import { useCausasStore } from "@/store/causasStore";
+import { usePathname, useRouter } from "next/navigation";
 import { useUIStore } from "@/store/uiStore";
-import { ANTICIPACION_ALERTA, ESTADOS_CAUSA, ETAPAS_PROCESALES, FUEROS, RESULTADOS_CAUSA, TIPOS_AVISO, TIPOS_JUICIO_POR_FUERO, VIAS_PROCESO } from "@/utils/constants";
+import { ANTICIPACION_ALERTA, ESTADOS_CAUSA, ETAPAS_POR_VIA, ETIQUETA_RESULTADO, FUEROS, TIPOS_AVISO, TIPOS_JUICIO_POR_FUERO, VIAS_EXTRAJUDICIALES, resultadosPara } from "@/utils/constants";
 import type { ClienteOption } from "@/services/supabase/clientes";
 import type { CaracterAbogado, CausaConRelaciones, CausaParte, RolParte, TipoPersona } from "@/types";
 
@@ -103,7 +105,8 @@ function computeAutoCaratula(partes: ParteRow[], tipoJuicio: string): string | n
 // así cada apertura arranca con el estado limpio.
 export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
   const closeForm = useCausasStore((s) => s.closeForm);
-  const select = useCausasStore((s) => s.select);
+  const router = useRouter();
+  const pathname = usePathname();
   const [state, action, pending] = useActionState<CausaFormState, FormData>(saveCausa, {});
   const { request: confirmRequest, dialog: confirmDialog } = useConfirm();
   const [deleteError, setDeleteError] = useState<string>();
@@ -119,13 +122,16 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
   const isNew = causa === null;
   useEffect(() => {
     if (!state.savedId) return;
-    select(state.savedId);
     closeForm();
+    // Después de guardar, la causa queda abierta en su página (si ya estamos ahí, se actualiza)
+    const destino = `/causas/${state.savedId}`;
+    if (pathname === destino) router.refresh();
+    else router.push(destino);
     useUIStore.getState().showToast({
       message: state.message ?? "Causa guardada.",
       ...(isNew && { actionLabel: "Cargar otra", onAction: useCausasStore.getState().openCreate }),
     });
-  }, [state.savedId, state.message, isNew, select, closeForm]);
+  }, [state.savedId, state.message, isNew, pathname, router, closeForm]);
 
   const onDelete = async () => {
     if (!causa) return;
@@ -134,8 +140,9 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
     startDelete(async () => {
       const result = await deleteCausa(causa.id);
       if (result.error) return setDeleteError(result.error);
-      select(null);
       closeForm();
+      // Una causa eliminada no tiene página: se vuelve al listado
+      router.push("/causas");
       useUIStore.getState().showToast({ message: result.message ?? "Causa eliminada." });
     });
   };
@@ -181,6 +188,32 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
   }, [partes, tipoJuicio]);
 
   const [selectedFuero, setSelectedFuero] = useState<string>(v?.fuero ?? "");
+  // Clientes: la lista puede crecer desde este formulario (alta rápida de cliente)
+  const [listaClientes, setListaClientes] = useState<ClienteOption[]>(clientes);
+  const [clienteSel, setClienteSel] = useState<string>(v?.cliente_id ?? "");
+  // Instancia (judicial o extrajudicial) y, si es extrajudicial, la vía concreta.
+  // La vía que se guarda es "Judicial" o la vía extrajudicial elegida.
+  const [instancia, setInstancia] = useState<string>(
+    v?.via_proceso ? (v.via_proceso === "Judicial" ? "Judicial" : "Extrajudicial") : "",
+  );
+  const [subVia, setSubVia] = useState<string>(v?.via_proceso && v.via_proceso !== "Judicial" ? v.via_proceso : "");
+  const viaSel = instancia === "Judicial" ? "Judicial" : instancia === "Extrajudicial" ? subVia : "";
+  const [nuevoCliente, setNuevoCliente] = useState<string | null>(null); // null = cerrado
+  const [errorCliente, setErrorCliente] = useState<string>();
+  const [creandoCliente, startCrearCliente] = useTransition();
+
+  const guardarNuevoCliente = () => {
+    if (nuevoCliente === null) return;
+    startCrearCliente(async () => {
+      const r = await crearClienteRapido(nuevoCliente);
+      if (r.error || !r.id) return setErrorCliente(r.error ?? "No se pudo crear el cliente.");
+      setListaClientes((lista) => [...lista, { id: r.id!, nombre_completo: r.nombre_completo! }]
+        .sort((a, b) => a.nombre_completo.localeCompare(b.nombre_completo, "es")));
+      setClienteSel(r.id!);
+      setNuevoCliente(null);
+      setErrorCliente(undefined);
+    });
+  };
   const [tieneVencimiento, setTieneVencimiento] = useState(!!v?.proximo_vencimiento);
 
   return (
@@ -313,10 +346,10 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
 
         {/* ── 2. Nro expte + Tipo de juicio → Carátula ── */}
         <FormSection title="Carátula">
-          <TextField label="Nro expediente" name="nro_expediente" defaultValue={v?.nro_expediente ?? ""} placeholder="2024-0042581" />
+          <TextField label="Nro expediente" name="nro_expediente" error={state.campo === "nro_expediente"} defaultValue={v?.nro_expediente ?? ""} placeholder="2024-0042581" />
           <AutocompleteField
             label="Tipo de juicio"
-            name="tipo_juicio"
+            name="tipo_juicio" error={state.campo === "tipo_juicio"}
             defaultValue={v?.tipo_juicio ?? ""}
             placeholder="Despido, daños y perjuicios…"
             onChangeValue={setTipoJuicio}
@@ -329,7 +362,7 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
           <div className="sm:col-span-2">
             <TextField
               label="Carátula"
-              name="caratula"
+              name="caratula" error={state.campo === "caratula"}
               required
               value={caratula}
               onChange={(e) => { setCaratula(e.target.value); lastAutoRef.current = null; }}
@@ -342,7 +375,23 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
         {/* ── 3. Resto del expediente ── */}
         <FormSection title="Expediente">
           <SelectField label="Estado" name="estado" options={ESTADOS_CAUSA} defaultValue={v?.estado ?? "Iniciada"} />
-          <SelectField label="Vía de proceso" name="via_proceso" options={VIAS_PROCESO} placeholder="Seleccionar…" defaultValue={v?.via_proceso ?? ""} />
+          <SelectField
+            label="Instancia"
+            options={["Judicial", "Extrajudicial"]}
+            placeholder="Seleccionar…"
+            value={instancia}
+            onChange={(e) => { setInstancia(e.target.value); setSubVia(""); }}
+          />
+          {instancia === "Extrajudicial" && (
+            <SelectField
+              label="Tipo extrajudicial"
+              options={VIAS_EXTRAJUDICIALES}
+              placeholder="Seleccionar…"
+              value={subVia}
+              onChange={(e) => setSubVia(e.target.value)}
+            />
+          )}
+          <input type="hidden" name="via_proceso" value={viaSel} />
           <SelectField
             label="Fuero"
             name="fuero"
@@ -351,25 +400,58 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
             defaultValue={v?.fuero ?? ""}
             onChange={(e) => setSelectedFuero(e.target.value)}
           />
-          <TextField label="Juzgado / Cámara" name="juzgado_camara" defaultValue={v?.juzgado_camara ?? ""} placeholder="Cámara 6°" />
+          <TextField label="Tribunal" name="juzgado_camara" error={state.campo === "juzgado_camara"} defaultValue={v?.juzgado_camara ?? ""} placeholder="Cámara 6°" />
           <TextField label="Fecha de inicio" name="fecha_inicio" type="date" defaultValue={v?.fecha_inicio ?? ""} />
-          <SelectField label="Etapa procesal" name="etapa_procesal" options={ETAPAS_PROCESALES} placeholder="Sin definir" defaultValue={v?.etapa_procesal ?? ""} />
-          <SelectField label="Resultado" name="resultado" options={RESULTADOS_CAUSA} placeholder="Sin resultado" defaultValue={v?.resultado ?? ""} />
-          <TextField label="Fecha del resultado" name="resultado_fecha" type="date" defaultValue={v?.resultado_fecha ?? ""} />
+          <SelectField label="Etapa procesal" name="etapa_procesal" options={ETAPAS_POR_VIA[viaSel || "Judicial"] ?? []} placeholder="Sin definir" defaultValue={v?.etapa_procesal ?? ""} />
+          <SelectField label="Resultado" name="resultado" options={resultadosPara(viaSel).map((r) => ({ value: r, label: ETIQUETA_RESULTADO[r] ?? r }))} placeholder="Sin resultado" defaultValue={v?.resultado ?? ""} />
+          <TextField label="Fecha del resultado" name="resultado_fecha" error={state.campo === "resultado_fecha"} type="date" defaultValue={v?.resultado_fecha ?? ""} />
         </FormSection>
 
         {/* ── 4. Cliente y monto ── */}
         <FormSection title="Cliente y monto">
-          <SelectField
-            label="Cliente"
-            name="cliente_id"
-            placeholder={clientes.length ? "Sin cliente asignado" : "Todavía no cargaste clientes"}
-            options={clientes.map((c) => ({ value: c.id, label: c.nombre_completo }))}
-            defaultValue={v?.cliente_id ?? ""}
-          />
+          <div className="flex min-w-0 flex-col gap-1">
+            <SelectField
+              label="Cliente"
+              name="cliente_id"
+              placeholder={listaClientes.length ? "Sin cliente asignado" : "Todavía no cargaste clientes"}
+              options={listaClientes.map((c) => ({ value: c.id, label: c.nombre_completo }))}
+              value={clienteSel}
+              onChange={(e) => setClienteSel(e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={() => { setNuevoCliente(nuevoCliente === null ? "" : null); setErrorCliente(undefined); }}
+              className="self-start cursor-pointer text-[12px] font-semibold text-blue hover:underline"
+            >
+              {nuevoCliente === null ? "+ Nuevo cliente" : "Cancelar nuevo cliente"}
+            </button>
+            {nuevoCliente !== null && (
+              <div className="mt-1 flex flex-col gap-2 rounded-[8px] border border-border p-3">
+                <TextField
+                  label="Nombre del cliente"
+                  value={nuevoCliente}
+                  onChange={(e) => setNuevoCliente(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); guardarNuevoCliente(); } }}
+                  placeholder="Nombre y apellido o razón social"
+                  autoFocus
+                />
+                {errorCliente && <p className="text-[12px] text-red">{errorCliente}</p>}
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={guardarNuevoCliente}
+                    disabled={creandoCliente}
+                    className="cursor-pointer rounded-[6px] bg-blue px-3 py-[5px] text-[12.5px] font-semibold text-on-primary hover:opacity-90 disabled:opacity-60"
+                  >
+                    {creandoCliente ? "Guardando…" : "Guardar cliente"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
           <TextField
             label="Monto reclamado ($)"
-            name="monto_reclamado"
+            name="monto_reclamado" error={state.campo === "monto_reclamado"}
             inputMode="decimal"
             defaultValue={v?.monto_reclamado ?? ""}
             placeholder="4200000"
@@ -405,21 +487,21 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
               <TextField label="Fecha" name="proximo_vencimiento" type="date" defaultValue={v?.proximo_vencimiento ?? ""} />
               <SelectField label="Tipo" name="tipo_vencimiento" options={TIPOS_AVISO} defaultValue={v?.tipo_vencimiento ?? "Vencimiento"} />
               <div className="sm:col-span-2">
-                <TextField label="Motivo" name="motivo_vencimiento" defaultValue={v?.motivo_vencimiento ?? ""} placeholder="Contestación de demanda" />
+                <TextField label="Motivo" name="motivo_vencimiento" error={state.campo === "motivo_vencimiento"} defaultValue={v?.motivo_vencimiento ?? ""} placeholder="Contestación de demanda" />
               </div>
               <SelectField label="Avisarme con anticipación de" name="anticipacion_alerta" options={ANTICIPACION_ALERTA} defaultValue={v?.anticipacion_alerta ?? "1 día"} />
             </>
           )}
 
-          <TextField label="Alerta de inactividad (días)" name="inactividad_dias" type="number" min={1} defaultValue={v?.inactividad_dias ?? 7} />
+          <TextField label="Alerta de inactividad (días)" name="inactividad_dias" error={state.campo === "inactividad_dias"} type="number" min={1} defaultValue={v?.inactividad_dias ?? 7} />
         </FormSection>
 
         <FormSection title="Otros">
           <div className="sm:col-span-2">
-            <TextField label="Link carpeta Drive" name="link_drive" type="url" defaultValue={v?.link_drive ?? ""} placeholder="https://drive.google.com/…" />
+            <TextField label="Link carpeta Drive" name="link_drive" error={state.campo === "link_drive"} type="url" defaultValue={v?.link_drive ?? ""} placeholder="https://drive.google.com/…" />
           </div>
           <div className="sm:col-span-2">
-            <TextAreaField label="Notas" name="notas" defaultValue={v?.notas ?? ""} />
+            <TextAreaField label="Notas" name="notas" error={state.campo === "notas"} defaultValue={v?.notas ?? ""} />
           </div>
         </FormSection>
       </form>

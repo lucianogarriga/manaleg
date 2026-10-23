@@ -12,9 +12,11 @@ interface AutocompleteFieldProps {
   defaultValue?: string;
   placeholder?: string;
   onChangeValue?: (value: string) => void;
+  error?: boolean;
 }
 
 export default function AutocompleteField({
+  error = false,
   label,
   name,
   options,
@@ -81,7 +83,7 @@ export default function AutocompleteField({
         value={value}
         placeholder={placeholder}
         autoComplete="off"
-        className={CONTROL}
+        className={error ? `${CONTROL} !border-red bg-red/5 focus:!border-red` : CONTROL}
         onChange={(e) => { setValue(e.target.value); onChangeValue?.(e.target.value); setOpen(true); setHighlighted(0); }}
         onFocus={() => { setOpen(true); setHighlighted(0); }}
         onKeyDown={onKeyDown}
