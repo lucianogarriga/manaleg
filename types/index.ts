@@ -310,6 +310,8 @@ export interface Pago {
 // Estado de los formularios manejados con Server Actions + useActionState
 export interface FormState {
   error?: string;
+  // Nombre del campo al que corresponde el error, para resaltarlo en el formulario
+  campo?: string;
   message?: string;
   // Valores a re-mostrar si hay error (React 19 resetea el form tras el submit)
   values?: Record<string, string>;

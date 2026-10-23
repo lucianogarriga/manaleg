@@ -4,6 +4,10 @@ import DateInput from "@/components/ui/DateInput";
 const CONTROL =
   "w-full rounded-[6px] border border-border bg-bg px-[10px] py-[6px] text-[14px] text-text outline-none transition-colors placeholder:text-muted focus:border-blue focus:bg-card";
 
+// Con error, el control se pinta de rojo (el campo donde falló la carga)
+const claseControl = (error?: boolean) =>
+  error ? `${CONTROL} !border-red bg-red/5 focus:!border-red` : CONTROL;
+
 function Label({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <label className="block min-w-0">
@@ -16,7 +20,7 @@ function Label({ label, required, children }: { label: string; required?: boolea
   );
 }
 
-export function TextField({ label, ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
+export function TextField({ label, error, ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string; error?: boolean }) {
   if (props.type === "date") {
     const { type: _type, ...resto } = props;
     return (
@@ -34,7 +38,7 @@ export function TextField({ label, ...props }: InputHTMLAttributes<HTMLInputElem
             autoFocus={resto.autoFocus}
             disabled={resto.disabled}
             aria-label={label}
-            className={CONTROL}
+            className={claseControl(error)}
           />
         </div>
       </Label>
@@ -42,7 +46,7 @@ export function TextField({ label, ...props }: InputHTMLAttributes<HTMLInputElem
   }
   return (
     <Label label={label} required={props.required}>
-      <input className={CONTROL} {...props} />
+      <input className={claseControl(error)} {...props} />
     </Label>
   );
 }
@@ -51,15 +55,17 @@ export function SelectField({
   label,
   options,
   placeholder,
+  error,
   ...props
 }: SelectHTMLAttributes<HTMLSelectElement> & {
   label: string;
   options: readonly (string | { value: string; label: string })[];
   placeholder?: string;
+  error?: boolean;
 }) {
   return (
     <Label label={label} required={props.required}>
-      <select className={`${CONTROL} cursor-pointer`} {...props}>
+      <select className={`${claseControl(error)} cursor-pointer`} {...props}>
         {placeholder !== undefined && <option value="">{placeholder}</option>}
         {options.map((o) => {
           const { value, label: text } = typeof o === "string" ? { value: o, label: o } : o;
@@ -74,10 +80,10 @@ export function SelectField({
   );
 }
 
-export function TextAreaField({ label, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }) {
+export function TextAreaField({ label, error, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string; error?: boolean }) {
   return (
     <Label label={label} required={props.required}>
-      <textarea className={`${CONTROL} min-h-[70px] resize-y`} {...props} />
+      <textarea className={`${claseControl(error)} min-h-[70px] resize-y`} {...props} />
     </Label>
   );
 }
