@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, CalendarClock, ClipboardList, Pencil, Share2, Users, Wallet, type LucideIcon } from "lucide-react";
 import { marcarNotificacionesLeidas } from "@/app/(app)/notificaciones/actions";
-import { useCausasStore } from "@/store/causasStore";
 import { formatRelative, getDaysUntil } from "@/utils/formatters";
 import { URGENCY_DOT, getDeadlineLabel, getUrgency } from "@/utils/urgencyHelpers";
 import type { AlertaItem, NotificacionItem } from "@/services/supabase/layoutCounts";
@@ -60,14 +59,9 @@ export default function AlertsBell({ alertas, urgentes, notificaciones, sinLeer 
     };
   }, [open]);
 
-  // Abre la causa en el listado (sin filtros que puedan ocultarla)
   const goToCausa = (causaId: string) => {
-    const { select, setFilter, setSearch } = useCausasStore.getState();
-    setFilter("todas");
-    setSearch("");
-    select(causaId);
     setOpen(false);
-    router.push("/causas");
+    router.push(`/causas/${causaId}`);
   };
 
   const abrirNotificacion = (n: NotificacionItem) => {

@@ -14,11 +14,10 @@ import type { CausaConRelaciones } from "@/types";
 
 interface CausaCardProps {
   causa: CausaConRelaciones;
-  active: boolean;
   onSelect: () => void;
 }
 
-export default function CausaCard({ causa, active, onSelect }: CausaCardProps) {
+export default function CausaCard({ causa, onSelect }: CausaCardProps) {
   const [hovered, setHovered] = useState(false);
   const cerrada = causa.estado === "Cerrada";
   const urgency = getVisualUrgency(causa.proximo_vencimiento, causa.tipo_vencimiento, cerrada);
@@ -27,7 +26,7 @@ export default function CausaCard({ causa, active, onSelect }: CausaCardProps) {
     : getRowDeadlineText(causa.proximo_vencimiento, causa.tipo_vencimiento, causa.motivo_vencimiento);
   const initials = getInitials(causa.owner?.nombre_completo, causa.owner?.email[0]?.toUpperCase());
 
-  const bg = active ? "var(--color-blue-lt)" : hovered ? "var(--hover-row)" : "var(--color-card)";
+  const bg = hovered ? "var(--hover-row)" : "var(--color-card)";
 
   return (
     <button

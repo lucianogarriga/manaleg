@@ -5,7 +5,6 @@ import Link from "next/link";
 import { PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useUIStore, loadPin } from "@/store/uiStore";
-import { useCausasStore } from "@/store/causasStore";
 import type { Profile } from "@/types";
 import type { LayoutCounts } from "@/services/supabase/layoutCounts";
 import { NAV_SECTIONS, type NavItem } from "./navigation";
@@ -91,7 +90,6 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { sidebarOpen, closeSidebar, sidebarPinned, toggleSidebarPin } = useUIStore();
-  const selectCausa = useCausasStore((s) => s.select);
   const [hovered, setHovered] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
   const [pill, setPill] = useState<Medida | null>(null);
@@ -123,7 +121,6 @@ export default function Sidebar({ profile, counts }: SidebarProps) {
   // Transición entre secciones: la vista actual se desvanece, luego navega (el loader muestra la carga)
   const navegar = (href: string, e: React.MouseEvent<HTMLAnchorElement>) => {
     closeSidebar();
-    if (href === "/causas") selectCausa(null);
     const esClicSimple = e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
     if (!esClicSimple || href === pathname) return;
     e.preventDefault();

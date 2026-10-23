@@ -1,8 +1,5 @@
-"use client";
+import Link from "next/link";
 
-import { useRouter } from "next/navigation";
-
-// Abre la página de la causa (desde las páginas globales de Movimientos, Honorarios, etc.).
 export default function OpenCausaButton({
   causaId,
   className,
@@ -12,13 +9,9 @@ export default function OpenCausaButton({
   className?: string;
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-
-  const open = () => router.push(`/causas/${causaId}`);
-
   return (
-    <button type="button" onClick={open} className={`cursor-pointer text-left ${className ?? ""}`}>
+    <Link href={`/causas/${causaId}`} className={`cursor-pointer text-left ${className ?? ""}`}>
       {children}
-    </button>
+    </Link>
   );
 }

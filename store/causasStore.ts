@@ -3,14 +3,12 @@ import { create } from "zustand";
 export type CausasFilter = "todas" | "mias" | "compartidas" | "urgentes" | "cerradas" | "vencen_hoy" | "vencen_3dias" | "sin_movimiento" | "audiencias" | "recordatorios" | "vencimientos";
 
 interface CausasState {
-  selectedId: string | null;
   filter: CausasFilter;
   search: string; // lo escribe el buscador del Topbar
   fueros: string[]; // multi-select: JUD, EXT, ADM, MED, DEF
   tipoJuicio: string | null; // filtro por tipo de juicio
   formOpen: boolean;
   editingId: string | null; // null = crear nueva
-  select: (id: string | null) => void;
   setFilter: (filter: CausasFilter) => void;
   setSearch: (search: string) => void;
   toggleFuero: (fuero: string) => void;
@@ -22,14 +20,12 @@ interface CausasState {
 }
 
 export const useCausasStore = create<CausasState>((set, get) => ({
-  selectedId: null,
   filter: "todas",
   search: "",
   fueros: [],
   tipoJuicio: null,
   formOpen: false,
   editingId: null,
-  select: (selectedId) => set({ selectedId }),
   setFilter: (filter) => set({ filter }),
   setSearch: (search) => set({ search }),
   toggleFuero: (fuero) => {

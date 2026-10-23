@@ -265,7 +265,6 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
                   <CausaCard
                     key={causa.id}
                     causa={causa}
-                    active={false}
                     onSelect={() => abrirCausa(causa.id)}
                   />
                 ))}
