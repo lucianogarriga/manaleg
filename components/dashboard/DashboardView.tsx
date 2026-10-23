@@ -230,7 +230,7 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
         </div>
 
         {/* Pestañas en pastilla ovalada, centrada (en mobile baja a su propia línea) */}
-        <div className="order-last flex w-full justify-center md:order-none md:w-auto">
+        <div className="order-first flex w-full justify-center md:order-none md:w-auto">
           <nav aria-label="Vistas del dashboard" className="depth-sm inline-flex items-center gap-1 rounded-full border border-border bg-panel2 p-1">
             {PESTANAS.map(({ id, label }) => (
           <button
