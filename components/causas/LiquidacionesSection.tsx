@@ -98,23 +98,43 @@ function VistaLinea({ aprobada, ordenes }: { aprobada: Liquidacion; ordenes: Ord
   );
 }
 
+// Donut de avance por rubro: 2 columnas en mobile, 4 en pantallas medianas y 6 en grandes
+function Dona({ pct, warn }: { pct: number; warn: boolean }) {
+  const r = 26;
+  const c = 2 * Math.PI * r;
+  return (
+    <div className="relative h-[68px] w-[68px] shrink-0">
+      <svg width="68" height="68" viewBox="0 0 68 68" className="-rotate-90" aria-hidden>
+        <circle cx="34" cy="34" r={r} fill="none" strokeWidth="6" className="stroke-border" />
+        <circle
+          cx="34"
+          cy="34"
+          r={r}
+          fill="none"
+          strokeWidth="6"
+          strokeLinecap="round"
+          className={warn ? "stroke-amb" : "stroke-blue"}
+          strokeDasharray={c}
+          strokeDashoffset={c * (1 - pct / 100)}
+        />
+      </svg>
+      <span className="absolute inset-0 flex items-center justify-center text-[13px] font-bold tabular-nums text-text">
+        {Math.round(pct)}%
+      </span>
+    </div>
+  );
+}
+
 function VistaTablero({ aprobada, ordenes }: { aprobada: Liquidacion; ordenes: OrdenPago[] }) {
   const filas = seguimiento(aprobada, ordenes);
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <div className="grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-6">
       {filas.map((f) => (
-        <div key={f.rubro} className="flex flex-col gap-2 rounded-[10px] border border-border bg-card p-3">
-          <div className="flex items-start justify-between gap-2">
-            <span className="text-[13px] font-semibold text-text">{f.rubro}</span>
-            <span className={`text-[11.5px] font-semibold ${COLOR_ESTADO[f.estado]}`}>{f.estado}</span>
-          </div>
-          <div className="h-[6px] overflow-hidden rounded-[3px] bg-border">
-            <div className={`h-full rounded-[3px] ${f.estado === "Cerca de cancelarse" ? "bg-amb" : "bg-blue"}`} style={{ width: `${f.pct}%` }} />
-          </div>
-          <div className="flex flex-wrap justify-between gap-x-3 text-[12px] tabular-nums text-muted">
-            <span>Girado {pesos(f.girado)} ({Math.round(f.pct)}%)</span>
-            <span>Pendiente {pesos(f.pendiente)}</span>
-          </div>
+        <div key={f.rubro} className="flex flex-col items-center gap-2 rounded-[10px] border border-border bg-card p-3 text-center">
+          <Dona pct={f.pct} warn={f.estado === "Cerca de cancelarse"} />
+          <span className="text-[12.5px] font-semibold text-text">{f.rubro}</span>
+          <span className={`text-[11px] font-semibold ${COLOR_ESTADO[f.estado]}`}>{f.estado}</span>
+          <span className="text-[11.5px] tabular-nums text-muted">Pendiente {pesos(f.pendiente)}</span>
         </div>
       ))}
     </div>
