@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
 import Link from "next/link";
 import { X, Share2, Pencil } from "lucide-react";
@@ -34,7 +33,7 @@ interface Props {
   userId: string;
 }
 
-export default function CausaModal({ causa, userId }: Props) {
+export default function CausaDetalle({ causa, userId }: Props) {
   const select = useCausasStore((s) => s.select);
   const openEdit = useCausasStore((s) => s.openEdit);
   const showToast = useUIStore((s) => s.showToast);
@@ -140,21 +139,11 @@ export default function CausaModal({ causa, userId }: Props) {
   ];
   if (causa.notas) datos.push({ label: "Notas", value: causa.notas, full: true });
 
-  return createPortal(
+  // Página de detalle: ya no es un modal (sin fondo, sin portal). El formulario de edición sí se abre encima.
+  return (
     <>
-      {/* Backdrop */}
-      <div
-        className="modal-backdrop fixed inset-0 z-50 bg-black/45 backdrop-blur-[3px]"
-        onClick={() => select(null)}
-        aria-hidden="true"
-      />
-
-      {/* Modal: 97vh en mobile, 95vh en desktop — siempre flotando sobre el backdrop */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => select(null)}>
-        <div
-          className="modal-panel relative flex h-[92dvh] w-[calc(100%-16px)] flex-col overflow-hidden overscroll-contain rounded-xl bg-bg shadow-2xl md:w-[95%] md:rounded-2xl"
-          onClick={(e) => e.stopPropagation()}
-        >
+      <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card">
+        <div>
           {/* Header fijo */}
           <div className="shrink-0 border-b border-border bg-card px-5 pt-4 pb-3">
             {/* Título + botón cerrar */}
@@ -162,16 +151,6 @@ export default function CausaModal({ causa, userId }: Props) {
               <h2 className="flex-1 text-[16px] font-bold leading-[1.35] text-text">
                 {causa.nro_expediente && `${causa.nro_expediente} — `}{causa.caratula}
               </h2>
-              <button
-                type="button"
-                onClick={() => select(null)}
-                title="Cerrar (Esc)"
-                className="mt-[2px] shrink-0 cursor-pointer rounded-lg p-[5px] text-sub transition-colors"
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--hover-row)"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = ""; }}
-              >
-                <X size={17} />
-              </button>
             </div>
 
             {/* Badges + acciones */}
@@ -236,7 +215,7 @@ export default function CausaModal({ causa, userId }: Props) {
                 )}
                 <button
                   type="button"
-                  onClick={() => { select(null); openEdit(causa.id); }}
+                  onClick={() => openEdit(causa.id)}
                   className="flex cursor-pointer items-center gap-1 text-[13px] font-semibold text-blue hover:underline"
                 >
                   <Pencil size={12} /> Editar
@@ -344,7 +323,6 @@ export default function CausaModal({ causa, userId }: Props) {
         />
       )}
       {confirmDialog}
-    </>,
-    document.body,
+    </>
   );
 }

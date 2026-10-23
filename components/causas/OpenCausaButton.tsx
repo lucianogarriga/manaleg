@@ -1,10 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCausasStore } from "@/store/causasStore";
 
-// Lleva al listado de causas con esta causa seleccionada
-// (desde las páginas globales de Movimientos, Honorarios, etc.).
+// Abre la página de la causa (desde las páginas globales de Movimientos, Honorarios, etc.).
 export default function OpenCausaButton({
   causaId,
   className,
@@ -16,13 +14,7 @@ export default function OpenCausaButton({
 }) {
   const router = useRouter();
 
-  const open = () => {
-    const { select, setFilter, setSearch } = useCausasStore.getState();
-    setFilter("todas");
-    setSearch("");
-    select(causaId);
-    router.push("/causas");
-  };
+  const open = () => router.push(`/causas/${causaId}`);
 
   return (
     <button type="button" onClick={open} className={`cursor-pointer text-left ${className ?? ""}`}>

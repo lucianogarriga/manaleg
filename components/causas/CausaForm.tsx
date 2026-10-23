@@ -10,6 +10,7 @@ import { Plus, Trash2 } from "lucide-react";
 import AutocompleteField from "@/components/ui/AutocompleteField";
 import { FormSection, SelectField, TextAreaField, TextField } from "@/components/ui/FormControls";
 import { useCausasStore } from "@/store/causasStore";
+import { usePathname, useRouter } from "next/navigation";
 import { useUIStore } from "@/store/uiStore";
 import { ANTICIPACION_ALERTA, ESTADOS_CAUSA, ETAPAS_POR_VIA, ETIQUETA_RESULTADO, FUEROS, TIPOS_AVISO, TIPOS_JUICIO_POR_FUERO, VIAS_EXTRAJUDICIALES, resultadosPara } from "@/utils/constants";
 import type { ClienteOption } from "@/services/supabase/clientes";
@@ -104,7 +105,8 @@ function computeAutoCaratula(partes: ParteRow[], tipoJuicio: string): string | n
 // así cada apertura arranca con el estado limpio.
 export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
   const closeForm = useCausasStore((s) => s.closeForm);
-  const select = useCausasStore((s) => s.select);
+  const router = useRouter();
+  const pathname = usePathname();
   const [state, action, pending] = useActionState<CausaFormState, FormData>(saveCausa, {});
   const { request: confirmRequest, dialog: confirmDialog } = useConfirm();
   const [deleteError, setDeleteError] = useState<string>();
@@ -120,13 +122,16 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
   const isNew = causa === null;
   useEffect(() => {
     if (!state.savedId) return;
-    select(state.savedId);
     closeForm();
+    // Después de guardar, la causa queda abierta en su página (si ya estamos ahí, se actualiza)
+    const destino = `/causas/${state.savedId}`;
+    if (pathname === destino) router.refresh();
+    else router.push(destino);
     useUIStore.getState().showToast({
       message: state.message ?? "Causa guardada.",
       ...(isNew && { actionLabel: "Cargar otra", onAction: useCausasStore.getState().openCreate }),
     });
-  }, [state.savedId, state.message, isNew, select, closeForm]);
+  }, [state.savedId, state.message, isNew, pathname, router, closeForm]);
 
   const onDelete = async () => {
     if (!causa) return;
@@ -135,8 +140,9 @@ export default function CausaForm({ causa, clientes, userId }: CausaFormProps) {
     startDelete(async () => {
       const result = await deleteCausa(causa.id);
       if (result.error) return setDeleteError(result.error);
-      select(null);
       closeForm();
+      // Una causa eliminada no tiene página: se vuelve al listado
+      router.push("/causas");
       useUIStore.getState().showToast({ message: result.message ?? "Causa eliminada." });
     });
   };

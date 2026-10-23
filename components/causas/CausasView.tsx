@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { AlertTriangle, FileSpreadsheet, Scale, Search, X } from "lucide-react";
 import { CAUSAS_LIMIT, normalizeTipoJuicio } from "@/utils/constants";
 import EmptyState from "@/components/ui/EmptyState";
@@ -12,7 +13,6 @@ import { useCausasStore } from "@/store/causasStore";
 import type { ClienteOption } from "@/services/supabase/clientes";
 import type { CausaConRelaciones } from "@/types";
 import CausaForm from "./CausaForm";
-import CausaModal from "./CausaModal";
 import MaintenanceBanner from "@/components/ui/MaintenanceBanner";
 import CausasTabla from "./CausasTabla";
 import Paginacion, { CAUSAS_POR_PAGINA } from "./Paginacion";
@@ -49,11 +49,12 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
     return [...seen.values()].sort();
   }, [causas]);
   const atLimit = causasPropias >= causasMax;
-  const selectedId = useCausasStore((s) => s.selectedId);
   const formOpen = useCausasStore((s) => s.formOpen);
   const editingId = useCausasStore((s) => s.editingId);
   const openCreate = useCausasStore((s) => s.openCreate);
-  const select = useCausasStore((s) => s.select);
+  const router = useRouter();
+  // Cada causa tiene su propia página: se abre en /causas/[id]
+  const abrirCausa = (id: string) => router.push(`/causas/${id}`);
   const search = useCausasStore((s) => s.search);
   const setSearch = useCausasStore((s) => s.setSearch);
   const filtro = useCausasStore((s) => s.filter);
@@ -132,7 +133,6 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
     try { localStorage.setItem("causas-view", mode); } catch {}
   };
 
-  const selected = causas.find((c) => c.id === selectedId) ?? null;
   const editing = editingId ? (causas.find((c) => c.id === editingId) ?? null) : null;
 
   return (
@@ -251,7 +251,7 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
           {/* Lista o grid */}
           {vistaEfectiva === "list" ? (
             <div className="px-3 py-1 pb-16 sm:px-4">
-              <CausasTabla causas={enPagina} enLineaPorCausa={enLineaPorCausa} onSelect={(id) => select(id)} />
+              <CausasTabla causas={enPagina} enLineaPorCausa={enLineaPorCausa} onSelect={abrirCausa} />
               {visibles.length === 0 && (
                 <p className="px-4 py-8 text-center text-[13px] text-muted">
                   {search ? `No hay causas que coincidan con "${search}".` : "No hay causas en este filtro."}
@@ -265,8 +265,8 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
                   <CausaCard
                     key={causa.id}
                     causa={causa}
-                    active={selectedId === causa.id}
-                    onSelect={() => select(causa.id)}
+                    active={false}
+                    onSelect={() => abrirCausa(causa.id)}
                   />
                 ))}
               </div>
@@ -292,7 +292,6 @@ export default function CausasView({ causas, totalEnBD, clientes, userId, causas
         onClose={() => setImportOpen(false)}
         onImported={(m) => setAvisoImport(m)}
       />
-      {selected && <CausaModal causa={selected} userId={userId} />}
       {formOpen && (
         <CausaForm key={editingId ?? "new"} causa={editing} clientes={clientes} userId={userId} />
       )}
