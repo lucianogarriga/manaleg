@@ -28,8 +28,6 @@ export const FUEROS = [
   "Federal",
   "Comercial",
   "Ciberdelitos",
-  "Estafa virtual",
-  "Phishing",
   "Defensa del Consumidor",
   "Otro",
 ] as const;
@@ -131,7 +129,7 @@ export const TIPOS_AVISO = ["Vencimiento", "Recordatorio", "Audiencia"] as const
 
 export const ETAPAS_PROCESALES = ["Inicial", "Prueba", "Alegatos", "Sentencia", "Ejecución"] as const;
 
-export const RESULTADOS_CAUSA = ["Ganada", "Transada", "Perdida"] as const;
+export const RESULTADOS_CAUSA = ["Ganada", "Transada", "Perdida", "Sin acuerdo"] as const;
 
 export const ESTADOS_CAUSA = [
   "Iniciada",

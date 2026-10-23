@@ -7,9 +7,9 @@ export default function ProgressBar({ percent }: { percent: number }) {
       aria-valuenow={Math.round(value)}
       aria-valuemin={0}
       aria-valuemax={100}
-      className="mb-1 h-[5px] overflow-hidden rounded-[3px] bg-slate-200"
+      className="mb-1 h-[5px] overflow-hidden rounded-[3px] bg-border"
     >
-      <div className="h-full rounded-[3px] bg-linear-to-r from-grn to-[#059669]" style={{ width: `${value}%` }} />
+      <div className="h-full rounded-[3px] bg-linear-to-r from-blue to-pur" style={{ width: `${value}%` }} />
     </div>
   );
 }

@@ -618,6 +618,11 @@ button[type="submit"]:not(:disabled):hover::after {
 }
 @keyframes chart-draw { to { stroke-dashoffset: 0; } }
 
+/* Mobile: iOS hace zoom al enfocar campos con letra menor a 16px; los campos quedan en 16px */
+@media (max-width: 767px) {
+  input, select, textarea { font-size: 16px; }
+}
+
 /* Preferencia "Reducir movimiento" del perfil (data-motion="off") y reducción del sistema: sin animaciones ni transiciones largas */
 html[data-motion="off"] *,
 html[data-motion="off"] *::before,

@@ -641,7 +641,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase,
           extra={etapas.length > 0 ? <div className="mt-2 text-[12px] text-muted">{etapas.map(([e, dd]) => `${e} ${dd}`).join(" · ")}</div> : null} />
         <Tile titulo="Tasa de éxito en causas" sub="Causas cerradas, últimos 2 años"
           valor={exitoPct === null ? "—" : `${exitoPct}%`}
-          extra={n.gestion.exito.total > 0 ? <div className="mt-2 text-[12px] text-muted">Ganadas {n.gestion.exito.ganadas} · Transadas {n.gestion.exito.transadas} · Perdidas {n.gestion.exito.perdidas}</div> : null} />
+          extra={n.gestion.exito.total > 0 ? <div className="mt-2 text-[12px] text-muted">Ganadas {n.gestion.exito.ganadas} · Acuerdos {n.gestion.exito.transadas} · Perdidas {n.gestion.exito.perdidas}</div> : null} />
         <Tile titulo="Audiencias con suspensión" sub={`${n.audiencias.suspendidasMes} de ${n.audiencias.mes} audiencias del mes`}
           valor={n.audiencias.mes > 0 ? `${Math.round((n.audiencias.suspendidasMes / n.audiencias.mes) * 100)}%` : "—"}
           extra={<div className="mt-2 text-[12px] text-muted">Suspendidas o reprogramadas</div>} />
@@ -762,7 +762,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase,
               <ul className="flex min-w-0 flex-col justify-center gap-3 text-[13px]">
                 {[
                   { etiqueta: "Ganadas", valor: n.gestion.exito.ganadas, color: "var(--color-series-1)" },
-                  { etiqueta: "Transadas", valor: n.gestion.exito.transadas, color: "var(--color-series-2)" },
+                  { etiqueta: "Acuerdos", valor: n.gestion.exito.transadas, color: "var(--color-series-2)" },
                   { etiqueta: "Perdidas", valor: n.gestion.exito.perdidas, color: "var(--color-donut-3)" },
                 ].map((f) => (
                   <li key={f.etiqueta} className="flex items-center gap-2 border-b border-border pb-2 last:border-0">
@@ -780,7 +780,7 @@ function Kpis({ d, periodo, moneda, setMoneda, estilo, setEstilo, base, setBase,
               <div className="flex justify-center">
                 <Dona sinLeyenda segmentos={[
                   { etiqueta: "Ganadas", valor: n.gestion.exito.ganadas, color: "var(--color-series-1)" },
-                  { etiqueta: "Transadas", valor: n.gestion.exito.transadas, color: "var(--color-series-2)" },
+                  { etiqueta: "Acuerdos", valor: n.gestion.exito.transadas, color: "var(--color-series-2)" },
                   { etiqueta: "Perdidas", valor: n.gestion.exito.perdidas, color: "var(--color-donut-3)" },
                 ]} />
               </div>
