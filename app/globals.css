@@ -556,16 +556,12 @@ button[type="submit"]:not(:disabled):hover::after {
   transition: transform 1100ms cubic-bezier(.22,1,.36,1);
 }
 .fondo-blob.b1 {
-  width: 46%; height: 62%; left: -8%; top: -12%; opacity: .24; background: var(--color-blue);
-  transform: translate3d(calc((var(--mx, .5) - .5) * -36px), calc((var(--my, .5) - .5) * -24px), 0);
+  width: 44%; height: 58%; left: -10%; top: -16%; opacity: .2; background: var(--color-blue);
+  transform: translate3d(calc((var(--mx, .5) - .5) * -30px), calc((var(--my, .5) - .5) * -20px), 0);
 }
 .fondo-blob.b2 {
-  width: 40%; height: 50%; right: -6%; top: 22%; opacity: .2; background: var(--color-pur);
-  transform: translate3d(calc((var(--mx, .5) - .5) * 44px), calc((var(--my, .5) - .5) * 30px), 0);
-}
-.fondo-blob.b3 {
-  width: 34%; height: 40%; left: 34%; bottom: -16%; opacity: .16; background: var(--color-blue);
-  transform: translate3d(calc((var(--mx, .5) - .5) * -20px), calc((var(--my, .5) - .5) * 18px), 0);
+  width: 40%; height: 52%; right: -10%; bottom: -18%; opacity: .16; background: var(--color-pur);
+  transform: translate3d(calc((var(--mx, .5) - .5) * 34px), calc((var(--my, .5) - .5) * 24px), 0);
 }
 
 /* Profundidad: cards y badges flotan sobre el fondo. Sombras en capas, un borde de luz arriba

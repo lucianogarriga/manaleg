@@ -152,20 +152,8 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
       </div>
 
       {/* ── Pestañas + período ── */}
-      <div className="flex items-center gap-[18px] border-b border-border">
-        {PESTANAS.map(({ id, label }) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setTab(id)}
-            className={`-mb-px border-b-2 px-0.5 py-2 text-[14px] transition-colors ${
-              tab === id ? "border-accent font-semibold text-text" : "border-transparent text-muted hover:text-text"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-        <div className="ml-auto flex flex-wrap items-center justify-end gap-2 pb-[6px]">
+      <div className="flex flex-wrap items-center justify-between gap-3 md:grid md:grid-cols-[1fr_auto_1fr]">
+        <div className="flex items-center md:justify-self-start">
           <div ref={monedasRef} className="relative">
             <button type="button" onClick={() => setMonedasAbierto((v) => !v)} aria-expanded={monedasAbierto}
               className={`flex cursor-pointer items-center gap-1.5 rounded-[8px] border px-3 py-[5px] text-[12px] font-semibold text-text ${
@@ -176,7 +164,7 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
             </button>
 
             {monedasAbierto && (
-              <div className="absolute right-0 top-full z-30 mt-1 w-[310px] max-w-[calc(100vw-24px)] rounded-[10px] border border-border bg-card p-2 shadow-[0_8px_24px_rgba(0,0,0,.18)]">
+              <div className="absolute left-0 top-full z-30 mt-1 w-[310px] max-w-[calc(100vw-24px)] rounded-[10px] border border-border bg-card p-2 shadow-[0_8px_24px_rgba(0,0,0,.18)]">
                 <div className="flex items-center justify-between px-1.5 pb-1.5 pt-0.5">
                   <span className="text-[10.5px] font-bold uppercase tracking-[.5px] text-muted">Monedas judiciales</span>
                   <span className="group/info relative inline-flex h-[16px] w-[16px] cursor-help items-center justify-center rounded-full border border-muted text-[10px] font-bold text-muted" tabIndex={0} aria-label="¿Qué es la moneda judicial?">
@@ -239,6 +227,27 @@ export default function DashboardView({ inicial, preferencia, nombre }: Props) {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Pestañas en pastilla ovalada, centrada (en mobile baja a su propia línea) */}
+        <div className="order-last flex w-full justify-center md:order-none md:w-auto">
+          <nav aria-label="Vistas del dashboard" className="depth-sm inline-flex items-center gap-1 rounded-full border border-border bg-panel2 p-1">
+            {PESTANAS.map(({ id, label }) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setTab(id)}
+            className={`whitespace-nowrap rounded-full px-4 py-[6px] text-[13.5px] transition-all duration-300 ${
+              tab === id ? "bg-card font-semibold text-text shadow-sm" : "text-muted hover:text-text"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+          </nav>
+        </div>
+
+        <div className="flex justify-end md:justify-self-end">
           <Segmentado
             titulo="Período"
             valores={["mes", "trim", "anio"] as Periodo[]}
